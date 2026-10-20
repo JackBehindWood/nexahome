@@ -1,13 +1,17 @@
-# Security Policy
+# Security policy
 
 ## Reporting a vulnerability
 
-Please report security issues privately using GitHub's "Report a vulnerability" feature on this repository (Security tab). Do not open a public issue for a vulnerability.
+Do not open a public issue with details. If this repository's Security tab offers "Report a vulnerability", use it. If it does not, open an issue that asks for a private channel and contains no details; the maintainer will reply with one.
 
-## What must never be committed
+## Scope
 
-Passwords, API keys, tokens, private keys, live databases, `.env` files, and personal data (names, hostnames, IP addresses, emails). Use `.env.example` with placeholders. If you believe a secret was committed, treat it as compromised: rotate it first, then report it.
+The code, configuration and documents in this repository. Your own deployment, hardware and network are your responsibility.
 
-## Deployment guidance
+## Response
 
-Keep administrative interfaces off the public internet; use a local network or VPN. Published container ports bind to `127.0.0.1` by default.
+Best effort, without a promised response time. This is a solo hobby project.
+
+## If a secret was committed
+
+Treat it as compromised: rotate it first, then report it. The full list of what must never be committed is in [constraints](docs/constraints.md#security-rules).
