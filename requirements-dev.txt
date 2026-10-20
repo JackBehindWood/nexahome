@@ -1,0 +1,4 @@
+# Dev tooling, installed into the gitignored ./.venv by `make setup` (uv if present, else pip).
+pre-commit==4.7.0
+pre-commit-hooks==6.0.0
+detect-secrets==1.5.0

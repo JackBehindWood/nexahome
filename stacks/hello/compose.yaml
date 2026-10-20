@@ -1,0 +1,21 @@
+name: nexahome-hello
+
+services:
+  hello:
+    image: busybox:1.37.0
+    command: ["httpd", "-f", "-p", "8080", "-h", "/www"]
+    user: "10001:10001"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${HELLO_PORT:-8080}:8080"
+    volumes:
+      - ./www:/www:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 2s

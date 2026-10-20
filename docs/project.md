@@ -58,7 +58,9 @@ Status: **Confirmed** (explicitly agreed), **Proposed** (suggested, not yet agre
 | SSH method, VPN choice (Tailscale/WireGuard) | Open | Depends on hardware not yet available | n/a |
 | Repository layout (`docs/`, `stacks/`, `scripts/`, data outside the tree) | Proposed | Separates code, config, secrets, data | n/a |
 | Public-repo security baseline (scanning, hooks, agent permissions) | Proposed | Public repo must not leak secrets or personal data | n/a |
-| Container runtime on the laptop (Docker Desktop / OrbStack / Colima) | Open | Decide when the first container runs | n/a |
+| Container runtime on the laptop: Colima (open source, light, same docker CLI and Compose files) | Confirmed | Chosen by the owner; lightest option for an Air | [0004](adr/0004-colima-runtime.md) |
+| Python tooling: `.venv` via uv if installed, plain pip otherwise; no `pyproject.toml` until Python code needs it | Confirmed | uv is preferred but optional | n/a |
+| `.vscode/` is never committed (editor config stays local) | Confirmed | Personal editor preferences stay private | n/a |
 | Task runner: Makefile | Proposed | No install needed on macOS/Linux | n/a |
 | Claude Code sandbox on or off | Open | Trade-off between safety and friction | n/a |
 | Name-collision check for "NexaHome" before first push | Open | Avoid clashing with an existing project | n/a |

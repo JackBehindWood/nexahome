@@ -2,6 +2,36 @@
 
 Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
+## 2026-10-20: Session 1, Pipeline proof
+
+**Done**
+- Tooling: `Makefile` (setup, hooks, unhooks, check, up, down, ps), `requirements-dev.txt` (pre-commit 4.7.0, pre-commit-hooks 6.0.0, detect-secrets 1.5.0), `.venv` created with uv (pip fallback in `make setup`). All hooks are local and run from `.venv`, so nothing is cloned or cached outside the repo.
+- Hooks: secrets, private keys, large files, YAML, whitespace, no direct commits to `main`/`dev`, and a personal-data check (private IPs, home paths, `.local` hosts, terms from a local gitignored `.personal-denylist`). The git hook is installed (approved); `make unhooks` removes it.
+- Runtime: Colima (already installed) started with 2 CPUs, 2 GB RAM, 20 GB disk. ADR 0004.
+- Stack `stacks/hello` (BusyBox httpd, non-root, read-only, caps dropped, health check, bound to `127.0.0.1`), `scripts/check_compose.py` enforcing the compose policy, `.editorconfig`, `.gitattributes`, lean CI (`.github/workflows/ci.yml`, actions pinned to commit SHAs) and a PR template.
+- Identity fix: the account predates 2017, so the commit email is now `ID+handle@users.noreply.github.com`; the single unpushed commit was rewritten.
+- Local-only by owner's decision: `.claude/`, `CLAUDE.md` and `.vscode/` are gitignored and untracked. Local `.claude/rules/compose.md` and `.vscode/` files exist on this machine only.
+
+**Doc changes and reasons**
+- `project.md`: decisions table gained rows for Colima (Confirmed), uv-optional Python tooling (Confirmed), `.vscode/` never committed (Confirmed), and `.claude/` never committed / `CLAUDE.md` local for now (Proposed for `CLAUDE.md`); the working-method pointer no longer links to the untracked `CLAUDE.md`.
+- `constraints.md`: guardrails are described as implemented in a local, uncommitted settings file.
+- `roadmap.md`: Session 1 marked done; the Session 5 note about settings travelling via git was corrected (they do not); the stack is `hello`, not `whoami`; the "data volume survives restart" exit criterion was dropped (a volume is Session 3 scope).
+- No Confirmed decision was altered.
+
+**Verification**
+- `make check` passes. Planted fake secret, private IP, home path, `.local` host and a denylist term were each caught; a real commit attempt with a planted secret was blocked; committing on `dev` is blocked.
+- `make up`: container healthy, HTTP 200 on `127.0.0.1:8080`, port bound to 127.0.0.1 only, runs as uid 10001, no answer on the LAN address; `make down` clean.
+- Permission rules observed: `sudo`, `rm -rf`, `git push --force` and a Read of `.env` were denied; Read of `.env.example` worked; `docker ps`, `docker compose config` and `docker compose ps` ran silently. `rm .env` was also denied.
+- **Not verified:** CI (needs a push); whether `docker compose up` / `docker run` raised a prompt (not observable by the agent); the sandbox was not enabled (decision: stay off for now, Proposed).
+- A dummy `.env` with a fake value remains in the repo folder (gitignored); the deny rule stopped the agent from deleting it, so delete it by hand.
+
+**Next:** Session 2, publish safely (see `roadmap.md`).
+
+**Open questions**
+- Sandbox on or off (Proposed: off for now).
+- Name-collision check for "NexaHome".
+- Optional SSH-signed commits; macOS version and RAM.
+
 ## 2026-10-20: Session 0, Bootstrap
 
 **Done**

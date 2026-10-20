@@ -29,11 +29,8 @@ CLAUDE.local.md
 .venv/
 __pycache__/
 
-# Editor (shared files are re-included)
-.vscode/*
-!.vscode/settings.json
-!.vscode/extensions.json
-!.vscode/tasks.json
+# Editor config: local only, never committed
+.vscode/
 
 # OS
 .DS_Store
