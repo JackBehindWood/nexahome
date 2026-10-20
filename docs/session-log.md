@@ -10,8 +10,12 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 - GitHub secret scanning and push protection are enabled (the default for public repos).
 - The first push did not start a CI run, so the CI proof goes through a pull request from `feat/session-2` into `dev`.
 
-**Open**
-- Result of the first CI run and branch protection on `main`: see the entries added below as they complete.
+- Branch protection on `main` (owner's rule: merges to `main` only via PR): PR required with 0 approvals (solo project), enforced for admins, force-push and deletion blocked. Read back via the API; not tested with a real push, because a failed test would have altered `main`. Outsiders contribute through fork PRs; no extra protection on other branches.
+- Doc changes: ADR 0002 and the decisions table now state the PR-only rule; added an Open row for required CI checks.
+
+**Not verified / open**
+- **CI has never run**: after about 10 minutes, no workflow run exists for either the push or PR #1, with no GitHub incident reported and Actions enabled. Likely a GitHub-side or account-level matter (check the repo's Actions tab). Until a run succeeds, `make check` is the only proof of the checks; required status checks on `main` stay Open.
+- PR #1 (`feat/session-2` into `dev`) is open and not merged; merging into `dev` needs the owner's approval. `main` does not yet contain the Session 2 log.
 - Owner action: GitHub setting "Block command line pushes that expose my email".
 
 ## 2026-10-20: Session 1, Pipeline proof
