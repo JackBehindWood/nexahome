@@ -1,0 +1,39 @@
+# Secrets and local config
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+id_*
+*.kdbx
+secrets/
+.personal-denylist
+
+# Persistent and local data
+data/
+*.sqlite
+*.db
+*.dump
+
+# Local agent config: never committed
+CLAUDE.md
+.claude/
+
+# Private notes and inventory
+*.local.md
+inventory.local.md
+CLAUDE.local.md
+
+# Tooling
+.venv/
+__pycache__/
+
+# Editor (shared files are re-included)
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+
+# OS
+.DS_Store
