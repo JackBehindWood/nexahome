@@ -38,7 +38,7 @@ Enforced by `make check` (`scripts/check_compose.py`) unless marked review.
 ## Security rules
 
 - **Never commit:** passwords, API keys, tokens, private keys (SSH or TLS), live databases, `.env` files, and personal data (names, institutions, hostnames, IP addresses, emails, home paths). Use `.env.example` with placeholders. A committed secret is compromised: rotate it first, then report it ([SECURITY.md](../SECURITY.md)).
-- **Scanning:** secrets and personal data are checked locally by the pre-commit hook and by CI. CI has not yet run, so only the local check is proven.
+- **Scanning:** secrets and personal data are checked locally by the pre-commit hook and by CI.
 - **Exposure:** administrative interfaces stay off the public internet; local network or VPN only.
 - **Least privilege:** applies to users, service accounts and AI agents. No `sudo`, root containers or `--privileged` without the owner's explicit approval.
 - **Destructive or system-changing actions** (delete, force-push, reset, container runtime, package manager, service manager, network or power settings) need the owner's approval.

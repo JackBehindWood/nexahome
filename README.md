@@ -2,7 +2,7 @@
 
 A modular, self-hosted homelab platform: local AI, development tools, storage, networking and home automation. Built to be reproducible, secure and easy to adapt to your own hardware.
 
-**Status:** early foundation. One demo stack (`hello`) runs on a laptop. A CI workflow is configured but has not yet run, so it is unproven; `make check` is the only proven check.
+**Status:** early foundation. One demo stack (`hello`) runs on a laptop. CI (secret scan and `make check`) has run once and passed; see the [session log](docs/session-log.md).
 
 ## Quick start
 

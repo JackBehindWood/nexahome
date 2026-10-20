@@ -23,13 +23,14 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
 **Next:** Phase P1 in the roadmap: CI proof, then the merges (owner approval), then Dependabot.
 
+**Update, later the same day:** GitHub Actions had been disabled for the repository. After the owner enabled it, CI ran for the first time on pull request 3: jobs `secrets` and `checks` both succeeded. Pull requests 1 to 3 were merged into `dev`; `dev` was then merged into `main` by pull request.
+
 **Pending (owner actions, not actioned)**
-- CI run unproven; investigate the Actions tab; decide required checks on `main`.
-- Merge pull request 1 into `dev`, then the documentation pull request, then `dev` into `main` by pull request (owner approves each merge).
+- Decide required checks on `main` (recommended: `secrets` and `checks`).
 - Delete the dummy `.env` in the working folder by hand.
 - GitHub account setting "Block command line pushes that expose my email".
 - Private vulnerability reporting was enabled afterwards (done; `SECURITY.md` updated).
-- Ask rules for `docker compose up` and `docker run`: whether they prompt is unconfirmed.
+- Ask rules for `docker compose up` and `docker run`: confirmed on 2026-10-20, the owner was asked to approve both (done).
 - Optional: SSH-signed commits; decide Makefile, repository layout and security baseline (Proposed).
 
 ## 2026-10-20: Session 2, Publish safely

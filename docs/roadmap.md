@@ -8,7 +8,7 @@ What gets built and in what order. Hardware has no dates; phases are ordered by 
 
 | When | Work |
 | :--- | :--- |
-| Now | Prove CI; add Dependabot; merge `dev` into `main` (documentation set 1.0 is merged into `dev`) |
+| Now | Decide required checks on `main`; add Dependabot |
 | Next | Persistence and restore drill on the laptop |
 | Later | Health view, then the hardware phases in order: Mac mini, NAS and UPS, network, home automation, then personal applications and media |
 
@@ -18,7 +18,7 @@ Pending owner actions are tracked in the [session log](session-log.md), not here
 
 - **Session 0, bootstrap:** repository, documents, decisions table, first ADRs, licence, README, SECURITY.
 - **Session 1, pipeline proof:** Makefile, project-local tooling, opt-in pre-commit hook, Colima runtime, `hello` stack, Compose policy check, CI workflow file, PR template.
-- **Session 2, publish safely (done except the pending items):** history scan, public repository, secret scanning and push protection, `main` protected. Still open: CI has never run; pull request 1 is unmerged.
+- **Session 2, publish safely (done except the pending items):** history scan, public repository, secret scanning and push protection, `main` protected. CI was proven afterwards (first run 2026-10-20) once Actions was enabled.
 - **Documentation foundation:** this documentation set, version 1.0.
 
 ## Phases
@@ -31,6 +31,7 @@ Goal: a safe, public, documented starting point. Exit criteria were met by Sessi
 
 ### P1 Prove CI and the publishing flow
 
+- **Status:** CI proof and merges are done (2026-10-20); the required-checks decision and Dependabot remain.
 - **Goal:** a green CI run, and a working merge path. **Depends on:** P0. **Hardware:** none.
 - **Scope:** find why no workflow run starts and fix it; add a manual trigger if that is the cause (owner approval for the workflow change); merge pull request 1 into `dev`, then `dev` into `main` by pull request (owner approves each merge); decide whether to require the CI checks on `main`; add `.github/dependabot.yml` for Actions and image tags.
 - **Exit criteria:** one successful CI run is linked in the log; `main` and `dev` match; the required-check decision is in the register; Dependabot has opened its first pull request or its config is validated by GitHub.
@@ -93,9 +94,9 @@ P0, P1, then P2 and P4 (P4 waits for hardware), P3 after P2, P5 after P2 and P4,
 ## Risks and assumptions
 
 - Hardware arrives late or in a different order: the laptop phases (P1 to P3) are useful alone.
-- CI cannot be made to run: `make check` stays the only proof of checks and required checks stay undecided.
+- CI stops running (for example Actions disabled again): `make check` stays the local proof.
 - Single maintainer: work is kept small and documented so it can be resumed.
-- A secret or personal detail reaches the public repository: local hooks and CI scanning exist; CI is unproven.
+- A secret or personal detail reaches the public repository: local hooks and CI scanning exist.
 - Assumes the laptop's 8 GB limits what runs beside the VM.
 
 ## Updating this roadmap
