@@ -8,13 +8,22 @@ A modular, self-hosted homelab platform: local AI, development tools, storage, n
 
 - **Modular:** components can be added, removed, replaced or migrated without disturbing the rest.
 - **Reproducible:** the system can be rebuilt from the repository and a backup.
-- **Frugal:** low cost; minimal compute, power and storage; complexity only when justified (see [constraints](constraints.md#principles)).
+- **Frugal:** affordable, energy efficient and low maintenance; minimal compute, power and storage; open source first, no paid subscriptions; complexity only when justified (see [constraints](constraints.md#principles)).
 - **Portable:** runs unchanged on macOS and Linux; platform-specific parts are isolated and explained.
 - **Incremental:** start on a laptop, grow onto dedicated hardware with documented migration steps ([architecture](architecture.md#migration-paths)).
 
 ## Scope and non-goals
 
-In scope: the capabilities in the [architecture](architecture.md#capabilities-hosts-and-phases) table, delivered as Compose stacks plus the documents and checks that keep them safe.
+In scope, built incrementally, starting with what is useful today and delivered as Compose stacks plus the documents and checks that keep them safe. Hosts and phases are in the [architecture](architecture.md#capabilities-hosts-and-phases) table.
+
+- **Development:** Git, VS Code Remote-SSH, Claude Code, automated builds and tests.
+- **Local AI:** local models, coding agents, later a modular personal assistant.
+- **Storage and backups:** file storage, photo management, reliable backups.
+- **Personal applications:** expense tracking, stock and portfolio tracking.
+- **Home automation:** Home Assistant, MQTT, ESP32 projects.
+- **Networking and security:** VPN, internal DNS, ad blocking, secure remote access.
+- **Media:** self-hosted streaming.
+- **Management:** service dashboard, health monitoring, logs, notifications.
 
 Not in scope: Kubernetes or custom orchestration, public exposure of administrative interfaces, hosting for other people. Windows is not a target.
 
@@ -57,6 +66,7 @@ Status values: **Confirmed** (explicitly agreed), **Proposed** (suggested, not y
 | Project-local tooling (`.venv`, pinned dependencies); no global installs; opt-in git hooks | Confirmed | Clean machine, reproducible setup | [0003](adr/0003-project-local-tooling.md) |
 | Python tooling: `.venv` via uv if installed, pip otherwise; no `pyproject.toml` until Python code needs it | Confirmed | uv is preferred but optional | n/a |
 | Frugality: low cost, minimal compute, power and storage; complexity only when justified | Confirmed | Home hardware, small budget | n/a |
+| Open-source software first; no paid subscriptions; no always-on workload unless needed | Proposed | Part of the same frugality aim, stated more precisely | n/a |
 | Dependabot for pinned image tags and Action SHAs | Proposed | Pins rot without updates | n/a |
 | Backup tool (restic is the shortlist) | Open | Chosen when the restore drill is built | n/a |
 | **Users and availability** | | | |
@@ -74,4 +84,4 @@ Status values: **Confirmed** (explicitly agreed), **Proposed** (suggested, not y
 
 Not decided and not blocking: capability priority order; local AI model size (the laptop has 8 GB, so no local model runs there); home automation scope (no devices yet); storage volume, budget and power limits; macOS version; optional SSH-signed commits; a trademark check on the name (a basic web search found no clash, not a trademark search).
 
-Changelog: 1.0 (2026-10-20): restructured; metadata and working-method sections removed; decisions regrouped; frugality, users, audience and hardware-order rows added.
+Changelog: 1.0 (2026-10-20): planned services list and open-source rule added; restructured; metadata and working-method sections removed; decisions regrouped; frugality, users, audience and hardware-order rows added.

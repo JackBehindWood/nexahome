@@ -14,7 +14,7 @@ Each principle has a check you can run or read.
 | Reproducibility | Configuration lives in Git; setup and recovery steps are written down | A fresh clone plus `make setup` and `make check` works (see the [README](../README.md)) |
 | Portability | Same files on macOS and Linux; platform-specific parts are isolated and explained | No hardcoded paths, hostnames, IPs or UIDs; paths come from environment variables |
 | Simplicity | Prefer the simplest design that works today; Docker Compose only | No Kubernetes, custom orchestrator or "for later" abstraction without an ADR |
-| Frugality | Low cost; minimal compute, power and storage; add complexity only when justified | New services state their RAM and disk need; nothing runs that is not used |
+| Frugality | Affordable, energy efficient, low maintenance. Open-source software first; no paid subscriptions; no always-on workload unless it needs to be always on; complexity only when justified | New services state their RAM and disk need and whether they must run 24/7; nothing runs that is not used |
 | Reliability | Every service has a health check, a restart policy and a pinned image; data survives container replacement | `scripts/check_compose.py`; backups count only after a tested restore |
 
 ## Compose policy
@@ -60,4 +60,4 @@ Rules evaluate deny, then ask, then allow; the first match wins. Limits: rules m
 
 Preferences, not mandates; evaluate against requirements. Git, Markdown and ADRs, YAML and `.env` files, SSH keys for remote access, REST and MQTT as protocols. Not selected until a requirement appears: NAS operating system, orchestration platform, identity provider, configuration management (not before a second host).
 
-Changelog: 1.0 (2026-10-20): reorganised into principles, Compose policy, tooling, security and guardrails; frugality and tooling policy added; Compose policy moved here from local files; VPN and SSH method preferences removed (open in the register).
+Changelog: 1.0 (2026-10-20): frugality expanded; reorganised into principles, Compose policy, tooling, security and guardrails; frugality and tooling policy added; Compose policy moved here from local files; VPN and SSH method preferences removed (open in the register).

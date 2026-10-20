@@ -10,7 +10,7 @@ What gets built and in what order. Hardware has no dates; phases are ordered by 
 | :--- | :--- |
 | Now | Prove CI; merge the open pull requests; add Dependabot; finish the documentation set (this release) |
 | Next | Persistence and restore drill on the laptop |
-| Later | Health view, then the hardware phases in order: Mac mini, NAS and UPS, network, home automation |
+| Later | Health view, then the hardware phases in order: Mac mini, NAS and UPS, network, home automation, then personal applications and media |
 
 Pending owner actions are tracked in the [session log](session-log.md), not here.
 
@@ -47,7 +47,7 @@ Goal: a safe, public, documented starting point. Exit criteria were met by Sessi
 
 ### P3 Health view (optional)
 
-- **Goal:** one place to see service health. **Depends on:** P2 (a real service to watch). **Hardware:** none.
+- **Goal:** one place to see service health, logs and notifications (the service dashboard). **Depends on:** P2 (a real service to watch). **Hardware:** none.
 - **Scope:** compare two tools from the [shortlist](observability.md#tool-shortlist), choose by ADR, deploy as a stack.
 - **Exit criteria:** it shows the real stack's state; stopping the tool breaks nothing else (decoupling rule).
 - **Sessions:** (1) ADR and deployment.
@@ -76,13 +76,19 @@ Goal: a safe, public, documented starting point. Exit criteria were met by Sessi
 - **Goal:** a smart-home hub. **Depends on:** P6. **Hardware gate:** a Linux host and devices; scope not decided.
 - **Scope:** to be defined when devices exist (Home Assistant and an MQTT broker are the likely pieces). Not designed yet.
 
+### P8 Personal applications and media
+
+- **Goal:** the everyday applications. **Depends on:** P5 (storage and backups). **Hardware gate:** NAS for media; none for expense and portfolio tracking.
+- **Scope:** expense tracking, portfolio tracking, media streaming; each a separate stack chosen by ADR (open source, self-hosted, backed up). Not designed yet.
+- **Exit criteria:** each application runs healthy and its data passes the restore drill.
+
 ## Claude Code sessions
 
 A session has one verifiable outcome and can be resumed cold: it states its entry state, steps and exit check, and ends with the log updated. Only Now and Next are detailed above; later phases stay outlines until their dependencies are met.
 
 ## Dependency order
 
-P0, P1, then P2 and P4 (P4 waits for hardware), P3 after P2, P5 after P2 and P4, P6 after P5, P7 after P6.
+P0, P1, then P2 and P4 (P4 waits for hardware), P3 after P2, P5 after P2 and P4, P6 after P5, P7 after P6, P8 after P5.
 
 ## Risks and assumptions
 
@@ -96,4 +102,4 @@ P0, P1, then P2 and P4 (P4 waits for hardware), P3 after P2, P5 after P2 and P4,
 
 Version 1.x changes progress or wording; a new major version means the phase structure changed. A phase may be split when it needs more than about five sessions or has two independent exit criteria. Phases are reordered only when a dependency or hardware change makes the current order impossible. Every split or reorder is logged with its reason; any change touching a decided item needs the owner's approval first.
 
-Changelog: 1.0 (2026-10-20): restructured into phases with gates, exit criteria and a now/next/later view; CI proof made the first item.
+Changelog: 1.0 (2026-10-20): added P8 personal applications and media; restructured into phases with gates, exit criteria and a now/next/later view; CI proof made the first item.

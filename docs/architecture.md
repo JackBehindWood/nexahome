@@ -116,17 +116,21 @@ Phase names refer to the [roadmap](roadmap.md#phases).
 
 | Capability | Runs on | Phase | Hardware needed |
 | :--- | :--- | :--- | :--- |
-| Development tools, Git workflows | Laptop, then Mac mini | P0, P4 | None / Mac mini |
+| Development: Git, builds, tests, Remote-SSH | Laptop, then Mac mini | P0, P4 | None / Mac mini |
 | Persistence and backups | Laptop first, NAS later | P2, P5 | None / NAS |
-| Health and uptime view | Any always-on host | P3 | None |
-| Local AI | Mac mini, native | P4 | Mac mini; model size not decided |
-| Storage, photos, media | NAS | P5 | NAS |
-| Core network (DNS, VPN, remote access) | Always-on host and network gear | P6 | Server and network gear |
-| Home automation | Linux host with USB and network access | P7 | Linux host and devices; scope not decided |
-| Personal finance, dashboards | Any host | Not scheduled | None |
+| Health view and logs | Any always-on host | P3 | None |
+| Notifications | With the health view | P3 | None |
+| Local AI, coding agents | Mac mini, native | P4 | Mac mini; model size not decided |
+| Personal assistant | Mac mini, on top of local AI | Not scheduled | Mac mini |
+| File storage, photos | NAS | P5 | NAS |
+| Media streaming | NAS or server | P8 | NAS; GPU or transcoding need not decided |
+| Core network: DNS, ad blocking, VPN, remote access | Always-on host and network gear | P6 | Server and network gear |
+| Home automation: Home Assistant, MQTT, ESP32 | Linux host with USB and network access | P7 | Linux host and devices; scope not decided |
+| Personal applications: expenses, portfolio | Any host | P8 | None |
+| Central dashboard | Any always-on host | P3 | None |
 
 ## Decisions
 
 The decision register is in [project.md](project.md#decision-register); rationale is in [adr/](adr/).
 
-Changelog: 1.0 (2026-10-20): rewritten; added failure domains, trust zones, backup and restore, identity, migration paths and a capability table; duplicated rules moved to constraints.
+Changelog: 1.0 (2026-10-20): full planned-services capability table; rewritten; added failure domains, trust zones, backup and restore, identity, migration paths and a capability table; duplicated rules moved to constraints.

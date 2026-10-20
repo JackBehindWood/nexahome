@@ -26,6 +26,7 @@ Leave phase 0 when a second real service exists or when something broke unnotice
 | Logs | Why did it fail? | `docker compose logs` |
 | Backups | Did the last backup run and can it be restored? | restore drill ([architecture](architecture.md#data-backup-and-restore)) |
 | Deployment state | Which version of which stack is running? | image tags in `compose.yaml`, Git commit |
+| Notifications | Who tells me something broke? | None in phase 0; chosen with the health tool, must not be a paid service |
 
 ## Tool shortlist
 
@@ -44,4 +45,4 @@ Hostnames and addresses must not be published. Keep the real inventory in a giti
 | Power | `<UPS or none>` |
 | Backup | `<last verified restore date>` |
 
-Changelog: 1.0 (2026-10-20): reduced to the decoupling rule, a testable phase 0, a shortlist and an inventory template; dashboard and portal aspirations removed.
+Changelog: 1.0 (2026-10-20): notifications signal added; reduced to the decoupling rule, a testable phase 0, a shortlist and an inventory template; dashboard and portal aspirations removed.
