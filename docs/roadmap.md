@@ -8,7 +8,7 @@ What gets built and in what order. Hardware has no dates; phases are ordered by 
 
 | When | Work |
 | :--- | :--- |
-| Now | Require the CI checks on `main` (owner setting); then close P1 |
+| Now | Merge `dev` into `main` so Dependabot activates; then P1 is closed |
 | Next | Persistence and restore drill on the laptop |
 | Later | Health view, then the hardware phases in order: Mac mini, NAS and UPS, network, home automation, then personal applications and media |
 
@@ -31,7 +31,7 @@ Goal: a safe, public, documented starting point. Exit criteria were met by Sessi
 
 ### P1 Prove CI and the publishing flow
 
-- **Status:** CI proof and merges are done (2026-10-20); Dependabot is configured (`.github/dependabot.yml`, weekly: Actions, the hello stack image, dev tools). Only requiring the CI checks `secrets` and `checks` on `main` remains, an owner setting.
+- **Status:** CI proof and merges are done (2026-10-20); Dependabot is configured (`.github/dependabot.yml`, weekly: Actions, the hello stack image, dev tools). The CI checks `secrets` and `checks` are required on `main`. Dependabot reads its config from the default branch, so it starts once `dev` is merged into `main`.
 - **Goal:** a green CI run, and a working merge path. **Depends on:** P0. **Hardware:** none.
 - **Scope:** find why no workflow run starts and fix it; add a manual trigger if that is the cause (owner approval for the workflow change); merge pull request 1 into `dev`, then `dev` into `main` by pull request (owner approves each merge); decide whether to require the CI checks on `main`; add `.github/dependabot.yml` for Actions and image tags.
 - **Exit criteria:** one successful CI run is linked in the log; `main` and `dev` match; the required-check decision is in the register; Dependabot's config is validated by GitHub.
