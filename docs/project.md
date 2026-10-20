@@ -84,4 +84,4 @@ Status values: **Confirmed** (explicitly agreed), **Proposed** (suggested, not y
 
 Not decided and not blocking: capability priority order; local AI model size (the laptop has 8 GB, so no local model runs there); home automation scope (no devices yet); storage volume, budget and power limits; macOS version; optional SSH-signed commits; a trademark check on the name (a basic web search found no clash, not a trademark search).
 
-Changelog: 1.0 (2026-10-20): planned services list and open-source rule added; restructured; metadata and working-method sections removed; decisions regrouped; frugality, users, audience and hardware-order rows added.
+Changelog: 1.0 (2026-10-20): Dependabot confirmed; planned services list and open-source rule added; restructured; metadata and working-method sections removed; decisions regrouped; frugality, users, audience and hardware-order rows added.
