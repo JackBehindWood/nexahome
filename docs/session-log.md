@@ -2,6 +2,35 @@
 
 Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
+## 2026-10-20: Documentation foundation (version 1.0)
+
+**Done**
+- Rewrote the documentation set as version 1.0 on branch `feat/docs-foundation`, based on `feat/session-2` because pull request 1 is unmerged: `project.md`, `constraints.md`, `observability.md`, `architecture.md`, `roadmap.md`, `README.md`, `SECURITY.md`; added `docs/README.md` (index, ownership, conventions) and ADR 0005; added an optional `Supersedes` line to the ADR template.
+
+**Doc changes and reasons**
+- `project.md`: working-method and metadata sections removed (duplicates; one referred to a local file); decisions regrouped; rows added for frugality, single owner, best-effort availability, audience, hardware order, backup tool, Dependabot, documentation conventions. Reason: one home per fact, and the owner's confirmed constraints were missing.
+- `constraints.md`: frugality, tooling policy and the Compose policy now live here (the policy was only in local files and the checker). Tailscale/WireGuard preference removed because it is not decided.
+- `architecture.md`: added failure domains, trust zones, backup and restore, identity, migration paths and a capability table; the "SSH key-only" statement removed because the method is not decided.
+- `observability.md`: aspirations cut; testable phase 0, shortlist and inventory template added.
+- `roadmap.md`: sessions restructured into phases with gates and exit criteria; CI proof is the first item.
+- `README.md`: "no services yet" corrected, quick start added. `SECURITY.md`: private reporting is not enabled on the repository, so the text gives a fallback.
+- Status change: "agent configuration stays local" moved from Proposed to Confirmed on the owner's answer "stay local" (ADR 0005). Makefile, repository layout and the security baseline remain Proposed because the owner did not say yes. No other Confirmed item was altered.
+
+**Verification**
+- See the verification results reported at the end of this session (links, headers, personal data, duplication, register and ADR cross-check).
+- **Not verified:** CI (never ran); Mermaid rendering (needs GitHub); that private vulnerability reporting works (it is disabled); whether ask rules prompt for container commands; the Action pins in `ci.yml`.
+
+**Next:** Phase P1 in the roadmap: CI proof, then the merges (owner approval), then Dependabot.
+
+**Pending (owner actions, not actioned)**
+- CI run unproven; investigate the Actions tab; decide required checks on `main`.
+- Merge pull request 1 into `dev`, then `dev` into `main` by pull request; this branch has no pull request yet.
+- Delete the dummy `.env` in the working folder by hand.
+- GitHub account setting "Block command line pushes that expose my email".
+- Enable private vulnerability reporting on the repository (currently disabled).
+- Ask rules for `docker compose up` and `docker run`: whether they prompt is unconfirmed.
+- Optional: SSH-signed commits; decide Makefile, repository layout and security baseline (Proposed).
+
 ## 2026-10-20: Session 2, Publish safely
 
 **Done**
