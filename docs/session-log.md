@@ -14,6 +14,7 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 - `observability.md`: aspirations cut; testable phase 0, shortlist and inventory template added.
 - `roadmap.md`: sessions restructured into phases with gates and exit criteria; CI proof is the first item.
 - `README.md`: "no services yet" corrected, quick start added. `SECURITY.md`: private reporting is not enabled on the repository, so the text gives a fallback.
+- Later in the session: added the full planned-services list, P8 (personal applications and media), notifications and the open-source, no-subscription rule (Confirmed on the owner's yes). Private vulnerability reporting was enabled.
 - Status change: "agent configuration stays local" moved from Proposed to Confirmed on the owner's answer "stay local" (ADR 0005). Makefile, repository layout and the security baseline remain Proposed because the owner did not say yes. No other Confirmed item was altered.
 
 **Verification**

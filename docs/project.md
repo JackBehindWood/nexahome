@@ -66,7 +66,7 @@ Status values: **Confirmed** (explicitly agreed), **Proposed** (suggested, not y
 | Project-local tooling (`.venv`, pinned dependencies); no global installs; opt-in git hooks | Confirmed | Clean machine, reproducible setup | [0003](adr/0003-project-local-tooling.md) |
 | Python tooling: `.venv` via uv if installed, pip otherwise; no `pyproject.toml` until Python code needs it | Confirmed | uv is preferred but optional | n/a |
 | Frugality: low cost, minimal compute, power and storage; complexity only when justified | Confirmed | Home hardware, small budget | n/a |
-| Open-source software first; no paid subscriptions; no always-on workload unless needed | Proposed | Part of the same frugality aim, stated more precisely | n/a |
+| Open-source software first; no paid subscriptions; no always-on workload unless needed | Confirmed | Part of the same frugality aim, stated more precisely | n/a |
 | Dependabot for pinned image tags and Action SHAs | Proposed | Pins rot without updates | n/a |
 | Backup tool (restic is the shortlist) | Open | Chosen when the restore drill is built | n/a |
 | **Users and availability** | | | |

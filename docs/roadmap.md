@@ -8,7 +8,7 @@ What gets built and in what order. Hardware has no dates; phases are ordered by 
 
 | When | Work |
 | :--- | :--- |
-| Now | Prove CI; merge the open pull requests; add Dependabot; finish the documentation set (this release) |
+| Now | Prove CI; add Dependabot; merge `dev` into `main` (documentation set 1.0 is merged into `dev`) |
 | Next | Persistence and restore drill on the laptop |
 | Later | Health view, then the hardware phases in order: Mac mini, NAS and UPS, network, home automation, then personal applications and media |
 
