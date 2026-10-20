@@ -8,7 +8,7 @@ What gets built and in what order. Hardware has no dates; phases are ordered by 
 
 | When | Work |
 | :--- | :--- |
-| Now | Decide required checks on `main`; add Dependabot |
+| Now | Require the CI checks on `main` (owner setting); then close P1 |
 | Next | Persistence and restore drill on the laptop |
 | Later | Health view, then the hardware phases in order: Mac mini, NAS and UPS, network, home automation, then personal applications and media |
 

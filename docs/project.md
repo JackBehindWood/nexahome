@@ -67,7 +67,7 @@ Status values: **Confirmed** (explicitly agreed), **Proposed** (suggested, not y
 | Python tooling: `.venv` via uv if installed, pip otherwise; no `pyproject.toml` until Python code needs it | Confirmed | uv is preferred but optional | n/a |
 | Frugality: low cost, minimal compute, power and storage; complexity only when justified | Confirmed | Home hardware, small budget | n/a |
 | Open-source software first; no paid subscriptions; no always-on workload unless needed | Confirmed | Part of the same frugality aim, stated more precisely | n/a |
-| Dependabot for pinned image tags and Action SHAs | Proposed | Pins rot without updates | n/a |
+| Dependabot for pinned image tags, Action SHAs and dev tools | Confirmed | Pins rot without updates | n/a |
 | Backup tool (restic is the shortlist) | Open | Chosen when the restore drill is built | n/a |
 | **Users and availability** | | | |
 | One owner and administrator; hosting for others is a non-goal | Confirmed | Keeps trust and identity simple | n/a |
