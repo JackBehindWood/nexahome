@@ -48,7 +48,7 @@ Status values: **Confirmed** (explicitly agreed), **Proposed** (suggested, not y
 | **Process** | | | |
 | Docker Compose is the container orchestrator | Confirmed | Simplest workable option | [0001](adr/0001-docker-compose.md) |
 | Branching: `main` ← `dev` ← `feat/<topic>`; merges into `main` only by pull request | Confirmed | Stable main, isolated work | [0002](adr/0002-branching.md) |
-| Required CI status checks on `main` | Open | CI has now passed once; requiring `secrets` and `checks` is recommended, awaiting the owner's yes | n/a |
+| Required CI status checks on `main`: `secrets` and `checks` | Confirmed | CI passes; a failing check must block merges | n/a |
 | Foundation first: repository, docs, guardrails, secret scanning, one trivial service | Confirmed | Smallest useful first deliverable | n/a |
 | Commit identity: GitHub handle with noreply address, repository-local | Confirmed | Nothing personal in public history | n/a |
 | Documentation conventions and one-owner-per-fact rule ([docs/README.md](README.md)) | Proposed | Keeps the set consistent as it grows | n/a |
@@ -67,7 +67,7 @@ Status values: **Confirmed** (explicitly agreed), **Proposed** (suggested, not y
 | Python tooling: `.venv` via uv if installed, pip otherwise; no `pyproject.toml` until Python code needs it | Confirmed | uv is preferred but optional | n/a |
 | Frugality: low cost, minimal compute, power and storage; complexity only when justified | Confirmed | Home hardware, small budget | n/a |
 | Open-source software first; no paid subscriptions; no always-on workload unless needed | Confirmed | Part of the same frugality aim, stated more precisely | n/a |
-| Dependabot for pinned image tags and Action SHAs | Proposed | Pins rot without updates | n/a |
+| Dependabot for pinned image tags, Action SHAs and dev tools | Confirmed | Pins rot without updates | n/a |
 | Backup tool (restic is the shortlist) | Open | Chosen when the restore drill is built | n/a |
 | **Users and availability** | | | |
 | One owner and administrator; hosting for others is a non-goal | Confirmed | Keeps trust and identity simple | n/a |
@@ -84,4 +84,4 @@ Status values: **Confirmed** (explicitly agreed), **Proposed** (suggested, not y
 
 Not decided and not blocking: capability priority order; local AI model size (the laptop has 8 GB, so no local model runs there); home automation scope (no devices yet); storage volume, budget and power limits; macOS version; optional SSH-signed commits; a trademark check on the name (a basic web search found no clash, not a trademark search).
 
-Changelog: 1.0 (2026-10-20): planned services list and open-source rule added; restructured; metadata and working-method sections removed; decisions regrouped; frugality, users, audience and hardware-order rows added.
+Changelog: 1.0 (2026-10-20): Dependabot confirmed; planned services list and open-source rule added; restructured; metadata and working-method sections removed; decisions regrouped; frugality, users, audience and hardware-order rows added.
