@@ -11,14 +11,13 @@ Only the next session is detailed. Later sessions are outlines. Update via `/ses
 - [x] Planted secret and personal data blocked by the hook; branch guard works; permission deny rules tested
 - Not verified: CI (runs only after the first push, Session 2); that "ask" rules prompt (not observable from the agent side)
 
-## Session 2: Publish safely (next)
-**Goal:** push to a public GitHub repo with scanning and branch protection on.
-- Merge `feat/session-1` into `dev` and `dev` into `main` (owner approval), name-collision check, history scan.
-- Create the public repo, push `main` and `dev`, confirm CI is green.
-- Enable secret scanning and push protection, protect `main` (no force-push or deletion, required checks).
-- **Exit:** CI green on `main`; protections visible in repo settings; `git remote -v` shows only the new origin.
-- **Verify:** `gh run list`, `gh api` on repo security settings and branch protection, `git log` review.
-- Manual step for the owner: GitHub account setting "Block command line pushes that expose my email".
+## Session 2: Publish safely (mostly done 2026-10-20; finish first next time)
+- [x] History scan, name check, public repo created, `main` and `dev` pushed, secret scanning and push protection on
+- [x] `main` protected: PR-only (also for the owner), no force-push or deletion
+- [ ] **CI green on GitHub**: no run has started yet; investigate the repo's Actions tab, then make the checks required on `main`
+- [ ] Merge PR #1 into `dev`, then PR `dev` into `main` (owner approval)
+- [ ] Owner action: GitHub account setting "Block command line pushes that expose my email"
+- **Verify:** `gh run list`, `gh api` on branch protection, `git log` review.
 
 ## Later (outline)
 - **Session 3: Persistence and restore drill.** Named volume with a toy stateful service, backup script, runbook.

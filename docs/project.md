@@ -47,7 +47,8 @@ Status: **Confirmed** (explicitly agreed), **Proposed** (suggested, not yet agre
 | Decision | Status | Rationale | ADR |
 | :--- | :--- | :--- | :--- |
 | Docker Compose as the container orchestrator | Confirmed | Simplest workable option; Kubernetes explicitly out | [0001](adr/0001-docker-compose.md) |
-| Branching: `main` ← `dev` ← `feat/<topic>`; small commits on `feat/*` | Confirmed | Stable main, integration branch, isolated work | [0002](adr/0002-branching.md) |
+| Branching: `main` ← `dev` ← `feat/<topic>`; small commits on `feat/*`; merges into `main` only via pull request; outsiders contribute via PRs | Confirmed | Stable main, integration branch, isolated work, reviewable history | [0002](adr/0002-branching.md) |
+| Required CI status checks on `main` | Open | CI has not run yet on GitHub; requiring a check that never runs would block all merges | n/a |
 | Project-local tooling (`.venv`, pinned deps); no global installs; opt-in git hooks | Confirmed | Keep the machine clean, reproducible setup | [0003](adr/0003-project-local-tooling.md) |
 | Agent config (`.claude/`) is never committed; `CLAUDE.md` is also kept local for now | Confirmed (`.claude/`), Proposed (`CLAUDE.md`) | Keeps tooling preferences private; public docs stay self-contained | n/a |
 | MIT license; public repository from first push | Confirmed | Maximum reuse; resale by others accepted | n/a |
