@@ -1,26 +1,48 @@
-# NexaHome: Observability & Operations
+# Observability and operations
 
-## 1. Management & Observability Layers
+Version 1.0 · Last reviewed 2026-10-20
 
-The platform aims to build toward a unified management view separating the following domains:
+How we see what is running. Today there is one demo stack on one laptop, so the approach is deliberately minimal.
 
-1. **Service Discovery & Portal:** Navigation and links to active web applications and services.
-2. **Health & Availability:** Uptime monitoring, probe status, and alert notifications.
-3. **Telemetry & Logs:** Aggregated metrics, resource usage (CPU/RAM/Disk), and log collection.
-4. **Deployment & Config Status:** Track active container versions, Git commit state, and drift.
-5. **Backups & Recovery:** Job execution history, backup integrity, and restoration readiness.
-6. **Asset Inventory:** Hardware inventory, assigned local IPs, and network topology map.
+## Decoupling rule
 
-*The asset inventory contains hostnames and IPs, so it must stay private: keep it in a gitignored `inventory.local.md` or outside the repository, and publish only a template.*
+Critical services (DNS, storage, core AI) never depend on monitoring or any dashboard to work. Monitoring may be down without anything else breaking.
 
----
+## Phase 0: laptop only (current)
 
-## 2. Observability Strategy
+No monitoring suite. State comes from:
 
-* Start with lightweight, existing open-source tools before building custom solutions.
-* A dedicated **NexaHome Dashboard** may be created in later phases once system interfaces mature.
-* **Decoupling:** Critical services (DNS, storage, core AI) must never depend on the monitoring/dashboard suite to function.
+- Container health checks, required on every service ([Compose policy](constraints.md#compose-policy)).
+- `make ps` (or `docker compose ps` in the stack directory): a service is healthy when its status says `healthy`.
+- `docker compose logs` for one stack at a time.
 
-## 3. Phase 0 (laptop only)
+Leave phase 0 when a second real service exists or when something broke unnoticed. A real service means one that holds data or that someone uses, not the `hello` demo.
 
-No monitoring suite. Use container health checks and `docker compose ps` to see service state. Choose a portal or uptime tool only after one real service exists.
+## What we want to see
+
+| Signal | Question it answers | Phase 0 source |
+| :--- | :--- | :--- |
+| Health | Is each service up and responding? | health checks, `make ps` |
+| Logs | Why did it fail? | `docker compose logs` |
+| Backups | Did the last backup run and can it be restored? | restore drill ([architecture](architecture.md#data-backup-and-restore)) |
+| Deployment state | Which version of which stack is running? | image tags in `compose.yaml`, Git commit |
+| Notifications | Who tells me something broke? | None in phase 0; chosen with the health tool, must not be a paid service |
+
+## Tool shortlist
+
+Nothing is chosen. Candidates for an uptime view or portal: Uptime Kuma, Homepage, Beszel. Selection criteria: arm64 image, small memory footprint, runs from Compose, needs no cloud account, can be removed without data loss. The choice is recorded in an ADR when the first real service exists.
+
+## Private inventory
+
+Hostnames and addresses must not be published. Keep the real inventory in a gitignored `inventory.local.md` or outside the repository. Template:
+
+| Field | Example placeholder |
+| :--- | :--- |
+| Host ID | `host-1` |
+| Role | workstation, AI, always-on services, storage |
+| Operating system | `<os and version>` |
+| Address | `<lan address>` |
+| Power | `<UPS or none>` |
+| Backup | `<last verified restore date>` |
+
+Changelog: 1.0 (2026-10-20): notifications signal added; reduced to the decoupling rule, a testable phase 0, a shortlist and an inventory template; dashboard and portal aspirations removed.

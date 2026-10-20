@@ -1,65 +1,63 @@
-# NexaHome: Principles, Constraints & Security
+# Principles, constraints and security
 
-## 1. Systems Engineering Principles
+Version 1.0 · Last reviewed 2026-10-20
 
-* **Modularity:**
-  * Define single responsibilities per component with clear boundaries.
-  * Separate application code, runtime configuration, secrets, and persistent data.
-  * Ensure components are independently deployable, testable, and replaceable.
-* **Reproducibility:**
-  * Keep all infrastructure configuration and code under version control (Git).
-  * Automate setup and deployment steps where practical.
-  * Document prerequisites, configuration, upgrade steps, and recovery procedures. Avoid undocumented manual interventions.
-* **Portability:**
-  * Prefer platform-independent solutions; platform-specific parts must be unavoidable, isolated, and documented with the reason.
-  * Avoid hardcoding environment-specific filesystems, paths, or hostnames.
-  * Prefer standard protocols and documented APIs to minimize lock-in.
-  * Account for differences between macOS (ARM64), Linux, and container runtimes.
-* **Simplicity:**
-  * Prefer the simplest workable design.
-  * **Docker Compose** is the container orchestrator (confirmed).
-  * Avoid premature adoption of Kubernetes, complex microservice patterns, or custom orchestration tools.
-* **Reliability** (checkable per service):
-  * Every service has a health check, a restart policy, and a pinned image tag.
-  * Persistent storage is separate from disposable application containers.
-  * Backups are application-aware and verified by test restoration. Until a NAS exists, restore drills use a local volume only.
+Rules every change must follow. Decisions and their status are in the [register](project.md#decision-register).
 
----
+## Principles
 
-## 2. Technology Preferences
+Each principle has a check you can run or read.
 
-> **Note:** Everything in this section except Docker Compose is a preference, to be evaluated against requirements rather than treated as a mandate.
+| Principle | Rule | Check |
+| :--- | :--- | :--- |
+| Modularity | One responsibility per stack; code, configuration, secrets and data are separate | A stack is one directory under `stacks/` with `compose.yaml`, `.env.example` and a README |
+| Reproducibility | Configuration lives in Git; setup and recovery steps are written down | A fresh clone plus `make setup` and `make check` works (see the [README](../README.md)) |
+| Portability | Same files on macOS and Linux; platform-specific parts are isolated and explained | No hardcoded paths, hostnames, IPs or UIDs; paths come from environment variables |
+| Simplicity | Prefer the simplest design that works today; Docker Compose only | No Kubernetes, custom orchestrator or "for later" abstraction without an ADR |
+| Frugality | Affordable, energy efficient, low maintenance. Open-source software first; no paid subscriptions; no always-on workload unless it needs to be always on; complexity only when justified | New services state their RAM and disk need and whether they must run 24/7; nothing runs that is not used |
+| Reliability | Every service has a health check, a restart policy and a pinned image; data survives container replacement | `scripts/check_compose.py`; backups count only after a tested restore |
 
-* **Version Control:** Git
-* **Containerization:** Docker Compose (account for macOS Docker running inside a Linux VM)
-* **Documentation:** Markdown & Architecture Decision Records (ADRs)
-* **Configuration:** YAML, `.env` files, and shell scripts
-* **Remote Access & Admin:** SSH keys, Tailscale / WireGuard VPN
-* **Protocols:** Standard REST and MQTT; others (gRPC, OpenID Connect/OAuth2) only if a requirement appears.
+## Compose policy
 
-*Do not select a NAS OS, container orchestration platform, or enterprise identity provider (IdP) until explicit requirements demand it. Configuration management (e.g. Ansible) is deferred until there is more than one host.*
+Enforced by `make check` (`scripts/check_compose.py`) unless marked review.
 
----
+- Image pinned to an exact tag; never `latest`; multi-arch (arm64 and amd64), no amd64-only images (review).
+- Health check and restart policy on every service.
+- Published ports bind to `127.0.0.1`, with the host port from an environment variable with a default.
+- No `network_mode: host` and no `privileged`. No Docker socket mount (review).
+- Run as non-root, `cap_drop: [ALL]`, `no-new-privileges`, read-only root filesystem where possible (review).
+- No inline secrets: values come from a gitignored `.env`; every variable is listed in `.env.example` with a placeholder.
+- Persistent data uses a named volume or `NEXAHOME_DATA_DIR`, never the stack or repository directory. Read-only static content that ships in the repository (as in `stacks/hello`) is not persistent data.
 
-## 3. Security Guidelines
+## Tooling policy
 
-* **Least Privilege:** Apply least privilege to users, system accounts, and AI agents.
-* **Secrets Management:** **Never** commit passwords, API keys, private SSH keys, or live databases to Git.
-* **Public repository:** Nothing personal is committed (names, institutions, hostnames, IPs, emails, home paths). Every stack ships a `.env.example` with placeholders; real `.env` files are gitignored. Secret scanning runs locally (opt-in hook) and in CI.
-* **Network Exposure:** Keep administrative interfaces off the public internet; restrict to the local network or VPN. Published container ports bind to `127.0.0.1` by default.
-* **AI Agent Guardrails:** AI agents **must not** receive unrestricted administrator root privileges by default. Destructive operations require explicit human approval.
-* **Segmentation:** Plan for future network segmentation (e.g., placing IoT/ESP32 devices on an isolated VLAN).
-* **Disaster Recovery:** Maintain a documented, manual administrator recovery path.
+- Dev tools are pinned in `requirements-dev.txt` and installed into the gitignored `.venv` ([ADR 0003](adr/0003-project-local-tooling.md)).
+- No global or Homebrew installs and no new git hooks without the owner's approval. The request states what the tool does, where it installs, whether it changes global configuration and how to remove it.
+- Optional linters and security scanners are added when a concrete need appears. The pre-commit hook is installed only with opt-in (`make hooks`, removed by `make unhooks`).
 
-### Agent guardrails: enforcement
+## Security rules
 
-Status: **Proposed**, implemented in a local, uncommitted `.claude/settings.json`. Rules evaluate deny, then ask, then allow; the first match wins.
+- **Never commit:** passwords, API keys, tokens, private keys (SSH or TLS), live databases, `.env` files, and personal data (names, institutions, hostnames, IP addresses, emails, home paths). Use `.env.example` with placeholders. A committed secret is compromised: rotate it first, then report it ([SECURITY.md](../SECURITY.md)).
+- **Scanning:** secrets and personal data are checked locally by the pre-commit hook and by CI. CI has not yet run, so only the local check is proven.
+- **Exposure:** administrative interfaces stay off the public internet; local network or VPN only.
+- **Least privilege:** applies to users, service accounts and AI agents. No `sudo`, root containers or `--privileged` without the owner's explicit approval.
+- **Destructive or system-changing actions** (delete, force-push, reset, container runtime, package manager, service manager, network or power settings) need the owner's approval.
+
+## Agent guardrails
+
+AI agents never receive unrestricted administrator rights, never read or write secrets, and need approval for destructive operations. They are enforced by local, uncommitted agent settings ([ADR 0005](adr/0005-agent-config-local.md)):
 
 | Rule | Mechanism |
 | :--- | :--- |
-| Never commit secrets | Deny Read/Edit on `.env*` (except `.env.example`), key files, `secrets/`, `~/.ssh/`; scanners as backstop |
+| No secrets | Deny reading and editing `.env*` (except `.env.example`), key files, `secrets/` and SSH keys; scanners as backstop |
 | No unrestricted root | Deny `sudo` |
-| Destructive operations need approval | Deny `rm -rf`, force-push; ask before push, reset, clean, docker run/rm/up/down, brew, launchctl, system settings |
+| Destructive operations need approval | Deny `rm -rf` and force-push; ask before push, reset, clean, container run/remove/up/down, package manager, service manager, system settings |
 | Least privilege | Allow only a short list of read-only commands |
 
-**Limits.** Command rules match the command text, so `/bin/rm`, `bash -c '...'`, or a script can slip past them. Read/Edit deny rules cover Claude's file tools and common file commands, not arbitrary programs. Secret scanning and the optional Claude Code sandbox are the backstops; the sandbox decision is open.
+Rules evaluate deny, then ask, then allow; the first match wins. Limits: rules match the command text, so `bash -c '...'`, a different path to the same program, or a script can bypass them; file deny rules cover the agent's file tools and common file commands, not arbitrary programs. Secret scanning and the optional sandbox are the backstops. That the ask rules prompt for container commands has not been observed.
+
+## Technology preferences
+
+Preferences, not mandates; evaluate against requirements. Git, Markdown and ADRs, YAML and `.env` files, SSH keys for remote access, REST and MQTT as protocols. Not selected until a requirement appears: NAS operating system, orchestration platform, identity provider, configuration management (not before a second host).
+
+Changelog: 1.0 (2026-10-20): frugality expanded; reorganised into principles, Compose policy, tooling, security and guardrails; frugality and tooling policy added; Compose policy moved here from local files; VPN and SSH method preferences removed (open in the register).

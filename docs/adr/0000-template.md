@@ -2,6 +2,7 @@
 
 * **Status:** Proposed | Confirmed | Superseded by NNNN
 * **Date:** YYYY-MM-DD
+* **Supersedes:** NNNN (optional; delete this line if none)
 
 ## Context
 Why a decision is needed; constraints and requirements.

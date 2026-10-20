@@ -1,67 +1,87 @@
 # NexaHome
 
-A modular, self-hosted homelab platform bringing together local AI, development tools, storage, networking, home automation, and personal applications.
+Version 1.0 · Last reviewed 2026-10-20
 
----
+A modular, self-hosted homelab platform: local AI, development tools, storage, networking, home automation and personal applications.
 
-## Project Metadata
+## Vision
 
-* **Name:** NexaHome
-* **Repository Slug:** `nexahome`
-* **License / Access:** MIT, public GitHub repository
-* **Target Audience:** Self-hosters, home automation enthusiasts, and developers looking for a modular, reproducible homelab blueprint.
+- **Modular:** components can be added, removed, replaced or migrated without disturbing the rest.
+- **Reproducible:** the system can be rebuilt from the repository and a backup.
+- **Frugal:** affordable, energy efficient and low maintenance; minimal compute, power and storage; open source first, no paid subscriptions; complexity only when justified (see [constraints](constraints.md#principles)).
+- **Portable:** runs unchanged on macOS and Linux; platform-specific parts are isolated and explained.
+- **Incremental:** start on a laptop, grow onto dedicated hardware with documented migration steps ([architecture](architecture.md#migration-paths)).
 
----
+## Scope and non-goals
 
-## 1. Vision & Goals
+In scope, built incrementally, starting with what is useful today and delivered as Compose stacks plus the documents and checks that keep them safe. Hosts and phases are in the [architecture](architecture.md#capabilities-hosts-and-phases) table.
 
-NexaHome is designed as a small, extensible computing ecosystem. The goal is to build a secure, observable, maintainable, and reproducible system that can evolve over time.
+- **Development:** Git, VS Code Remote-SSH, Claude Code, automated builds and tests.
+- **Local AI:** local models, coding agents, later a modular personal assistant.
+- **Storage and backups:** file storage, photo management, reliable backups.
+- **Personal applications:** expense tracking, stock and portfolio tracking.
+- **Home automation:** Home Assistant, MQTT, ESP32 projects.
+- **Networking and security:** VPN, internal DNS, ad blocking, secure remote access.
+- **Media:** self-hosted streaming.
+- **Management:** service dashboard, health monitoring, logs, notifications.
 
-* **Modularity:** Components must be easy to add, remove, replace, or migrate without disrupting the rest of the system.
-* **Accessibility:** The project should be documented clearly enough for others to adapt to their own hardware setups, requirements, and budgets.
-* **Incremental Evolution:** Start on portable workstation hardware (MacBook Air M3) and grow to dedicated hardware (Mac mini, NAS, homelab servers) with documented migration steps.
-* **Platform independence:** Prefer solutions that run unchanged on macOS and Linux. Platform-specific parts are allowed only where unavoidable, isolated, and documented with the reason.
+Not in scope: Kubernetes or custom orchestration, public exposure of administrative interfaces, hosting for other people. Windows is not a target.
 
-### Non-goals
+## Audience and users
 
-No Kubernetes or custom orchestration, no public exposure of administrative interfaces, no multi-user hosting. Windows is not a current target (possible later).
+- **Reader:** a blueprint to read and fork. Pull requests are welcome; there is no support promise.
+- **User:** one owner and administrator. A household is considered unlikely; an admin account model is described in [architecture](architecture.md#secrets-and-identity).
+- **Availability:** best effort, no service level. A manual recovery path is enough.
 
----
+## Current status
 
-## 2. Working Method
+- Built: repository, documentation, local checks, a pre-commit hook, the `hello` demo stack on a Colima runtime.
+- Published: public repository, secret scanning and push protection on, `main` protected (pull requests only).
+- Not yet proven: the CI workflow is configured but has never run. Pull request 1 is open and unmerged. See the [session log](session-log.md) for current pending items.
 
-How the engineering partner (human or AI) works on this project is defined in a local, uncommitted `CLAUDE.md`; the rules that matter to readers are in [`constraints.md`](constraints.md). Significant decisions are recorded as ADRs in [`adr/`](adr/).
+## Decision register
 
----
-
-## 3. Current Status
-
-See [`roadmap.md`](roadmap.md) for the next session and [`session-log.md`](session-log.md) for history. Begin on the **MacBook Air M3** without assuming the Mac mini, NAS, or network upgrades are available, and keep NexaHome useful at every stage.
-
----
-
-## 4. Decisions
-
-Status: **Confirmed** (explicitly agreed), **Proposed** (suggested, not yet agreed), **Open** (undecided). Statuses change only with the project owner's explicit agreement.
+Status values: **Confirmed** (explicitly agreed), **Proposed** (suggested, not yet agreed), **Open** (undecided). A status changes only with the owner's explicit agreement.
 
 | Decision | Status | Rationale | ADR |
 | :--- | :--- | :--- | :--- |
-| Docker Compose as the container orchestrator | Confirmed | Simplest workable option; Kubernetes explicitly out | [0001](adr/0001-docker-compose.md) |
-| Branching: `main` ← `dev` ← `feat/<topic>`; small commits on `feat/*`; merges into `main` only via pull request; outsiders contribute via PRs | Confirmed | Stable main, integration branch, isolated work, reviewable history | [0002](adr/0002-branching.md) |
-| Required CI status checks on `main` | Open | CI has not run yet on GitHub; requiring a check that never runs would block all merges | n/a |
-| Project-local tooling (`.venv`, pinned deps); no global installs; opt-in git hooks | Confirmed | Keep the machine clean, reproducible setup | [0003](adr/0003-project-local-tooling.md) |
-| Agent config (`.claude/`) is never committed; `CLAUDE.md` is also kept local for now | Confirmed (`.claude/`), Proposed (`CLAUDE.md`) | Keeps tooling preferences private; public docs stay self-contained | n/a |
-| MIT license; public repository from first push | Confirmed | Maximum reuse; resale by others accepted | n/a |
-| Supported platforms: macOS and Linux; prefer platform-independent solutions | Confirmed | Portability to the planned Linux/dedicated hardware | n/a |
-| Commit identity: GitHub handle with noreply address, repo-local config | Confirmed | Nothing personal in public history | n/a |
-| Foundation first: repo, docs, guardrails, secret scanning, one trivial service | Confirmed | Smallest useful first deliverable | n/a |
-| SSH from the MacBook Air to the Mac mini (goal) | Confirmed | Remote administration of the future host | n/a |
-| SSH method, VPN choice (Tailscale/WireGuard) | Open | Depends on hardware not yet available | n/a |
-| Repository layout (`docs/`, `stacks/`, `scripts/`, data outside the tree) | Proposed | Separates code, config, secrets, data | n/a |
-| Public-repo security baseline (scanning, hooks, agent permissions) | Proposed | Public repo must not leak secrets or personal data | n/a |
-| Container runtime on the laptop: Colima (open source, light, same docker CLI and Compose files) | Confirmed | Chosen by the owner; lightest option for an Air | [0004](adr/0004-colima-runtime.md) |
-| Python tooling: `.venv` via uv if installed, plain pip otherwise; no `pyproject.toml` until Python code needs it | Confirmed | uv is preferred but optional | n/a |
-| `.vscode/` is never committed (editor config stays local) | Confirmed | Personal editor preferences stay private | n/a |
-| Task runner: Makefile | Proposed | No install needed on macOS/Linux | n/a |
-| Claude Code sandbox on or off | Open | Trade-off between safety and friction | n/a |
-| Name-collision check for "NexaHome" before first push | Open | Avoid clashing with an existing project | n/a |
+| **Process** | | | |
+| Docker Compose is the container orchestrator | Confirmed | Simplest workable option | [0001](adr/0001-docker-compose.md) |
+| Branching: `main` ← `dev` ← `feat/<topic>`; merges into `main` only by pull request | Confirmed | Stable main, isolated work | [0002](adr/0002-branching.md) |
+| Required CI status checks on `main` | Open | CI has never run; requiring a check that never runs blocks every merge | n/a |
+| Foundation first: repository, docs, guardrails, secret scanning, one trivial service | Confirmed | Smallest useful first deliverable | n/a |
+| Commit identity: GitHub handle with noreply address, repository-local | Confirmed | Nothing personal in public history | n/a |
+| Documentation conventions and one-owner-per-fact rule ([docs/README.md](README.md)) | Proposed | Keeps the set consistent as it grows | n/a |
+| **Platform** | | | |
+| Supported platforms: macOS and Linux | Confirmed | Portability to planned Linux hardware | n/a |
+| Container runtime on the laptop: Colima | Confirmed | Light, open source, same docker CLI | [0004](adr/0004-colima-runtime.md) |
+| Repository layout: `docs/`, `stacks/`, `scripts/`, data outside the tree | Proposed | Separates code, config, secrets and data | n/a |
+| Task runner: Makefile | Proposed | No install needed on macOS or Linux | n/a |
+| **Security** | | | |
+| MIT licence; public repository from the first push | Confirmed | Maximum reuse | n/a |
+| Agent configuration (`CLAUDE.md`, `.claude/`) and `.vscode/` are never committed | Confirmed | Private preferences; public docs stay self-contained | [0005](adr/0005-agent-config-local.md) |
+| Public-repository security baseline (scanning, hooks, agent permissions) | Proposed | A public repository must not leak secrets or personal data | n/a |
+| Claude Code sandbox on or off | Open | Safety against friction; currently off | n/a |
+| **Tooling** | | | |
+| Project-local tooling (`.venv`, pinned dependencies); no global installs; opt-in git hooks | Confirmed | Clean machine, reproducible setup | [0003](adr/0003-project-local-tooling.md) |
+| Python tooling: `.venv` via uv if installed, pip otherwise; no `pyproject.toml` until Python code needs it | Confirmed | uv is preferred but optional | n/a |
+| Frugality: low cost, minimal compute, power and storage; complexity only when justified | Confirmed | Home hardware, small budget | n/a |
+| Open-source software first; no paid subscriptions; no always-on workload unless needed | Confirmed | Part of the same frugality aim, stated more precisely | n/a |
+| Dependabot for pinned image tags and Action SHAs | Proposed | Pins rot without updates | n/a |
+| Backup tool (restic is the shortlist) | Open | Chosen when the restore drill is built | n/a |
+| **Users and availability** | | | |
+| One owner and administrator; hosting for others is a non-goal | Confirmed | Keeps trust and identity simple | n/a |
+| Best-effort availability, no service level | Confirmed | Hobby scale | n/a |
+| Audience: blueprint to read and fork; pull requests welcome; no support promise | Confirmed | Honest expectations | n/a |
+| Single admin account; no SSO or identity provider until a second user or a service needs one | Proposed | Avoids unneeded infrastructure | n/a |
+| **Hardware** | | | |
+| Hardware order: Mac mini, then NAS and UPS, then network upgrades | Confirmed | Owner's plan | n/a |
+| Timing of each hardware step | Open | No dates yet | n/a |
+| SSH from the MacBook Air to the Mac mini (goal) | Confirmed | Remote administration, deployment, backups | n/a |
+| SSH method and VPN choice (Tailscale or WireGuard) | Open | Hardware-gated | n/a |
+
+## Open questions
+
+Not decided and not blocking: capability priority order; local AI model size (the laptop has 8 GB, so no local model runs there); home automation scope (no devices yet); storage volume, budget and power limits; macOS version; optional SSH-signed commits; a trademark check on the name (a basic web search found no clash, not a trademark search).
+
+Changelog: 1.0 (2026-10-20): planned services list and open-source rule added; restructured; metadata and working-method sections removed; decisions regrouped; frugality, users, audience and hardware-order rows added.
