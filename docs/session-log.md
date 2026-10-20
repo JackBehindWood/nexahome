@@ -2,6 +2,53 @@
 
 Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
+## 2026-10-20: Documentation foundation (version 1.0)
+
+**Done**
+- Rewrote the documentation set as version 1.0 on branch `feat/docs-foundation`, based on `feat/session-2` because pull request 1 is unmerged: `project.md`, `constraints.md`, `observability.md`, `architecture.md`, `roadmap.md`, `README.md`, `SECURITY.md`; added `docs/README.md` (index, ownership, conventions) and ADR 0005; added an optional `Supersedes` line to the ADR template.
+
+**Doc changes and reasons**
+- `project.md`: working-method and metadata sections removed (duplicates; one referred to a local file); decisions regrouped; rows added for frugality, single owner, best-effort availability, audience, hardware order, backup tool, Dependabot, documentation conventions. Reason: one home per fact, and the owner's confirmed constraints were missing.
+- `constraints.md`: frugality, tooling policy and the Compose policy now live here (the policy was only in local files and the checker). Tailscale/WireGuard preference removed because it is not decided.
+- `architecture.md`: added failure domains, trust zones, backup and restore, identity, migration paths and a capability table; the "SSH key-only" statement removed because the method is not decided.
+- `observability.md`: aspirations cut; testable phase 0, shortlist and inventory template added.
+- `roadmap.md`: sessions restructured into phases with gates and exit criteria; CI proof is the first item.
+- `README.md`: "no services yet" corrected, quick start added. `SECURITY.md`: private reporting is not enabled on the repository, so the text gives a fallback.
+- Later in the session: added the full planned-services list, P8 (personal applications and media), notifications and the open-source, no-subscription rule (Confirmed on the owner's yes). Private vulnerability reporting was enabled.
+- Status change: "agent configuration stays local" moved from Proposed to Confirmed on the owner's answer "stay local" (ADR 0005). Makefile, repository layout and the security baseline remain Proposed because the owner did not say yes. No other Confirmed item was altered.
+
+**Verification**
+- See the verification results reported at the end of this session (links, headers, personal data, duplication, register and ADR cross-check).
+- **Not verified:** CI (never ran); Mermaid rendering (needs GitHub); that private vulnerability reporting accepts a real report (enabled, not tested); whether ask rules prompt for container commands; the Action pins in `ci.yml`.
+
+**Next:** Phase P1 in the roadmap: CI proof, then the merges (owner approval), then Dependabot.
+
+**Update, later the same day:** GitHub Actions had been disabled for the repository. After the owner enabled it, CI ran for the first time on pull request 3: jobs `secrets` and `checks` both succeeded. Pull requests 1 to 3 were merged into `dev`; `dev` was then merged into `main` by pull request.
+
+**Pending (owner actions, not actioned)**
+- Decide required checks on `main` (recommended: `secrets` and `checks`).
+- Delete the dummy `.env` in the working folder by hand.
+- GitHub account setting "Block command line pushes that expose my email".
+- Private vulnerability reporting was enabled afterwards (done; `SECURITY.md` updated).
+- Ask rules for `docker compose up` and `docker run`: confirmed on 2026-10-20, the owner was asked to approve both (done).
+- Optional: SSH-signed commits; decide Makefile, repository layout and security baseline (Proposed).
+
+## 2026-10-20: Session 2, Publish safely
+
+**Done**
+- Pre-push checks: full-history scan found no personal terms, private IPs, home paths or secrets; detect-secrets clean on all tracked files; one author, the noreply identity; basic web search found no existing "NexaHome" project (not a trademark search).
+- Merged `feat/session-1` into `dev` and `dev` into `main` (fast-forward, owner-approved), created the public repo `JackBehindWood/nexahome` (MIT), pushed `main` and `dev`.
+- GitHub secret scanning and push protection are enabled (the default for public repos).
+- The first push did not start a CI run, so the CI proof goes through a pull request from `feat/session-2` into `dev`.
+
+- Branch protection on `main` (owner's rule: merges to `main` only via PR): PR required with 0 approvals (solo project), enforced for admins, force-push and deletion blocked. Read back via the API; not tested with a real push, because a failed test would have altered `main`. Outsiders contribute through fork PRs; no extra protection on other branches.
+- Doc changes: ADR 0002 and the decisions table now state the PR-only rule; added an Open row for required CI checks.
+
+**Not verified / open**
+- **CI has never run**: after about 10 minutes, no workflow run exists for either the push or PR #1, with no GitHub incident reported and Actions enabled. Likely a GitHub-side or account-level matter (check the repo's Actions tab). Until a run succeeds, `make check` is the only proof of the checks; required status checks on `main` stay Open.
+- PR #1 (`feat/session-2` into `dev`) is open and not merged; merging into `dev` needs the owner's approval. `main` does not yet contain the Session 2 log.
+- Owner action: GitHub setting "Block command line pushes that expose my email".
+
 ## 2026-10-20: Session 1, Pipeline proof
 
 **Done**

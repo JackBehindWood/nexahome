@@ -1,25 +1,39 @@
 # NexaHome
 
-A modular, self-hosted homelab platform: local AI, development tools, storage, networking, home automation, and personal applications. Built to be reproducible, secure, and easy to adapt to your own hardware.
+A modular, self-hosted homelab platform: local AI, development tools, storage, networking and home automation. Built to be reproducible, secure and easy to adapt to your own hardware.
 
-**Status:** early foundation. Documentation and guardrails first; no services yet.
+**Status:** early foundation. One demo stack (`hello`) runs on a laptop. CI (secret scan and `make check`) has run once and passed; see the [session log](docs/session-log.md).
 
-## Principles
+## Quick start
 
-* Smallest design that works; Docker Compose, no Kubernetes.
-* Platform-independent (macOS and Linux) wherever possible.
-* Code, configuration, secrets, and persistent data are kept separate.
-* Nothing secret or personal is ever committed.
+Needs `git`, `make`, Python 3 and a Docker CLI with Compose and a running engine (on macOS the project uses [Colima](docs/adr/0004-colima-runtime.md)). Optional: `uv`.
 
-## Documentation
+```sh
+make setup                # create .venv and install the pinned dev tools
+make check                # hooks on every file plus the Compose policy check
+make up STACK=hello       # start the demo stack and wait until healthy
+make ps STACK=hello       # shows the service as healthy
+curl http://127.0.0.1:8080/
+make down STACK=hello
+```
 
-* [Project overview and decisions](docs/project.md)
-* [Architecture](docs/architecture.md)
-* [Constraints and security](docs/constraints.md)
-* [Observability](docs/observability.md)
-* [Roadmap](docs/roadmap.md) and [session log](docs/session-log.md)
-* [Architecture decision records](docs/adr/)
+`make check` ends without errors when everything passes. To remove everything: `make down`, delete `.venv`, and `colima delete` if you no longer need the runtime. `make help` lists all targets.
 
-## License
+## Layout
+
+- `docs/` documentation: start at the [documentation index](docs/README.md)
+- `stacks/<name>/` one deployable unit each: `compose.yaml`, `.env.example`, README
+- `scripts/` the checks behind `make check`
+- `data/` and every `.env` are local only and gitignored
+
+## Contributing
+
+Pull requests are welcome from forks; there is no support promise. Read [constraints](docs/constraints.md) first and see the [branching model](docs/adr/0002-branching.md). Run `make check` before opening a pull request.
+
+## Security
+
+See [SECURITY.md](SECURITY.md). Never commit secrets or personal data.
+
+## Licence
 
 [MIT](LICENSE)
