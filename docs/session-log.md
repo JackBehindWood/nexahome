@@ -26,7 +26,8 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 **Update, later the same day:** GitHub Actions had been disabled for the repository. After the owner enabled it, CI ran for the first time on pull request 3: jobs `secrets` and `checks` both succeeded. Pull requests 1 to 3 were merged into `dev`; `dev` was then merged into `main` by pull request.
 
 **Pending (owner actions, not actioned)**
-- Decide required checks on `main` (recommended: `secrets` and `checks`).
+- Require the checks `secrets` and `checks` on `main` (GitHub: Settings, Branches, rule for `main`, require status checks). The agent was not allowed to change branch protection.
+- Dependabot added (`.github/dependabot.yml`); confirm under Insights, Dependency graph, Dependabot that it parses.
 - Delete the dummy `.env` in the working folder by hand.
 - GitHub account setting "Block command line pushes that expose my email".
 - Private vulnerability reporting was enabled afterwards (done; `SECURITY.md` updated).

@@ -8,7 +8,7 @@ What gets built and in what order. Hardware has no dates; phases are ordered by 
 
 | When | Work |
 | :--- | :--- |
-| Now | Decide required checks on `main`; add Dependabot |
+| Now | Require the CI checks on `main` (owner setting); then close P1 |
 | Next | Persistence and restore drill on the laptop |
 | Later | Health view, then the hardware phases in order: Mac mini, NAS and UPS, network, home automation, then personal applications and media |
 
@@ -31,10 +31,10 @@ Goal: a safe, public, documented starting point. Exit criteria were met by Sessi
 
 ### P1 Prove CI and the publishing flow
 
-- **Status:** CI proof and merges are done (2026-10-20); the required-checks decision and Dependabot remain.
+- **Status:** CI proof and merges are done (2026-10-20); Dependabot is configured (`.github/dependabot.yml`, weekly: Actions, the hello stack image, dev tools). Only requiring the CI checks `secrets` and `checks` on `main` remains, an owner setting.
 - **Goal:** a green CI run, and a working merge path. **Depends on:** P0. **Hardware:** none.
 - **Scope:** find why no workflow run starts and fix it; add a manual trigger if that is the cause (owner approval for the workflow change); merge pull request 1 into `dev`, then `dev` into `main` by pull request (owner approves each merge); decide whether to require the CI checks on `main`; add `.github/dependabot.yml` for Actions and image tags.
-- **Exit criteria:** one successful CI run is linked in the log; `main` and `dev` match; the required-check decision is in the register; Dependabot has opened its first pull request or its config is validated by GitHub.
+- **Exit criteria:** one successful CI run is linked in the log; `main` and `dev` match; the required-check decision is in the register; Dependabot's config is validated by GitHub.
 - **Verification:** `gh run list`, `gh api` on branch protection, `git log`.
 - **Sessions:** (1) CI proof; (2) merges; (3) Dependabot.
 
@@ -103,4 +103,4 @@ P0, P1, then P2 and P4 (P4 waits for hardware), P3 after P2, P5 after P2 and P4,
 
 Version 1.x changes progress or wording; a new major version means the phase structure changed. A phase may be split when it needs more than about five sessions or has two independent exit criteria. Phases are reordered only when a dependency or hardware change makes the current order impossible. Every split or reorder is logged with its reason; any change touching a decided item needs the owner's approval first.
 
-Changelog: 1.0 (2026-10-20): added P8 personal applications and media; restructured into phases with gates, exit criteria and a now/next/later view; CI proof made the first item.
+Changelog: 1.0 (2026-10-20): P1 status; added P8 personal applications and media; restructured into phases with gates, exit criteria and a now/next/later view; CI proof made the first item.
