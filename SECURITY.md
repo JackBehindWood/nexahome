@@ -2,7 +2,7 @@
 
 ## Reporting a vulnerability
 
-Do not open a public issue with details. If this repository's Security tab offers "Report a vulnerability", use it. If it does not, open an issue that asks for a private channel and contains no details; the maintainer will reply with one.
+Do not open a public issue with details. Use "Report a vulnerability" in this repository's Security tab.
 
 ## Scope
 

@@ -18,16 +18,16 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
 **Verification**
 - See the verification results reported at the end of this session (links, headers, personal data, duplication, register and ADR cross-check).
-- **Not verified:** CI (never ran); Mermaid rendering (needs GitHub); that private vulnerability reporting works (it is disabled); whether ask rules prompt for container commands; the Action pins in `ci.yml`.
+- **Not verified:** CI (never ran); Mermaid rendering (needs GitHub); that private vulnerability reporting accepts a real report (enabled, not tested); whether ask rules prompt for container commands; the Action pins in `ci.yml`.
 
 **Next:** Phase P1 in the roadmap: CI proof, then the merges (owner approval), then Dependabot.
 
 **Pending (owner actions, not actioned)**
 - CI run unproven; investigate the Actions tab; decide required checks on `main`.
-- Merge pull request 1 into `dev`, then `dev` into `main` by pull request; this branch has no pull request yet.
+- Merge pull request 1 into `dev`, then the documentation pull request, then `dev` into `main` by pull request (owner approves each merge).
 - Delete the dummy `.env` in the working folder by hand.
 - GitHub account setting "Block command line pushes that expose my email".
-- Enable private vulnerability reporting on the repository (currently disabled).
+- Private vulnerability reporting was enabled afterwards (done; `SECURITY.md` updated).
 - Ask rules for `docker compose up` and `docker run`: whether they prompt is unconfirmed.
 - Optional: SSH-signed commits; decide Makefile, repository layout and security baseline (Proposed).
 
