@@ -28,7 +28,7 @@ make down STACK=hello
 
 ## Contributing
 
-Pull requests are welcome from forks; there is no support promise. Read [constraints](docs/constraints.md) first and see the [branching model](docs/adr/0002-branching.md). Run `make check` before opening a pull request.
+Pull requests are welcome from forks; there is no support promise. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Security
 

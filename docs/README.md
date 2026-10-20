@@ -18,7 +18,7 @@ Start with the [project overview](project.md). Each fact lives in exactly one do
 
 Reading order: project, constraints, architecture, observability, roadmap. The session log and ADRs are reference.
 
-Other owners: branching and branch protection are in [ADR 0002](adr/0002-branching.md), the container runtime in [ADR 0004](adr/0004-colima-runtime.md), the licence in [LICENSE](../LICENSE), and security reporting in [SECURITY.md](../SECURITY.md).
+Other owners: how to contribute is in [CONTRIBUTING.md](../CONTRIBUTING.md), branching and branch protection are in [ADR 0002](adr/0002-branching.md), the container runtime in [ADR 0004](adr/0004-colima-runtime.md), the licence in [LICENSE](../LICENSE), and security reporting in [SECURITY.md](../SECURITY.md).
 
 ## Conventions
 
