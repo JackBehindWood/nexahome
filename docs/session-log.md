@@ -29,7 +29,7 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 - Delete the dummy `.env` in the working folder by hand.
 - GitHub account setting "Block command line pushes that expose my email".
 - Private vulnerability reporting was enabled afterwards (done; `SECURITY.md` updated).
-- Ask rules for `docker compose up` and `docker run`: whether they prompt is unconfirmed.
+- Ask rules for `docker compose up` and `docker run`: confirmed on 2026-10-20, the owner was asked to approve both (done).
 - Optional: SSH-signed commits; decide Makefile, repository layout and security baseline (Proposed).
 
 ## 2026-10-20: Session 2, Publish safely
