@@ -2,6 +2,18 @@
 
 Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
+## 2026-10-20: Session 2, Publish safely
+
+**Done**
+- Pre-push checks: full-history scan found no personal terms, private IPs, home paths or secrets; detect-secrets clean on all tracked files; one author, the noreply identity; basic web search found no existing "NexaHome" project (not a trademark search).
+- Merged `feat/session-1` into `dev` and `dev` into `main` (fast-forward, owner-approved), created the public repo `JackBehindWood/nexahome` (MIT), pushed `main` and `dev`.
+- GitHub secret scanning and push protection are enabled (the default for public repos).
+- The first push did not start a CI run, so the CI proof goes through a pull request from `feat/session-2` into `dev`.
+
+**Open**
+- Result of the first CI run and branch protection on `main`: see the entries added below as they complete.
+- Owner action: GitHub setting "Block command line pushes that expose my email".
+
 ## 2026-10-20: Session 1, Pipeline proof
 
 **Done**
