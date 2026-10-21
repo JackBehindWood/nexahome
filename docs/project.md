@@ -35,7 +35,7 @@ Not in scope: Kubernetes or custom orchestration, public exposure of administrat
 
 ## Current status
 
-- Built: repository, documentation, local checks, a pre-commit hook, the `hello` demo stack on a Colima runtime.
+- Built: repository, documentation, local checks, a pre-commit hook, a stack template, and two stacks (`hello` demo, `actual` expense tracker) on a Colima runtime.
 - Published: public repository, secret scanning and push protection on, `main` protected (pull requests only).
 - CI: first successful run on 2026-10-20 (see the [session log](session-log.md), which holds the latest status and pending items).
 
@@ -53,6 +53,7 @@ Status values: **Confirmed** (explicitly agreed), **Proposed** (suggested, not y
 | Commit identity: GitHub handle with noreply address, repository-local | Confirmed | Nothing personal in public history | n/a |
 | Documentation conventions and one-owner-per-fact rule ([docs/README.md](README.md)) | Proposed | Keeps the set consistent as it grows | n/a |
 | Two entry points (README to use, CONTRIBUTING to develop) and an upstream/instance boundary | Proposed | Each reader sees only what they need; owner data stays untracked | [0006](adr/0006-concerns-and-audiences.md) |
+| Stack contract: `_template`, volume label `nexahome.backup`, project name `nexahome-<directory>`, `CHANGE_ME` placeholders | Proposed | Backups and tooling treat every stack the same | [0007](adr/0007-stack-contract.md) |
 | **Platform** | | | |
 | Supported platforms: macOS and Linux | Confirmed | Portability to planned Linux hardware | n/a |
 | Container runtime on the laptop: Colima | Confirmed | Light, open source, same docker CLI | [0004](adr/0004-colima-runtime.md) |
@@ -70,6 +71,7 @@ Status values: **Confirmed** (explicitly agreed), **Proposed** (suggested, not y
 | Open-source software first; no paid subscriptions; no always-on workload unless needed | Confirmed | Part of the same frugality aim, stated more precisely | n/a |
 | Dependabot for pinned image tags, Action SHAs and dev tools | Confirmed | Pins rot without updates | n/a |
 | Backup tool (restic is the shortlist) | Open | Chosen when the restore drill is built | n/a |
+| First application: Actual Budget (`stacks/actual`) | Proposed | Real SQLite data for the restore drill; fits P8 expense tracking | [0009](adr/0009-first-app-actual-budget.md) |
 | **Users and availability** | | | |
 | One owner and administrator; hosting for others is a non-goal | Confirmed | Keeps trust and identity simple | n/a |
 | Best-effort availability, no service level | Confirmed | Hobby scale | n/a |
@@ -85,4 +87,4 @@ Status values: **Confirmed** (explicitly agreed), **Proposed** (suggested, not y
 
 Not decided and not blocking: capability priority order; local AI model size (the laptop has 8 GB, so no local model runs there); home automation scope (no devices yet); storage volume, budget and power limits; macOS version; optional SSH-signed commits; a trademark check on the name (a basic web search found no clash, not a trademark search).
 
-Changelog: 1.0 (2026-10-21): entry-points row added (Proposed); 1.0 (2026-10-20): Dependabot confirmed; planned services list and open-source rule added; restructured; metadata and working-method sections removed; decisions regrouped; frugality, users, audience and hardware-order rows added.
+Changelog: 1.0 (2026-10-21): stack contract and first-app rows (Proposed), status line; 1.0 (2026-10-21): entry-points row added (Proposed); 1.0 (2026-10-20): Dependabot confirmed; planned services list and open-source rule added; restructured; metadata and working-method sections removed; decisions regrouped; frugality, users, audience and hardware-order rows added.

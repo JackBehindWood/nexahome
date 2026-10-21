@@ -2,7 +2,7 @@
 
 A modular, self-hosted homelab platform: local AI, development tools, storage, networking and home automation. Built to be reproducible, secure and easy to adapt to your own hardware.
 
-**Status:** early foundation. One demo stack (`hello`) runs on a laptop. CI (secret scan and `make check`) has run once and passed; see the [session log](docs/session-log.md).
+**Status:** early foundation. Two stacks run on a laptop: a demo (`hello`) and Actual Budget (`actual`, a local expense tracker; use dummy data until backups are proven). CI (secret scan and `make check`) has run once and passed; see the [session log](docs/session-log.md).
 
 ## Quick start
 
@@ -12,16 +12,15 @@ Needs `git`, `make`, and a Docker CLI with Compose and a running engine. On Linu
 colima start --cpu 2 --memory 2 --disk 20
 ```
 
-`hello` is a demo that serves one static page.
-
 ```sh
-make up STACK=hello       # start the demo stack and wait until healthy
-make ps STACK=hello       # shows the service as healthy
-curl http://127.0.0.1:8080/
-make down STACK=hello
+make up                   # start every stack and wait until healthy
+make ps                   # shows each service as healthy
+curl http://127.0.0.1:8080/        # hello, a static demo page
+curl http://127.0.0.1:5006/info    # actual, an expense tracker (open it in a browser)
+make down                 # stop; your data volumes are kept
 ```
 
-`make help` lists all targets.
+Add `STACK=hello` or `STACK=actual` to act on one stack. The first `make up` creates each stack's `.env` from `.env.example`. `make` lists all targets.
 
 ## Your data stays yours
 
@@ -34,7 +33,7 @@ No releases yet: use `main`, and run `git pull` to update.
 ## Layout
 
 - `docs/` documentation: start at the [documentation index](docs/README.md)
-- `stacks/<name>/` one deployable unit each: `compose.yaml`, `.env.example`, README
+- `stacks/<name>/` one deployable unit each: `compose.yaml`, `.env.example`, README; `stacks/_template/` is the starting point for a new one
 - `scripts/` the checks behind `make check`
 
 ## Contributing

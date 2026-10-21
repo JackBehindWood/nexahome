@@ -2,6 +2,37 @@
 
 Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
+## 2026-10-21: P2 session 1, stack contract and first app
+
+**Done**
+- On branch `feat/persistence-restore` (from `dev`, not pushed): `stacks/_template/`; two new `check_compose.py` rules (volume label `nexahome.backup`, project name `nexahome-<directory>`); Makefile rewritten with help grouping and `up`/`down`/`ps` over all stacks; `.env` bootstrap that stops on `CHANGE_ME`; `stacks/actual` (Actual Budget 26.10.0-alpine); `docs/runbooks/add-a-stack.md`; Dependabot entry for `actual`; ADRs 0007 and 0009 (Proposed). ADR 0008 is reserved for the backup tool (session 2).
+- Showed `make check` failing on scratchpad copies (unlabelled volume; wrong project name), then passing.
+- With Colima started (2 CPU, 2 GB, 20 GB) and stopped afterwards: `make up` brought both stacks healthy; Actual runs as uid 1001 with a read-only root and writes `/data`; the README quick start was run as written; `make down` kept the volume `nexahome-actual_data`.
+- Measured with both stacks running: Actual 130 MiB, hello 3 MiB, VM 419 of 1959 MiB used, VM disk 1.2 of 19 GB.
+
+**Doc changes and reasons**
+- `constraints.md`: label, project-name and placeholder rules; a Makefile conventions section (the deferral in ADR 0006 now points there; ADR 0006 is Proposed, so its one line was edited). Reason: conventions enter the docs and the Makefile together.
+- `project.md`: two Proposed rows (stack contract, first app); no existing row edited. `architecture.md`, `roadmap.md`, `docs/README.md` (runbooks row), `README.md` (quick start is now `make up`), `CONTRIBUTING.md` (runbook link): to match what exists.
+- Decision this session: run-path code is Make and POSIX shell, checks are Python; a shared `scripts/stacks.py` is extracted when a second Python consumer appears (session 2 or 3). No compiled tooling.
+- HTTPS/TLS and a reverse proxy stay deferred (trigger: first service reachable beyond `127.0.0.1`, P4 or P6).
+
+**Not verified**
+- Outbound network calls by Actual; behaviour across image upgrades; the Linux path; CI for this branch (not pushed); Dependabot parsing of the new entry; make behaviour beyond GNU make 3.81 on macOS.
+- The cold-reader test of the add-a-stack runbook.
+- Final check at session end: `make check` passed; link check found no broken relative links; no `.env`, key or `data/` is tracked or staged; working tree clean on `feat/persistence-restore`. CI is not stated here because the branch is not pushed.
+
+**Next:** P2 session 2, backup: spike first (restic arm64 image, Colima mount, restore ownership), then ADR 0008.
+
+**Open questions**
+- Accept, change or reject ADRs 0006, 0007 and 0009.
+- Where the restic password copy will be kept; whether an external disk is available for the backup directory (needed before session 2).
+- Delete the local plan `.claude/plans/concerns-and-audiences.md` (its note says to delete it after this session) and remove the test volume `nexahome-actual_data`, or keep it as the session 2 backup subject.
+
+**Pending (owner actions, not actioned)**
+- Push `feat/persistence-restore` and open a pull request into `dev` (S2 needs it merged); decide ADRs 0006, 0007, 0009.
+- Done this session by the owner: local allow rules for `make`, `make check`, `make ps`. Local plan, compose rules and `CLAUDE.md` repo map were updated (untracked files).
+- Carried over: Dependabot parses under Insights, Dependency graph, Dependabot; delete the dummy `.env` in the working folder by hand; GitHub setting "Block command line pushes that expose my email"; Makefile, repository layout and security baseline still Proposed.
+
 ## 2026-10-21: Entry points and instance boundary (docs only)
 
 **Done**

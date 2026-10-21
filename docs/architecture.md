@@ -1,6 +1,6 @@
 # Architecture
 
-Version 1.0 · Last reviewed 2026-10-20
+Version 1.0 · Last reviewed 2026-10-21
 
 What the system is and why it is shaped this way. Rules are in [constraints](constraints.md), sequencing in the [roadmap](roadmap.md), decisions in the [register](project.md#decision-register).
 
@@ -22,9 +22,9 @@ Cross-cutting concerns (monitoring, configuration, documentation, security, back
 | 1 | Physical | MacBook Air | Mac mini, NAS, UPS, upgraded switches |
 | 2 | Network and security | Home router; ports bound to localhost only | DNS, VPN, segmentation |
 | 3 | Compute platform | Colima VM with Docker Compose ([ADR 0004](adr/0004-colima-runtime.md)) | Docker Engine on a Linux host; local AI native on the Mac mini |
-| 4 | Data and storage | Local volume; restore drill not yet built | NAS volumes, tested backups |
+| 4 | Data and storage | Labelled named volumes ([ADR 0007](adr/0007-stack-contract.md)); backup and restore drill not yet built | NAS volumes, tested backups |
 | 5 | Service platform | None | Shared services (auth, messaging) only when a stack needs them |
-| 6 | Applications | `hello` demo stack | AI tools, home automation, media, personal apps |
+| 6 | Applications | `hello` demo stack, `actual` expense tracker | AI tools, home automation, media, personal apps |
 
 ```mermaid
 flowchart TB
@@ -133,4 +133,4 @@ Phase names refer to the [roadmap](roadmap.md#phases).
 
 The decision register is in [project.md](project.md#decision-register); rationale is in [adr/](adr/).
 
-Changelog: 1.0 (2026-10-20): full planned-services capability table; rewritten; added failure domains, trust zones, backup and restore, identity, migration paths and a capability table; duplicated rules moved to constraints.
+Changelog: 1.0 (2026-10-21): Layer 4 and 6 current state; 1.0 (2026-10-20): full planned-services capability table; rewritten; added failure domains, trust zones, backup and restore, identity, migration paths and a capability table; duplicated rules moved to constraints.

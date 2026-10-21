@@ -8,6 +8,10 @@ updates:
     directory: /stacks/hello
     schedule:
       interval: weekly
+  - package-ecosystem: docker-compose
+    directory: /stacks/actual
+    schedule:
+      interval: weekly
   - package-ecosystem: pip
     directory: /
     schedule:

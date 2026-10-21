@@ -1,6 +1,6 @@
 # Principles, constraints and security
 
-Version 1.0 · Last reviewed 2026-10-20
+Version 1.0 · Last reviewed 2026-10-21
 
 Rules every change must follow. Decisions and their status are in the [register](project.md#decision-register).
 
@@ -28,6 +28,17 @@ Enforced by `make check` (`scripts/check_compose.py`) unless marked review.
 - Run as non-root, `cap_drop: [ALL]`, `no-new-privileges`, read-only root filesystem where possible (review).
 - No inline secrets: values come from a gitignored `.env`; every variable is listed in `.env.example` with a placeholder.
 - Persistent data uses a named volume or `NEXAHOME_DATA_DIR`, never the stack or repository directory. Read-only static content that ships in the repository (as in `stacks/hello`) is not persistent data.
+- Every named volume carries the label `nexahome.backup` with `"true"` or `"false"`; the project name is `nexahome-<directory>`. Both are enforced by `make check` ([ADR 0007](adr/0007-stack-contract.md)).
+- A `.env` value of `CHANGE_ME` is a placeholder: `make up` stops until it is replaced.
+- New stacks start from `stacks/_template/` ([runbook](runbooks/add-a-stack.md)).
+
+## Makefile conventions
+
+- `make` with no target prints the help. Every target has a `## text` description and sits under `##@ Use` (for people running stacks) or `##@ Develop` (for contributors).
+- Target names are bare lowercase verbs, with a hyphen for verb-noun. Variables are UPPERCASE (`STACK`); environment variables are `NEXAHOME_*` with defaults.
+- `up`, `down` and `ps` act on every stack except `_template` and `backup` unless `STACK=name` is given. `down` never removes volumes.
+- GNU make 3.81 syntax only (the version macOS ships), so no `$(file ...)` or `.ONESHELL`. One Makefile until it passes about 150 lines.
+- The run path is Make and POSIX shell; Python is for checks.
 
 ## Tooling policy
 
@@ -60,4 +71,4 @@ Rules evaluate deny, then ask, then allow; the first match wins. Limits: rules m
 
 Preferences, not mandates; evaluate against requirements. Git, Markdown and ADRs, YAML and `.env` files, SSH keys for remote access, REST and MQTT as protocols. Not selected until a requirement appears: NAS operating system, orchestration platform, identity provider, configuration management (not before a second host).
 
-Changelog: 1.0 (2026-10-20): frugality expanded; reorganised into principles, Compose policy, tooling, security and guardrails; frugality and tooling policy added; Compose policy moved here from local files; VPN and SSH method preferences removed (open in the register).
+Changelog: 1.0 (2026-10-21): volume label, project name and placeholder rules, Makefile conventions; 1.0 (2026-10-20): frugality expanded; reorganised into principles, Compose policy, tooling, security and guardrails; frugality and tooling policy added; Compose policy moved here from local files; VPN and SSH method preferences removed (open in the register).

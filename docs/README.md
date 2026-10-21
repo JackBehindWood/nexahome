@@ -9,7 +9,7 @@ Each fact lives in exactly one document; every other document links to it.
 Roles follow [ADR 0006](adr/0006-concerns-and-audiences.md), which is not decided yet (see the register in [project.md](project.md)).
 
 - **Run a stack:** the root [README](../README.md). Nothing in `docs/` is required.
-- **Change or contribute:** [CONTRIBUTING.md](../CONTRIBUTING.md), then [constraints](constraints.md).
+- **Change or contribute:** [CONTRIBUTING.md](../CONTRIBUTING.md), then [constraints](constraints.md). To add a stack: [runbook](runbooks/add-a-stack.md).
 - **Understand the design:** [project](project.md), then [architecture](architecture.md).
 
 ## Index and ownership
@@ -22,6 +22,7 @@ Roles follow [ADR 0006](adr/0006-concerns-and-audiences.md), which is not decide
 | [observability.md](observability.md) | How we see what is running | Operators | Monitoring approach, decoupling rule, tool shortlist, inventory template |
 | [roadmap.md](roadmap.md) | What gets built, in what order | All | Phases, sessions, hardware gates, now/next/later |
 | [session-log.md](session-log.md) | What happened, newest first | Maintainer | History, CI status, pending owner actions |
+| [runbooks/](runbooks/add-a-stack.md) | Step-by-step how-tos, each opening with audience and admin need | Per runbook | Procedures (add a stack) |
 | [adr/](adr/) | Why a decision was made | Developers | Decision rationale, one record per decision |
 
 Reading order for the design: project, constraints, architecture, observability, roadmap. The session log and ADRs are reference.
@@ -38,4 +39,4 @@ Other owners: how to contribute is in [CONTRIBUTING.md](../CONTRIBUTING.md), ent
 - Nothing personal: no names, hostnames, IP addresses, emails or home paths.
 - The documentation set is versioned as a whole: version 1.0 is the first complete, consistent set. Per-document history is the changelog line and git.
 
-Changelog: 1.0 (2026-10-21): added start-here block and audience column; 1.0 (2026-10-20): initial index and conventions.
+Changelog: 1.0 (2026-10-21): runbooks row, start-here block and audience column; 1.0 (2026-10-20): initial index and conventions.
