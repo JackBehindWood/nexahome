@@ -11,7 +11,7 @@ Readers arrive with different goals: run NexaHome, change it, or understand it. 
 - CONTRIBUTING is the only entry for developing it (setup, checks, workflow). The owner as developer and a contributor follow the same rules.
 - Using NexaHome never requires reading `docs/architecture.md`.
 - Upstream is tracked content. An instance is a checkout plus untracked state: per-stack `.env`, data volumes, `.venv/`, `.personal-denylist`, `*.local.md`, and local agent and editor config. Outsiders never touch owner data.
-- Makefile conventions, new layout directories, an update promise (release tags) and an operating entry are deferred: to P2 once built, and to the first release tag.
+- Makefile conventions are now built and documented in [constraints](../constraints.md#makefile-conventions) and ADR 0007. New layout directories (`docs/runbooks/`, `stacks/_template/`) arrived with them; an update promise (release tags) and an operating entry stay deferred to the first release tag.
 
 ## Consequences
 Refines, and does not change, the Confirmed audience and no-hosting rows and [ADR 0005](0005-agent-config-local.md). The README no longer carries developer setup. Deferred items are written down only when they exist.

@@ -20,6 +20,8 @@ make check     # hooks on every file plus the Compose policy check
 make hooks     # optional: install the git pre-commit hook in this repo only
 ```
 
+To add a stack, follow [Add a stack](docs/runbooks/add-a-stack.md).
+
 `make check` ends without errors when everything passes. To undo: `make unhooks`, delete `.venv`, and `colima delete` if you no longer need the runtime.
 
 Agent and editor configuration (`CLAUDE.md`, `.claude/`, `.vscode/`) stays local and is never committed ([ADR 0005](docs/adr/0005-agent-config-local.md)); you need none of it.
