@@ -2,6 +2,20 @@
 
 Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
+## 2026-10-21: P2 closed (docs only)
+
+**Done**
+- The owner did the cold read of `docs/runbooks/restore.md` and found it good (no gaps noted). The last open P2 exit item is met, so P2 is closed.
+
+**Doc changes and reasons**
+- `docs/roadmap.md`: Next row and P2 and P2.5 lines updated to say P2 is closed. No Confirmed decision was touched.
+
+**Deferred (owner decision):** an extra recovery system for logins (admin-issued recovery as a feature, a master password, an offline paper or split secret). P2.5 session 3 keeps only a second passkey, a host-side one-time token and a password-manager copy of the restic password and the identity encryption key. Revisit when real data exists.
+
+**Next:** P2.5 session 1, the spike and ADRs 0010 and 0011 (needs approval to start the container runtime and pull images).
+
+**Not verified:** the cold read itself (reported by the owner, not observed); CI for this branch (not pushed).
+
 ## 2026-10-21: Owner actions closed (docs only)
 
 **Done**
