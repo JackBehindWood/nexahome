@@ -19,15 +19,22 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 - Audit cuts from the P2 plan (owner agreed): no "newer tag" in status, no 7-day nudge in `make up`, no `scripts/stacks.py` (status is shell, backup age comes from the repository's `snapshots/` files), restore flags and fingerprint helper left to session 3. Added: fixed host name so runs are incremental; `.env` of a stack is saved only when the stack has a labelled volume.
 
 **Not verified**
+- Final check at session end: `make check` passed; relative links resolve; no `.env`, key, `data/` or `.config/` is tracked or staged; `data/` and `.config/` were deleted by the owner after the test; Colima is stopped. CI is not stated here because the branch is not pushed.
 - Verified by the owner at the end of the session: `make backup-init`, `make backup` twice (first run saved 111 KiB; second added 684 B, so incremental), `restic check` clean, Actual stopped, backed up, restarted and healthy again, refusal with a missing repository and with a password file open to others, `make status`. Cleanup with `rm -r` prompted per file because restic files are read-only; the README now says `rm -rf data/backup .config`.
 - Restore (session 3); stacks with a UID other than 1001; Linux; a real external disk and macOS permission prompts for it; an interrupted backup; CI for this branch; Dependabot parsing the new entry.
 
 **Next:** P2 session 3: restore drill (`make restore`, fingerprint helper, runbook, upgrade). Test the copy-up restore flow there.
 
 **Open questions**
-- Accept, change or reject ADR 0008 (backup tool); then the register row can move.
+- Accept, change or reject ADR 0008 (backup tool); then the register row can move. Also still open: ADRs 0006, 0007 and 0009 (0009 now reads "drill subject only").
 - Where the restic password copy will be kept (not decided; dummy data only until then).
-- Local settings (owner): allow `make status`; ask for `make backup-init` and `make backup`.
+- Branch order: S1 (`feat/persistence-restore`) and S2 (`feat/backup`) are stacked and unmerged; S3 is planned on `feat/restore` from `feat/backup`. Merge order will be S1, then S2, then S3, each by pull request into `dev`.
+
+**Pending (owner actions, not actioned)**
+- Local `.claude/settings.json`: allow `make status` and `make snapshots`; ask for `make backup-init` and `make backup`. Local plan deviations for S2 and S3 (restic host name, `.config/`, `data/backup`, copy-up restore, no root container) are not written to `.claude/plans/p2-persistence-restore.md` yet.
+- Push the three stacked branches and open pull requests into `dev` when ready; decide ADRs 0006 to 0009.
+- Start S3: first a fresh `make backup-init` and `make backup`, run by the owner.
+- Carried over: Dependabot parses under Insights, Dependency graph, Dependabot (now includes `stacks/backup`); delete the dummy `.env` in the working folder by hand; GitHub setting "Block command line pushes that expose my email"; Makefile, repository layout and security baseline still Proposed; delete the local plan `.claude/plans/concerns-and-audiences.md`.
 
 ## 2026-10-21: P2 session 1, stack contract and first app
 

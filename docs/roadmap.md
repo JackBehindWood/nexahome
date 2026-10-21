@@ -8,8 +8,8 @@ What gets built and in what order. Hardware has no dates; phases are ordered by 
 
 | When | Work |
 | :--- | :--- |
-| Now | Owner decisions on ADRs [0006](adr/0006-concerns-and-audiences.md), [0007](adr/0007-stack-contract.md) and [0009](adr/0009-first-app-actual-budget.md); P2 sessions 1 and 2 are done on `feat/persistence-restore` and `feat/backup` (unmerged) |
-| Next | P2 session 3: restore drill, upgrade and runbooks; the owner first runs `make backup-init` and `make backup` |
+| Now | Owner decisions on ADRs [0006](adr/0006-concerns-and-audiences.md), [0007](adr/0007-stack-contract.md), [0008](adr/0008-backup-tool.md) and [0009](adr/0009-first-app-actual-budget.md); P2 sessions 1 and 2 are done on `feat/persistence-restore` and `feat/backup` (unmerged) |
+| Next | P2 session 3: restore drill, upgrade and runbooks; on `feat/restore` from `feat/backup`; the owner first runs `make backup-init` and `make backup` |
 | Later | Health view, then the hardware phases in order: Mac mini, NAS and UPS, network, home automation, then personal applications and media |
 
 Pending owner actions are tracked in the [session log](session-log.md), not here.
@@ -106,4 +106,4 @@ P0, P1, then P2 and P4 (P4 waits for hardware), P3 after P2, P5 after P2 and P4,
 
 Version 1.x changes progress or wording; a new major version means the phase structure changed. A phase may be split when it needs more than about five sessions or has two independent exit criteria. Phases are reordered only when a dependency or hardware change makes the current order impossible. Every split or reorder is logged with its reason; any change touching a decided item needs the owner's approval first.
 
-Changelog: 1.0 (2026-10-21): P2 session 2 done; 1.0 (2026-10-21): P2 session 1 done; 1.0 (2026-10-21): Now row corrected (merges done), entry-points work recorded; 1.0 (2026-10-20): P1 status; added P8 personal applications and media; restructured into phases with gates, exit criteria and a now/next/later view; CI proof made the first item.
+Changelog: 1.0 (2026-10-21): ADR 0008 in the Now row, S3 branch noted; 1.0 (2026-10-21): P2 session 2 done; 1.0 (2026-10-21): P2 session 1 done; 1.0 (2026-10-21): Now row corrected (merges done), entry-points work recorded; 1.0 (2026-10-20): P1 status; added P8 personal applications and media; restructured into phases with gates, exit criteria and a now/next/later view; CI proof made the first item.
