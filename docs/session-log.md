@@ -12,6 +12,7 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
 **Doc changes and reasons**
 - `constraints.md`: one-shot exception to the health check and restart rules (the job is run by a script, not kept up). `architecture.md`: backup model and layer 4 state. `roadmap.md`: session 2 done, next set. ADR 0008 is Proposed; the register row "Backup tool" stays Open until the owner says yes. ADR 0004 and `project.md` were not edited.
+- Owner decision after the build: the password file defaults to a gitignored `.config/restic-password` inside the working copy instead of the home directory (override: `NEXAHOME_RESTIC_PASSWORD_FILE`). `make backup-init` refuses a path inside the repository that is not gitignored. Trade-off recorded in ADR 0008: deleting the working copy deletes the password, so the separate copy matters more. The backup repository itself stays outside the repository tree.
 - Audit cuts from the P2 plan (owner agreed): no "newer tag" in status, no 7-day nudge in `make up`, no `scripts/stacks.py` (status is shell, backup age comes from the repository's `snapshots/` files), restore flags and fingerprint helper left to session 3. Added: fixed host name so runs are incremental; `.env` of a stack is saved only when the stack has a labelled volume.
 
 **Not verified**

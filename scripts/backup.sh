@@ -7,7 +7,8 @@ cd "$(dirname "$0")/.."
 
 [ -f stacks/backup/.env ] && { set -a; . stacks/backup/.env; set +a; }
 DIR=${NEXAHOME_BACKUP_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/nexahome-backup}
-PW=${NEXAHOME_RESTIC_PASSWORD_FILE:-${XDG_CONFIG_HOME:-$HOME/.config}/nexahome/restic-password}
+ROOT=$(pwd)
+PW=${NEXAHOME_RESTIC_PASSWORD_FILE:-$ROOT/.config/restic-password}
 export NEXAHOME_BACKUP_DIR="$DIR" NEXAHOME_RESTIC_PASSWORD_FILE="$PW"
 
 die() { echo "backup: $*" >&2; exit 1; }
@@ -36,9 +37,12 @@ restart_stopped() {
 cmd_init() {
 	[ ! -e "$PW" ] || die "password file already exists: $PW (not overwriting)"
 	[ ! -e "$DIR/config" ] || die "a repository already exists at $DIR (not overwriting)"
+	case "$PW" in "$ROOT"/*)
+		git check-ignore -q "$PW" || die "$PW is inside the repository but not gitignored; refusing to write a secret there." ;;
+	esac
 	need_runtime
-	mkdir -p "$DIR" "$(dirname "$PW")"
-	(umask 077; LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 40 >"$PW")
+	mkdir -p "$DIR"
+	(umask 077; mkdir -p "$(dirname "$PW")"; LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 40 >"$PW")
 	if ! job restic init || [ ! -f "$DIR/config" ]; then
 		rm -f "$PW"
 		die "repository was not created on the host. A directory outside your home directory must be shared with the Colima VM; see stacks/backup/README.md."

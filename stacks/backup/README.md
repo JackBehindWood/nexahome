@@ -10,7 +10,7 @@ make status          # stack health and how recent the last snapshot is
 
 Each stack is stopped for a consistent copy (a few seconds), saved as one snapshot tagged `stack=<name>`, then started again. `restic check` runs at the end. Restoring is session 3 of the persistence phase; until a restore has been tested, treat the backup as unproven and keep to dummy data.
 
-**Save the password.** `make backup-init` writes a random password to `~/.config/nexahome/restic-password` (mode 600) and never prints it. Copy that file into a password manager. Losing it makes every snapshot unreadable.
+**Save the password.** `make backup-init` writes a random password to `.config/restic-password` in this repository (mode 600, gitignored, never committed) and never prints it. Copy that file into a password manager. Losing it makes every snapshot unreadable, and deleting the repository folder deletes it too. To keep it elsewhere, set `NEXAHOME_RESTIC_PASSWORD_FILE`.
 
 | Item | Value |
 | :--- | :--- |
