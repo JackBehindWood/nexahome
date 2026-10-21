@@ -2,6 +2,40 @@
 
 Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
+## 2026-10-21: P2 session 2, backup
+
+**Done**
+- On branch `feat/backup` (from `feat/persistence-restore`, because session 1 is not merged into `dev`, by the owner's instruction; not pushed): spike, ADR 0008 (Proposed), `stacks/backup` (restic 0.19.1, one-shot), `scripts/backup.sh` (POSIX), `make backup-init`, `make backup`, `make status`, one-shot exception in `check_compose.py`, Dependabot entry.
+- Spike with Colima started and stopped afterwards: arm64 image exists; backup as uid 1001 into a host directory under `$HOME` works, second run added 350 B, `restic check` clean; a mode 600 host file is readable by the container; a directory outside `$HOME` is silently not shared (the repository would end up inside the VM), so `make backup-init` verifies the repository on the host; an extra writable Colima mount works but replaces the `$HOME` default and is saved in `~/.colima/default/colima.yaml`; restore as non-root into a fresh volume fails, and works after the volume is initialised from the app image (copy-up), so no root container was needed or run.
+- Spike leftovers removed: test volumes, scratchpad and `$HOME` test directories; `colima.yaml` mounts set back to `mounts: []` after the test.
+- Script failure paths tested with a fake `docker` (runtime down, password missing or world-readable, repository missing, status states, no overwrite on init). `make check` passes; the one-shot rule fails on a copy without the label.
+
+**Doc changes and reasons**
+- `constraints.md`: one-shot exception to the health check and restart rules (the job is run by a script, not kept up). `architecture.md`: backup model and layer 4 state. `roadmap.md`: session 2 done, next set. ADR 0008 is Proposed; the register row "Backup tool" stays Open until the owner says yes. ADR 0004 and `project.md` were not edited.
+- Owner decision after the build: the password file defaults to a gitignored `.config/restic-password` inside the working copy instead of the home directory (override: `NEXAHOME_RESTIC_PASSWORD_FILE`). `make backup-init` refuses a path inside the repository that is not gitignored.
+- Trade-off recorded in ADR 0008: deleting the working copy deletes the password, so the separate copy matters more.
+- The repository directory followed: default `data/backup` (gitignored, visible, size in `make status`) instead of `~/.local/share`; a Docker volume was rejected (hidden in the 20 GB VM disk, lost with `colima delete`). `backup-init` applies the gitignore guard to both paths.
+- Owner direction: Actual is a throwaway drill subject; an own expense app is planned for P8. ADR 0009 (still Proposed) and its register row say so. Also added `make snapshots` and `scripts/backup.sh restic <args>` after the owner hit a missing-variable error running restic by hand.
+- Audit cuts from the P2 plan (owner agreed): no "newer tag" in status, no 7-day nudge in `make up`, no `scripts/stacks.py` (status is shell, backup age comes from the repository's `snapshots/` files), restore flags and fingerprint helper left to session 3. Added: fixed host name so runs are incremental; `.env` of a stack is saved only when the stack has a labelled volume.
+
+**Not verified**
+- Final check at session end: `make check` passed; relative links resolve; no `.env`, key, `data/` or `.config/` is tracked or staged; `data/` and `.config/` were deleted by the owner after the test; Colima is stopped. CI is not stated here because the branch is not pushed.
+- Verified by the owner at the end of the session: `make backup-init`, `make backup` twice (first run saved 111 KiB; second added 684 B, so incremental), `restic check` clean, Actual stopped, backed up, restarted and healthy again, refusal with a missing repository and with a password file open to others, `make status`. Cleanup with `rm -r` prompted per file because restic files are read-only; the README now says `rm -rf data/backup .config`.
+- Restore (session 3); stacks with a UID other than 1001; Linux; a real external disk and macOS permission prompts for it; an interrupted backup; CI for this branch; Dependabot parsing the new entry.
+
+**Next:** P2 session 3: restore drill (`make restore`, fingerprint helper, runbook, upgrade). Test the copy-up restore flow there.
+
+**Open questions**
+- Accept, change or reject ADR 0008 (backup tool); then the register row can move. Also still open: ADRs 0006, 0007 and 0009 (0009 now reads "drill subject only").
+- Where the restic password copy will be kept (not decided; dummy data only until then).
+- Branch order: S1 (`feat/persistence-restore`) and S2 (`feat/backup`) are stacked and unmerged; S3 is planned on `feat/restore` from `feat/backup`. Merge order will be S1, then S2, then S3, each by pull request into `dev`.
+
+**Pending (owner actions, not actioned)**
+- Local `.claude/settings.json`: allow `make status` and `make snapshots`; ask for `make backup-init` and `make backup`. Local plan deviations for S2 and S3 (restic host name, `.config/`, `data/backup`, copy-up restore, no root container) are not written to `.claude/plans/p2-persistence-restore.md` yet.
+- Push the three stacked branches and open pull requests into `dev` when ready; decide ADRs 0006 to 0009.
+- Start S3: first a fresh `make backup-init` and `make backup`, run by the owner.
+- Carried over: Dependabot parses under Insights, Dependency graph, Dependabot (now includes `stacks/backup`); delete the dummy `.env` in the working folder by hand; GitHub setting "Block command line pushes that expose my email"; Makefile, repository layout and security baseline still Proposed; delete the local plan `.claude/plans/concerns-and-audiences.md`.
+
 ## 2026-10-21: P2 session 1, stack contract and first app
 
 **Done**

@@ -22,7 +22,7 @@ Each principle has a check you can run or read.
 Enforced by `make check` (`scripts/check_compose.py`) unless marked review.
 
 - Image pinned to an exact tag; never `latest`; multi-arch (arm64 and amd64), no amd64-only images (review).
-- Health check and restart policy on every service.
+- Health check and restart policy on every service. Exception: a one-shot job started by a script (the backup) carries the label `nexahome.oneshot: "true"` and is exempt from these two rules only; the image pin, port, privilege and network rules still apply ([ADR 0008](adr/0008-backup-tool.md)).
 - Published ports bind to `127.0.0.1`, with the host port from an environment variable with a default.
 - No `network_mode: host` and no `privileged`. No Docker socket mount (review).
 - Run as non-root, `cap_drop: [ALL]`, `no-new-privileges`, read-only root filesystem where possible (review).
@@ -71,4 +71,4 @@ Rules evaluate deny, then ask, then allow; the first match wins. Limits: rules m
 
 Preferences, not mandates; evaluate against requirements. Git, Markdown and ADRs, YAML and `.env` files, SSH keys for remote access, REST and MQTT as protocols. Not selected until a requirement appears: NAS operating system, orchestration platform, identity provider, configuration management (not before a second host).
 
-Changelog: 1.0 (2026-10-21): volume label, project name and placeholder rules, Makefile conventions; 1.0 (2026-10-20): frugality expanded; reorganised into principles, Compose policy, tooling, security and guardrails; frugality and tooling policy added; Compose policy moved here from local files; VPN and SSH method preferences removed (open in the register).
+Changelog: 1.0 (2026-10-21): one-shot job exception; 1.0 (2026-10-21): volume label, project name and placeholder rules, Makefile conventions; 1.0 (2026-10-20): frugality expanded; reorganised into principles, Compose policy, tooling, security and guardrails; frugality and tooling policy added; Compose policy moved here from local files; VPN and SSH method preferences removed (open in the register).

@@ -8,8 +8,8 @@ What gets built and in what order. Hardware has no dates; phases are ordered by 
 
 | When | Work |
 | :--- | :--- |
-| Now | Owner decisions on ADRs [0006](adr/0006-concerns-and-audiences.md), [0007](adr/0007-stack-contract.md) and [0009](adr/0009-first-app-actual-budget.md); P2 session 1 is done on `feat/persistence-restore` |
-| Next | P2 session 2: backup (spike first, then the backup-tool ADR), then session 3: restore drill |
+| Now | Owner decisions on ADRs [0006](adr/0006-concerns-and-audiences.md), [0007](adr/0007-stack-contract.md), [0008](adr/0008-backup-tool.md) and [0009](adr/0009-first-app-actual-budget.md); P2 sessions 1 and 2 are done on `feat/persistence-restore` and `feat/backup` (unmerged) |
+| Next | P2 session 3: restore drill, upgrade and runbooks; on `feat/restore` from `feat/backup`; the owner first runs `make backup-init` and `make backup` |
 | Later | Health view, then the hardware phases in order: Mac mini, NAS and UPS, network, home automation, then personal applications and media |
 
 Pending owner actions are tracked in the [session log](session-log.md), not here.
@@ -21,6 +21,7 @@ Pending owner actions are tracked in the [session log](session-log.md), not here
 - **Session 2, publish safely (done except the pending items):** history scan, public repository, secret scanning and push protection, `main` protected. CI was proven afterwards (first run 2026-10-20) once Actions was enabled.
 - **Documentation foundation:** this documentation set, version 1.0.
 - **P2 session 1, stack contract and first app:** stack template, volume-label and project-name checks, Makefile conventions, `.env` bootstrap, `actual` stack, add-a-stack runbook (ADRs 0007 and 0009 Proposed).
+- **P2 session 2, backup:** restic one-shot stack, `make backup-init`, `make backup`, `make status`, one-shot exception in the Compose check (ADR 0008 Proposed; backup run and checked by the owner, restore not tested).
 - **Entry points (docs only):** README as the use entry, CONTRIBUTING as the developer entry, start-here block in the docs index; ADR 0006 awaits the owner's decision.
 
 ## Phases
@@ -46,7 +47,7 @@ Goal: a safe, public, documented starting point. Exit criteria were met by Sessi
 - **Scope:** one real stateful stack (a small database or file service), a backup using the chosen tool (restic is the shortlist, chosen by ADR), a tested restore, a first runbook for restore, a short "add a stack" section.
 - **Exit criteria:** data deleted on purpose is restored from backup and checked; the runbook was followed by someone cold; `make check` passes.
 - **Verification:** restore drill output recorded in the log. The VM stays at 2 GB, so one extra light stack at a time.
-- **Sessions:** (1) stack with a named volume (done); (2) backup; (3) restore drill and runbook.
+- **Sessions:** (1) stack with a named volume (done); (2) backup (done, see session log); (3) restore drill and runbook.
 
 ### P3 Health view (optional)
 
@@ -105,4 +106,4 @@ P0, P1, then P2 and P4 (P4 waits for hardware), P3 after P2, P5 after P2 and P4,
 
 Version 1.x changes progress or wording; a new major version means the phase structure changed. A phase may be split when it needs more than about five sessions or has two independent exit criteria. Phases are reordered only when a dependency or hardware change makes the current order impossible. Every split or reorder is logged with its reason; any change touching a decided item needs the owner's approval first.
 
-Changelog: 1.0 (2026-10-21): P2 session 1 done; 1.0 (2026-10-21): Now row corrected (merges done), entry-points work recorded; 1.0 (2026-10-20): P1 status; added P8 personal applications and media; restructured into phases with gates, exit criteria and a now/next/later view; CI proof made the first item.
+Changelog: 1.0 (2026-10-21): ADR 0008 in the Now row, S3 branch noted; 1.0 (2026-10-21): P2 session 2 done; 1.0 (2026-10-21): P2 session 1 done; 1.0 (2026-10-21): Now row corrected (merges done), entry-points work recorded; 1.0 (2026-10-20): P1 status; added P8 personal applications and media; restructured into phases with gates, exit criteria and a now/next/later view; CI proof made the first item.

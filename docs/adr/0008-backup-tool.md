@@ -1,0 +1,24 @@
+# 0008. Backup tool: restic in a one-shot container
+
+* **Status:** Proposed
+* **Date:** 2026-10-21
+
+## Context
+Backups must treat every stack alike (found by the `nexahome.backup` label, [ADR 0007](0007-stack-contract.md)), be encrypted, deduplicated, verifiable, and live on the host, outside the Colima VM (`colima delete` would take data and backup together). Nothing may be installed on the host ([ADR 0003](0003-project-local-tooling.md)). The register row "Backup tool" is Open; restic was the shortlist.
+
+## Decision
+Use restic 0.19.1 from the official `restic/restic` image (arm64 and amd64 published), defined in `stacks/backup/compose.yaml` so `make check` and Dependabot cover the pin. It is a one-shot job: `--network none`, `cap_drop: ALL`, `no-new-privileges`, read-only root, volumes mounted read-only, a fixed host name (restic matches the previous snapshot by host name; without it every run looks full). One snapshot per stack, tagged `stack=<name>`, containing its labelled volumes and its `.env`. Each stack is stopped, copied and started again; `restic check` ends every run. Retention is manual.
+
+Spike evidence (2026-10-21, macOS, Colima 2 CPU / 2 GB, vz and virtiofs, Actual 26.10.0 data):
+- Backup as uid 1001 into a host directory under `$HOME` works (the default mount is writable); the second run added 350 B; `restic check` clean.
+- A host file with mode 600 is readable by a container with any UID (virtiofs maps ownership), so `.env` needs no special handling on macOS.
+- A directory outside `$HOME` is not shared. Docker silently creates it inside the VM and nothing reaches the host, so `make backup-init` verifies the repository on the host and fails otherwise. An extra writable `--mount` works, but naming any mount replaces the `$HOME` default and is saved in the Colima profile, so both must be listed (see `stacks/backup/README.md`).
+- Restore as non-root into a fresh named volume fails (it is root-owned). It works when the volume is first initialised by creating a container from the app image (Docker copies the image directory's ownership into a new volume), which `docker compose create` does for a stack. So no root restore container is needed: **none is proposed or approved**. Session 3 tests this flow on the real restore.
+
+Limits, accepted for now: the job runs as one non-root UID (`NEXAHOME_BACKUP_UID`, default 1001). A stack whose files are unreadable to that UID needs a decision when it arrives (a per-stack UID, or a root reader with `DAC_READ_SEARCH` only, which would need explicit approval). The repository defaults to `data/backup` (gitignored, visible, size shown by `make status`; `NEXAHOME_BACKUP_DIR` moves it, for example to an external disk). The password file defaults to `.config/restic-password` inside the working copy (gitignored; `make backup-init` refuses a path inside the repository that is not ignored) and is never stored in the backup directory; `NEXAHOME_RESTIC_PASSWORD_FILE` points it elsewhere. Trade-off: deleting the working copy deletes the password, so the owner's separate copy is essential, and the folder must be inside the Colima-shared home directory.
+
+## Consequences
+Nothing is installed on the host; the tool version is one pinned tag. Backups are only trusted after a tested restore (session 3). A same-disk repository is a drill, not protection; 3-2-1 arrives with the NAS (P5). A lost password means lost snapshots. A one-shot job is exempt from the health check and restart rules via the label `nexahome.oneshot: "true"` (see [constraints](../constraints.md#compose-policy)). Not verified: Linux, stacks with other UIDs, a real external disk, an interrupted backup, restore.
+
+## Alternatives
+kopia or borg (second tool to learn; restic's official image and simple CLI win), a host binary installed with Homebrew (breaks ADR 0003), wrappers such as resticprofile, autorestic or backrest (another tool to pin for little gain now), tar archives from a generic volume-backup container (no deduplication or built-in integrity check), a repository inside the VM (lost with `colima delete`).

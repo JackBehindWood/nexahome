@@ -10,6 +10,9 @@ id_*
 secrets/
 .personal-denylist
 
+# Local per-machine settings and secrets (backup password)
+.config/
+
 # Persistent and local data
 data/
 *.sqlite
