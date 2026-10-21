@@ -1,6 +1,6 @@
 # NexaHome
 
-Version 1.0 · Last reviewed 2026-10-20
+Version 1.0 · Last reviewed 2026-10-21
 
 A modular, self-hosted homelab platform: local AI, development tools, storage, networking, home automation and personal applications.
 
@@ -52,6 +52,7 @@ Status values: **Confirmed** (explicitly agreed), **Proposed** (suggested, not y
 | Foundation first: repository, docs, guardrails, secret scanning, one trivial service | Confirmed | Smallest useful first deliverable | n/a |
 | Commit identity: GitHub handle with noreply address, repository-local | Confirmed | Nothing personal in public history | n/a |
 | Documentation conventions and one-owner-per-fact rule ([docs/README.md](README.md)) | Proposed | Keeps the set consistent as it grows | n/a |
+| Two entry points (README to use, CONTRIBUTING to develop) and an upstream/instance boundary | Proposed | Each reader sees only what they need; owner data stays untracked | [0006](adr/0006-concerns-and-audiences.md) |
 | **Platform** | | | |
 | Supported platforms: macOS and Linux | Confirmed | Portability to planned Linux hardware | n/a |
 | Container runtime on the laptop: Colima | Confirmed | Light, open source, same docker CLI | [0004](adr/0004-colima-runtime.md) |
@@ -84,4 +85,4 @@ Status values: **Confirmed** (explicitly agreed), **Proposed** (suggested, not y
 
 Not decided and not blocking: capability priority order; local AI model size (the laptop has 8 GB, so no local model runs there); home automation scope (no devices yet); storage volume, budget and power limits; macOS version; optional SSH-signed commits; a trademark check on the name (a basic web search found no clash, not a trademark search).
 
-Changelog: 1.0 (2026-10-20): Dependabot confirmed; planned services list and open-source rule added; restructured; metadata and working-method sections removed; decisions regrouped; frugality, users, audience and hardware-order rows added.
+Changelog: 1.0 (2026-10-21): entry-points row added (Proposed); 1.0 (2026-10-20): Dependabot confirmed; planned services list and open-source rule added; restructured; metadata and working-method sections removed; decisions regrouped; frugality, users, audience and hardware-order rows added.
