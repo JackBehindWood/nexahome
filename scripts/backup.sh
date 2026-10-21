@@ -1,6 +1,6 @@
 #!/bin/sh
 # Back up every volume labelled nexahome.backup=true, plus each backed-up stack's .env, with restic.
-# Usage: scripts/backup.sh init | backup [stack] | status | restic <restic arguments>   (see make help)
+# Usage: scripts/backup.sh init | backup [stack] | restore <stack> | fingerprint <volume> | status | restic <restic arguments>   (see make help)
 # Settings come from the environment or stacks/backup/.env; see stacks/backup/.env.example.
 set -eu
 cd "$(dirname "$0")/.."
@@ -96,7 +96,63 @@ cmd_backup() {
 		n=$((n + 1))
 	done
 	job restic check
-	echo "backup ok: $n stack(s) saved, repository checked. Not tested until you restore (make restore, coming in session 3)."
+	echo "backup ok: $n stack(s) saved, repository checked. Not trusted until you have restored it once: docs/runbooks/restore.md."
+}
+
+# Restore a stack's snapshot into new volumes (project nexahome-<stack>[-<TARGET>]). Never deletes anything.
+# The volumes are first created from the app image (compose create), which gives them the app's ownership;
+# restic then fills them as the job user, with each volume mounted at its original path and --target /.
+cmd_restore() {
+	s=${1:-}
+	[ -n "$s" ] || die "usage: make restore STACK=name [SNAPSHOT=id] [TARGET=suffix]  (ids: make snapshots)"
+	[ -f "stacks/$s/compose.yaml" ] || die "no such stack: $s"
+	snap=${SNAPSHOT:-latest}
+	proj=nexahome-$s${TARGET:+-$TARGET}
+	cleanup="(cd stacks/$s && docker compose -p $proj down -v)"
+	need_runtime
+	need_repo
+	keys=$(job restic ls --tag "stack=$s" "$snap" /data | sed -n 's|^/data/\([^/][^/]*\)$|\1|p') || keys=
+	[ -n "$keys" ] || die "no snapshot of stack '$s' found (snapshot: $snap). See: make snapshots"
+	for key in $keys; do
+		nv=${proj}_${key#nexahome-"${s}"_}
+		if docker volume inspect "$nv" >/dev/null 2>&1; then
+			die "volume $nv already exists; restore does not overwrite. For a separate copy add TARGET=<suffix>. To replace it, stop the stack and remove the volume yourself (docker volume rm $nv), then run this again."
+		fi
+	done
+	# .env first (compose may need it); only when absent, written on the host, never printed.
+	if [ ! -e "stacks/$s/.env" ] && job restic ls --tag "stack=$s" "$snap" "/stacks/$s/.env" | grep -qx "/stacks/$s/.env"; then
+		(umask 077; job restic dump --tag "stack=$s" "$snap" "/stacks/$s/.env" >"stacks/$s/.env") ||
+			{ rm -f "stacks/$s/.env"; die "could not restore stacks/$s/.env"; }
+		echo "restored stacks/$s/.env"
+	fi
+	(cd "stacks/$s" && docker compose -p "$proj" create) || die "could not create the volumes. Clean up with: $cleanup"
+	for key in $keys; do
+		nv=${proj}_${key#nexahome-"${s}"_}
+		echo "restoring $key into volume $nv"
+		job -v "$nv:/data/$key" restic restore "$snap" --tag "stack=$s" --target / --include "/data/$key" --verify ||
+			die "restore failed. Remove the partial copy with: $cleanup"
+	done
+	cat <<EOF
+
+Restored into project $proj (snapshot: $snap).
+EOF
+	if [ -n "${TARGET:-}" ]; then
+		echo "Start it:   (cd stacks/$s && docker compose -p $proj up -d --wait)   (set the stack's port variable to a free port)"
+		echo "Remove it:  $cleanup   (it carries the backup label; the next make backup would save it)"
+	else
+		echo "Start it:   make up STACK=$s"
+	fi
+}
+
+# One hash over uid:gid, mode, content hash and path of every file in a volume, plus the file count.
+# Compare before and after a restore, with the stack stopped.
+cmd_fingerprint() {
+	v=${1:-}
+	[ -n "$v" ] || die "usage: scripts/backup.sh fingerprint <volume>"
+	need_runtime
+	need_repo
+	job -v "$v:/v:ro" --entrypoint sh restic -c \
+		'cd /v && find . -type f | sort | while read -r f; do echo "$(stat -c "%u:%g %a" "$f") $(sha256sum "$f")"; done | sha256sum; find . -type f | wc -l'
 }
 
 cmd_status() {
@@ -116,7 +172,9 @@ cmd_status() {
 case "${1:-}" in
 	init) cmd_init ;;
 	backup) shift; cmd_backup "$@" ;;
+	restore) shift; cmd_restore "$@" ;;
+	fingerprint) shift; cmd_fingerprint "$@" ;;
 	status) cmd_status ;;
 	restic) shift; need_runtime; need_repo; job restic "$@" ;;
-	*) die "usage: scripts/backup.sh init | backup [stack] | status | restic <arguments>" ;;
+	*) die "usage: scripts/backup.sh init | backup [stack] | restore <stack> | fingerprint <volume> | status | restic <arguments>" ;;
 esac

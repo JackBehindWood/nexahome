@@ -4,7 +4,7 @@ BIN   := $(VENV)/bin
 STACKS = $(if $(STACK),$(STACK),$(filter-out _template backup,$(notdir $(patsubst %/,%,$(wildcard stacks/*/)))))
 
 .DEFAULT_GOAL := help
-.PHONY: help up down ps status backup-init backup snapshots setup hooks unhooks check
+.PHONY: help up down ps status backup-init backup restore snapshots setup hooks unhooks check
 
 ##@ Use
 
@@ -38,6 +38,9 @@ backup-init: ## Create the backup repository and password file (once)
 
 backup: ## Back up labelled volumes and .env files (all, or STACK=name)
 	@sh scripts/backup.sh backup $(STACK)
+
+restore: ## Restore a stack into new volumes: STACK=name [SNAPSHOT=id] [TARGET=suffix]
+	@SNAPSHOT=$(SNAPSHOT) TARGET=$(TARGET) sh scripts/backup.sh restore $(STACK)
 
 snapshots: ## List the snapshots in the backup repository
 	@sh scripts/backup.sh restic snapshots
