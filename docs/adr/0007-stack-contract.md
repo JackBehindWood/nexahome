@@ -1,6 +1,6 @@
 # 0007. Stack contract
 
-* **Status:** Proposed
+* **Status:** Confirmed
 * **Date:** 2026-10-21
 
 ## Context

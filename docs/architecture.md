@@ -1,6 +1,6 @@
 # Architecture
 
-Version 1.0 · Last reviewed 2026-10-21
+Version 0.1 · Last reviewed 2026-10-21
 
 What the system is and why it is shaped this way. Rules are in [constraints](constraints.md), sequencing in the [roadmap](roadmap.md), decisions in the [register](project.md#decision-register).
 
@@ -81,12 +81,12 @@ Administrative interfaces are never exposed to the public internet. No firewall 
 
 - Persistent data lives outside the code tree. Compose reads the data root from `NEXAHOME_DATA_DIR` (laptop default `./data`, gitignored). Use named volumes for database-style data on macOS and bind mounts for configuration.
 - Target: three copies of important data on two kinds of storage with one copy off-site (the "3-2-1" rule). Not reachable without a NAS and an off-site destination.
-- A backup counts only after a tested restore. Until a NAS exists, restore drills use a local volume. The backup tool is restic in a one-shot container, proposed in [ADR 0008](adr/0008-backup-tool.md) (the [register](project.md#decision-register) row stays Open until decided): `make backup` saves labelled volumes and `.env` files into an encrypted repository on the host (default `data/backup`, gitignored, outside the VM), and `make restore` brings a stack back into new volumes ([runbook](runbooks/restore.md)). A restore drill passed on 2026-10-21, with dummy data. A repository on the laptop's own disk is a drill, not protection; repeat the drill after an app image upgrade.
+- A backup counts only after a tested restore. Until a NAS exists, restore drills use a local volume. The backup tool is restic in a one-shot container, chosen in [ADR 0008](adr/0008-backup-tool.md): `make backup` saves labelled volumes and `.env` files into an encrypted repository on the host (default `data/backup`, gitignored, outside the VM), and `make restore` brings a stack back into new volumes ([runbook](runbooks/restore.md)). A restore drill passed on 2026-10-21, with dummy data. A repository on the laptop's own disk is a drill, not protection; repeat the drill after an app image upgrade.
 
 ## Secrets and identity
 
 - Secrets live in a gitignored `.env` per stack and in a password manager, never in Git, images or documents. Encrypted secrets in Git are considered only once there is more than one host.
-- One administrator account per system. No single sign-on or identity provider until a second user or a service requires one.
+- The owner is the sole administrator. Roles `admin` and `users` are planned, an AI agent is never admin, and one small shared identity provider (OIDC) is planned in P2.5; until it exists each app keeps its own login ([roadmap](roadmap.md#p25-identity-edge-and-portal), [register](project.md#decision-register)).
 
 ## Remote access
 
@@ -133,4 +133,4 @@ Phase names refer to the [roadmap](roadmap.md#phases).
 
 The decision register is in [project.md](project.md#decision-register); rationale is in [adr/](adr/).
 
-Changelog: 1.0 (2026-10-21): restore drill recorded; 1.0 (2026-10-21): backup model; 1.0 (2026-10-21): Layer 4 and 6 current state; 1.0 (2026-10-20): full planned-services capability table; rewritten; added failure domains, trust zones, backup and restore, identity, migration paths and a capability table; duplicated rules moved to constraints.
+Changelog: 0.1 (2026-10-21): identity bullet updated for P2.5; backup tool decided; 0.1 (2026-10-21): restore drill recorded; 0.1 (2026-10-21): backup model; 0.1 (2026-10-21): Layer 4 and 6 current state; 0.1 (2026-10-20): full planned-services capability table; rewritten; added failure domains, trust zones, backup and restore, identity, migration paths and a capability table; duplicated rules moved to constraints.

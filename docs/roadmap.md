@@ -1,6 +1,6 @@
 # Roadmap
 
-Version 1.0 · Last reviewed 2026-10-21
+Version 0.1 · Last reviewed 2026-10-21
 
 What gets built and in what order. Hardware has no dates; phases are ordered by dependency. Update this file at the end of every working session.
 
@@ -8,7 +8,7 @@ What gets built and in what order. Hardware has no dates; phases are ordered by 
 
 | When | Work |
 | :--- | :--- |
-| Now | Owner decisions on ADRs [0006](adr/0006-concerns-and-audiences.md), [0007](adr/0007-stack-contract.md), [0008](adr/0008-backup-tool.md) and [0009](adr/0009-first-app-actual-budget.md); P2 sessions 1 to 3 are done on `feat/persistence-restore`, `feat/backup` and `feat/restore` (merging into `dev` by pull request, in that order) |
+| Now | ADRs 0007 and 0008 are decided (0006 and 0009 stay Proposed); P2 sessions 1 to 3 are done on `feat/persistence-restore`, `feat/backup` and `feat/restore` (merging into `dev` by pull request, in that order) |
 | Next | Owner: cold read of the restore runbook (closes P2) and the ADR decisions; then P2.5 identity, edge and portal (planned, five sessions, not started) |
 | Later | Health view (P3), then the hardware phases in order: Mac mini, NAS and UPS, network, home automation, then personal applications and media |
 
@@ -19,7 +19,7 @@ Pending owner actions are tracked in the [session log](session-log.md), not here
 - **Session 0, bootstrap:** repository, documents, decisions table, first ADRs, licence, README, SECURITY.
 - **Session 1, pipeline proof:** Makefile, project-local tooling, opt-in pre-commit hook, Colima runtime, `hello` stack, Compose policy check, CI workflow file, PR template.
 - **Session 2, publish safely (done except the pending items):** history scan, public repository, secret scanning and push protection, `main` protected. CI was proven afterwards (first run 2026-10-20) once Actions was enabled.
-- **Documentation foundation:** this documentation set, version 1.0.
+- **Documentation foundation:** this documentation set, version 0.1.
 - **P2 session 1, stack contract and first app:** stack template, volume-label and project-name checks, Makefile conventions, `.env` bootstrap, `actual` stack, add-a-stack runbook (ADRs 0007 and 0009 Proposed).
 - **P2 session 2, backup:** restic one-shot stack, `make backup-init`, `make backup`, `make status`, one-shot exception in the Compose check (ADR 0008 Proposed; backup run and checked by the owner, restore not tested).
 - **P2 session 3, restore drill:** `make restore` (never overwrites), fingerprint helper, restore runbook, two drills passed on the laptop (fresh-clone restore and delete-and-restore in place), update steps in the README. Cut with a trigger: `make upgrade`, changelog, separate upgrade runbook. Backup tool ADR 0008 still Proposed.
@@ -114,6 +114,6 @@ P0, P1, then P2 and P4 (P4 waits for hardware), P2.5 after P2, P3 after P2.5 (th
 
 ## Updating this roadmap
 
-Version 1.x changes progress or wording; a new major version means the phase structure changed. A phase may be split when it needs more than about five sessions or has two independent exit criteria. Phases are reordered only when a dependency or hardware change makes the current order impossible. Every split or reorder is logged with its reason; any change touching a decided item needs the owner's approval first.
+Version 0.x while the project is pre-release: changes to progress or wording keep the number; 1.0 is reserved for the first release tag. A phase may be split when it needs more than about five sessions or has two independent exit criteria. Phases are reordered only when a dependency or hardware change makes the current order impossible. Every split or reorder is logged with its reason; any change touching a decided item needs the owner's approval first.
 
-Changelog: 1.0 (2026-10-21): P2.5 added (identity, edge, portal; owner approved), launchpad moved from P3, P8 note; 1.0 (2026-10-21): P2 session 3 done; 1.0 (2026-10-21): ADR 0008 in the Now row, S3 branch noted; 1.0 (2026-10-21): P2 session 2 done; 1.0 (2026-10-21): P2 session 1 done; 1.0 (2026-10-21): Now row corrected (merges done), entry-points work recorded; 1.0 (2026-10-20): P1 status; added P8 personal applications and media; restructured into phases with gates, exit criteria and a now/next/later view; CI proof made the first item.
+Changelog: 0.1 (2026-10-21): Now row after ADR decisions; versioning rule for 0.x; version renamed from 1.0; 0.1 (2026-10-21): P2.5 added (identity, edge, portal; owner approved), launchpad moved from P3, P8 note; 0.1 (2026-10-21): P2 session 3 done; 0.1 (2026-10-21): ADR 0008 in the Now row, S3 branch noted; 0.1 (2026-10-21): P2 session 2 done; 0.1 (2026-10-21): P2 session 1 done; 0.1 (2026-10-21): Now row corrected (merges done), entry-points work recorded; 0.1 (2026-10-20): P1 status; added P8 personal applications and media; restructured into phases with gates, exit criteria and a now/next/later view; CI proof made the first item.
