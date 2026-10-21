@@ -30,7 +30,7 @@ ps: ## Show stack status and health (all, or STACK=name)
 	@set -e; for s in $(STACKS); do (cd stacks/$$s && docker compose ps); done
 
 status: ## Show stack health and how recent the backup is
-	@$(MAKE) --no-print-directory ps || echo "(no container runtime running; start it as in the README)"
+	@if docker info >/dev/null 2>&1; then $(MAKE) --no-print-directory ps; else echo "no container runtime running (start it as in the README)"; fi
 	@sh scripts/backup.sh status
 
 backup-init: ## Create the backup repository and password file (once)

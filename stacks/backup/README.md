@@ -33,6 +33,10 @@ colima start --cpu 2 --memory 2 --disk 20 --mount "$HOME:w" --mount "/path/to/ba
 
 Colima saves this in its own profile (`~/.colima/default/colima.yaml`). To undo it, restart Colima without the extra mount and set `mounts: []` there.
 
+## Removing the backups
+
+Restic makes its files read-only, so a plain `rm -r` asks about every file. To delete the repository and the password (all snapshots become unrecoverable), run `rm -rf data/backup .config` yourself.
+
 ## Limits
 
 - The job runs as one UID (`NEXAHOME_BACKUP_UID`, default 1001, the Actual user). A stack whose files only another UID can read will fail to back up; the fix is a decision for the first such stack ([ADR 0008](../../docs/adr/0008-backup-tool.md)).

@@ -21,7 +21,7 @@ Pending owner actions are tracked in the [session log](session-log.md), not here
 - **Session 2, publish safely (done except the pending items):** history scan, public repository, secret scanning and push protection, `main` protected. CI was proven afterwards (first run 2026-10-20) once Actions was enabled.
 - **Documentation foundation:** this documentation set, version 1.0.
 - **P2 session 1, stack contract and first app:** stack template, volume-label and project-name checks, Makefile conventions, `.env` bootstrap, `actual` stack, add-a-stack runbook (ADRs 0007 and 0009 Proposed).
-- **P2 session 2, backup:** restic one-shot stack, `make backup-init`, `make backup`, `make status`, one-shot exception in the Compose check (ADR 0008 Proposed; backup not yet run by the owner, restore not tested).
+- **P2 session 2, backup:** restic one-shot stack, `make backup-init`, `make backup`, `make status`, one-shot exception in the Compose check (ADR 0008 Proposed; backup run and checked by the owner, restore not tested).
 - **Entry points (docs only):** README as the use entry, CONTRIBUTING as the developer entry, start-here block in the docs index; ADR 0006 awaits the owner's decision.
 
 ## Phases

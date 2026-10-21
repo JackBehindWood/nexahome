@@ -19,10 +19,10 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 - Audit cuts from the P2 plan (owner agreed): no "newer tag" in status, no 7-day nudge in `make up`, no `scripts/stacks.py` (status is shell, backup age comes from the repository's `snapshots/` files), restore flags and fingerprint helper left to session 3. Added: fixed host name so runs are incremental; `.env` of a stack is saved only when the stack has a labelled volume.
 
 **Not verified**
-- `make backup-init` and `make backup` were not run end to end: they touch the password file and `.env` files, so the owner runs them. The compose run, stop and start of a live stack, and the summary output are untested; only the restic commands were tried by hand.
+- Verified by the owner at the end of the session: `make backup-init`, `make backup` twice (first run saved 111 KiB; second added 684 B, so incremental), `restic check` clean, Actual stopped, backed up, restarted and healthy again, refusal with a missing repository and with a password file open to others, `make status`. Cleanup with `rm -r` prompted per file because restic files are read-only; the README now says `rm -rf data/backup .config`.
 - Restore (session 3); stacks with a UID other than 1001; Linux; a real external disk and macOS permission prompts for it; an interrupted backup; CI for this branch; Dependabot parsing the new entry.
 
-**Next:** owner runs `make backup-init`, `make backup` (twice) and `make status`, then P2 session 3: restore drill (`make restore`, fingerprint helper, runbook, upgrade). Test the copy-up restore flow there.
+**Next:** P2 session 3: restore drill (`make restore`, fingerprint helper, runbook, upgrade). Test the copy-up restore flow there.
 
 **Open questions**
 - Accept, change or reject ADR 0008 (backup tool); then the register row can move.
