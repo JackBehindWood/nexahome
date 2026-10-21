@@ -19,16 +19,18 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 **Not verified**
 - Outbound network calls by Actual; behaviour across image upgrades; the Linux path; CI for this branch (not pushed); Dependabot parsing of the new entry; make behaviour beyond GNU make 3.81 on macOS.
 - The cold-reader test of the add-a-stack runbook.
+- Final check at session end: `make check` passed; link check found no broken relative links; no `.env`, key or `data/` is tracked or staged; working tree clean on `feat/persistence-restore`. CI is not stated here because the branch is not pushed.
 
 **Next:** P2 session 2, backup: spike first (restic arm64 image, Colima mount, restore ownership), then ADR 0008.
 
 **Open questions**
 - Accept, change or reject ADRs 0006, 0007 and 0009.
 - Where the restic password copy will be kept; whether an external disk is available for the backup directory (needed before session 2).
-- Local files to update with your yes: P2 plan deviations, `.claude/rules/compose.md`, `CLAUDE.md` repo map; delete `.claude/plans/concerns-and-audiences.md` (its note says so).
+- Delete the local plan `.claude/plans/concerns-and-audiences.md` (its note says to delete it after this session) and remove the test volume `nexahome-actual_data`, or keep it as the session 2 backup subject.
 
 **Pending (owner actions, not actioned)**
-- Push `feat/persistence-restore` and open a pull request into `dev`; decide ADRs 0006, 0007, 0009.
+- Push `feat/persistence-restore` and open a pull request into `dev` (S2 needs it merged); decide ADRs 0006, 0007, 0009.
+- Done this session by the owner: local allow rules for `make`, `make check`, `make ps`. Local plan, compose rules and `CLAUDE.md` repo map were updated (untracked files).
 - Carried over: Dependabot parses under Insights, Dependency graph, Dependabot; delete the dummy `.env` in the working folder by hand; GitHub setting "Block command line pushes that expose my email"; Makefile, repository layout and security baseline still Proposed.
 
 ## 2026-10-21: Entry points and instance boundary (docs only)
