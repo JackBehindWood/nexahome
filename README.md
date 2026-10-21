@@ -26,9 +26,16 @@ Add `STACK=hello` or `STACK=actual` to act on one stack. The first `make up` cre
 
 Each stack's `.env` and the `data/` directory are local only and gitignored. Nothing you configure is sent upstream.
 
-## Updating
+## Back up, restore, update
 
-No releases yet: use `main`, and run `git pull` to update.
+```sh
+make backup-init          # once: creates the encrypted repository and a password file
+make backup               # saves every stack's data (stops each for a few seconds)
+make restore STACK=actual # restores into new volumes; never overwrites
+make backup && git pull && make up    # update (no releases yet: use main)
+```
+
+Save a copy of the password file (`.config/restic-password`) somewhere other than this laptop; without it the backups are unreadable. The backup sits on the same disk by default, so it is a drill, not protection. Test a restore before you trust it: [restore runbook](docs/runbooks/restore.md), which also covers going back after a failed update.
 
 ## Layout
 

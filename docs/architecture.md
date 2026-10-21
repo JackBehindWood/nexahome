@@ -22,7 +22,7 @@ Cross-cutting concerns (monitoring, configuration, documentation, security, back
 | 1 | Physical | MacBook Air | Mac mini, NAS, UPS, upgraded switches |
 | 2 | Network and security | Home router; ports bound to localhost only | DNS, VPN, segmentation |
 | 3 | Compute platform | Colima VM with Docker Compose ([ADR 0004](adr/0004-colima-runtime.md)) | Docker Engine on a Linux host; local AI native on the Mac mini |
-| 4 | Data and storage | Labelled named volumes ([ADR 0007](adr/0007-stack-contract.md)); backup built (restic, [ADR 0008](adr/0008-backup-tool.md)), restore drill not yet done | NAS volumes, tested backups |
+| 4 | Data and storage | Labelled named volumes ([ADR 0007](adr/0007-stack-contract.md)); backup built (restic, [ADR 0008](adr/0008-backup-tool.md)), restore drill passed on the laptop's own disk | NAS volumes, tested backups |
 | 5 | Service platform | None | Shared services (auth, messaging) only when a stack needs them |
 | 6 | Applications | `hello` demo stack, `actual` expense tracker | AI tools, home automation, media, personal apps |
 
@@ -81,7 +81,7 @@ Administrative interfaces are never exposed to the public internet. No firewall 
 
 - Persistent data lives outside the code tree. Compose reads the data root from `NEXAHOME_DATA_DIR` (laptop default `./data`, gitignored). Use named volumes for database-style data on macOS and bind mounts for configuration.
 - Target: three copies of important data on two kinds of storage with one copy off-site (the "3-2-1" rule). Not reachable without a NAS and an off-site destination.
-- A backup counts only after a tested restore. Until a NAS exists, restore drills use a local volume. The backup tool is restic in a one-shot container, proposed in [ADR 0008](adr/0008-backup-tool.md) (the [register](project.md#decision-register) row stays Open until decided): `make backup` saves labelled volumes and `.env` files into an encrypted repository on the host (default `data/backup`, gitignored, outside the VM). A repository on the laptop's own disk is a drill, not protection, and nothing is trusted until a restore has been tested.
+- A backup counts only after a tested restore. Until a NAS exists, restore drills use a local volume. The backup tool is restic in a one-shot container, proposed in [ADR 0008](adr/0008-backup-tool.md) (the [register](project.md#decision-register) row stays Open until decided): `make backup` saves labelled volumes and `.env` files into an encrypted repository on the host (default `data/backup`, gitignored, outside the VM), and `make restore` brings a stack back into new volumes ([runbook](runbooks/restore.md)). A restore drill passed on 2026-10-21, with dummy data. A repository on the laptop's own disk is a drill, not protection; repeat the drill after an app image upgrade.
 
 ## Secrets and identity
 
@@ -133,4 +133,4 @@ Phase names refer to the [roadmap](roadmap.md#phases).
 
 The decision register is in [project.md](project.md#decision-register); rationale is in [adr/](adr/).
 
-Changelog: 1.0 (2026-10-21): backup model; 1.0 (2026-10-21): Layer 4 and 6 current state; 1.0 (2026-10-20): full planned-services capability table; rewritten; added failure domains, trust zones, backup and restore, identity, migration paths and a capability table; duplicated rules moved to constraints.
+Changelog: 1.0 (2026-10-21): restore drill recorded; 1.0 (2026-10-21): backup model; 1.0 (2026-10-21): Layer 4 and 6 current state; 1.0 (2026-10-20): full planned-services capability table; rewritten; added failure domains, trust zones, backup and restore, identity, migration paths and a capability table; duplicated rules moved to constraints.
