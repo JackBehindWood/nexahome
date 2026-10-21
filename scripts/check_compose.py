@@ -3,7 +3,9 @@
 
 Policy: pinned image tag, health check, restart policy, published ports bound to
 127.0.0.1, no host networking, not privileged; every named volume labelled
-nexahome.backup "true" or "false"; project name nexahome-<directory>. Uses
+nexahome.backup "true" or "false"; project name nexahome-<directory>. A service
+labelled nexahome.oneshot "true" (a job run by a script, such as the backup) is
+exempt from the health check and restart rules only. Uses
 `docker compose config`, which needs the docker CLI but no running engine.
 """
 import json
@@ -15,13 +17,14 @@ from pathlib import Path
 
 def check_service(name: str, svc: dict) -> list[str]:
     problems = []
+    oneshot = (svc.get("labels") or {}).get("nexahome.oneshot") == "true"
     image = svc.get("image", "")
     tag = image.rsplit("/", 1)[-1].partition(":")[2]
     if not tag or tag == "latest":
         problems.append(f"{name}: image '{image}' must have a pinned tag")
-    if "healthcheck" not in svc:
+    if not oneshot and "healthcheck" not in svc:
         problems.append(f"{name}: missing healthcheck")
-    if "restart" not in svc:
+    if not oneshot and "restart" not in svc:
         problems.append(f"{name}: missing restart policy")
     if svc.get("network_mode") == "host":
         problems.append(f"{name}: host networking is not allowed")

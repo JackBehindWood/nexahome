@@ -4,12 +4,12 @@ BIN   := $(VENV)/bin
 STACKS = $(if $(STACK),$(STACK),$(filter-out _template backup,$(notdir $(patsubst %/,%,$(wildcard stacks/*/)))))
 
 .DEFAULT_GOAL := help
-.PHONY: help up down ps setup hooks unhooks check
+.PHONY: help up down ps status backup-init backup setup hooks unhooks check
 
 ##@ Use
 
 help: ## Show this help
-	@awk 'BEGIN {FS = ":.*## "} /^##@ / {printf "\n%s\n", substr($$0, 5)} /^[a-z-]+:.*## / {printf "  %-9s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*## "} /^##@ / {printf "\n%s\n", substr($$0, 5)} /^[a-z-]+:.*## / {printf "  %-12s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 up: ## Start stacks and wait until healthy (all, or STACK=name)
 	@set -e; for s in $(STACKS); do \
@@ -28,6 +28,16 @@ down: ## Stop stacks; data volumes are kept (all, or STACK=name)
 
 ps: ## Show stack status and health (all, or STACK=name)
 	@set -e; for s in $(STACKS); do (cd stacks/$$s && docker compose ps); done
+
+status: ## Show stack health and how recent the backup is
+	@$(MAKE) --no-print-directory ps || echo "(no container runtime running; start it as in the README)"
+	@sh scripts/backup.sh status
+
+backup-init: ## Create the backup repository and password file (once)
+	@sh scripts/backup.sh init
+
+backup: ## Back up labelled volumes and .env files (all, or STACK=name)
+	@sh scripts/backup.sh backup $(STACK)
 
 ##@ Develop
 

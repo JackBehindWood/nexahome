@@ -2,6 +2,29 @@
 
 Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
+## 2026-10-21: P2 session 2, backup
+
+**Done**
+- On branch `feat/backup` (from `feat/persistence-restore`, because session 1 is not merged into `dev`, by the owner's instruction; not pushed): spike, ADR 0008 (Proposed), `stacks/backup` (restic 0.19.1, one-shot), `scripts/backup.sh` (POSIX), `make backup-init`, `make backup`, `make status`, one-shot exception in `check_compose.py`, Dependabot entry.
+- Spike with Colima started and stopped afterwards: arm64 image exists; backup as uid 1001 into a host directory under `$HOME` works, second run added 350 B, `restic check` clean; a mode 600 host file is readable by the container; a directory outside `$HOME` is silently not shared (the repository would end up inside the VM), so `make backup-init` verifies the repository on the host; an extra writable Colima mount works but replaces the `$HOME` default and is saved in `~/.colima/default/colima.yaml`; restore as non-root into a fresh volume fails, and works after the volume is initialised from the app image (copy-up), so no root container was needed or run.
+- Spike leftovers removed: test volumes, scratchpad and `$HOME` test directories; `colima.yaml` mounts set back to `mounts: []` after the test.
+- Script failure paths tested with a fake `docker` (runtime down, password missing or world-readable, repository missing, status states, no overwrite on init). `make check` passes; the one-shot rule fails on a copy without the label.
+
+**Doc changes and reasons**
+- `constraints.md`: one-shot exception to the health check and restart rules (the job is run by a script, not kept up). `architecture.md`: backup model and layer 4 state. `roadmap.md`: session 2 done, next set. ADR 0008 is Proposed; the register row "Backup tool" stays Open until the owner says yes. ADR 0004 and `project.md` were not edited.
+- Audit cuts from the P2 plan (owner agreed): no "newer tag" in status, no 7-day nudge in `make up`, no `scripts/stacks.py` (status is shell, backup age comes from the repository's `snapshots/` files), restore flags and fingerprint helper left to session 3. Added: fixed host name so runs are incremental; `.env` of a stack is saved only when the stack has a labelled volume.
+
+**Not verified**
+- `make backup-init` and `make backup` were not run end to end: they touch the password file and `.env` files, so the owner runs them. The compose run, stop and start of a live stack, and the summary output are untested; only the restic commands were tried by hand.
+- Restore (session 3); stacks with a UID other than 1001; Linux; a real external disk and macOS permission prompts for it; an interrupted backup; CI for this branch; Dependabot parsing the new entry.
+
+**Next:** owner runs `make backup-init`, `make backup` (twice) and `make status`, then P2 session 3: restore drill (`make restore`, fingerprint helper, runbook, upgrade). Test the copy-up restore flow there.
+
+**Open questions**
+- Accept, change or reject ADR 0008 (backup tool); then the register row can move.
+- Where the restic password copy will be kept (not decided; dummy data only until then).
+- Local settings (owner): allow `make status`; ask for `make backup-init` and `make backup`.
+
 ## 2026-10-21: P2 session 1, stack contract and first app
 
 **Done**

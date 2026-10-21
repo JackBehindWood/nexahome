@@ -1,0 +1,26 @@
+name: nexahome-backup
+
+# One-shot job run by scripts/backup.sh (make backup-init, make backup), never started by make up.
+# The script adds each labelled volume with `-v <volume>:/data/<volume>:ro`.
+services:
+  restic:
+    image: restic/restic:0.19.1
+    hostname: nexahome  # fixed: restic matches the previous snapshot by host name, so incremental runs need it
+    user: "${NEXAHOME_BACKUP_UID:-1001}"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    network_mode: none
+    restart: "no"
+    labels:
+      nexahome.oneshot: "true"  # exempt from the health check and restart rules (check_compose.py)
+    environment:
+      RESTIC_REPOSITORY: /repo
+      RESTIC_PASSWORD_FILE: /run/restic-password
+      RESTIC_CACHE_DIR: /tmp/restic-cache
+    tmpfs:
+      - /tmp
+    volumes:
+      - ${NEXAHOME_BACKUP_DIR:?set by scripts/backup.sh}:/repo
+      - ${NEXAHOME_RESTIC_PASSWORD_FILE:?set by scripts/backup.sh}:/run/restic-password:ro
+      - ../:/stacks:ro

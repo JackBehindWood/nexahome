@@ -12,6 +12,10 @@ updates:
     directory: /stacks/actual
     schedule:
       interval: weekly
+  - package-ecosystem: docker-compose
+    directory: /stacks/backup
+    schedule:
+      interval: weekly
   - package-ecosystem: pip
     directory: /
     schedule:
