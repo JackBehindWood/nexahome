@@ -1,6 +1,6 @@
 # Observability and operations
 
-Version 1.0 · Last reviewed 2026-10-20
+Version 0.1 · Last reviewed 2026-10-20
 
 How we see what is running. Today there is one demo stack on one laptop, so the approach is deliberately minimal.
 
@@ -45,4 +45,4 @@ Hostnames and addresses must not be published. Keep the real inventory in a giti
 | Power | `<UPS or none>` |
 | Backup | `<last verified restore date>` |
 
-Changelog: 1.0 (2026-10-20): notifications signal added; reduced to the decoupling rule, a testable phase 0, a shortlist and an inventory template; dashboard and portal aspirations removed.
+Changelog: 0.1 (2026-10-21): version renamed from 1.0 (pre-release project); 0.1 (2026-10-20): notifications signal added; reduced to the decoupling rule, a testable phase 0, a shortlist and an inventory template; dashboard and portal aspirations removed.

@@ -1,6 +1,6 @@
 # 0008. Backup tool: restic in a one-shot container
 
-* **Status:** Proposed
+* **Status:** Confirmed
 * **Date:** 2026-10-21
 
 ## Context

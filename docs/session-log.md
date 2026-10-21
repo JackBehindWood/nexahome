@@ -2,6 +2,38 @@
 
 Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
+## 2026-10-21: Owner actions closed (docs only)
+
+**Done**
+- Owner answers: push `feat/p2-5-plan` only (no pull request yet); ADR statuses left to me; yes to rewording the identity row and amending ADR 0009; documentation version renamed to 0.x.
+
+**Doc changes and reasons**
+- ADRs 0007 (stack contract) and 0008 (backup tool) set to Confirmed, and their register rows moved (the backup-tool row from Open). Reason: both are proven by the P2 drills, P2.5 builds on them, and the owner delegated the decision ("you decide"). That is delegation, not a per-ADR yes: the owner can reverse either one. ADRs 0006 and 0009 stay Proposed at this point; later the same day the owner asked to finalise the open items and both were Confirmed too, again by delegation (0009 still reads drill subject only).
+- `project.md` and `architecture.md`: the identity row and bullet reworded (still Proposed): sole administrator, roles `admin` and `users`, agent never admin, one small provider planned in P2.5. ADR 0009: one line, Actual is also the first client of that provider.
+- Version: documentation headers and changelogs renamed from 1.0 to 0.1; `docs/README.md` and the roadmap say 1.0 is reserved for the first release tag. Reason: the project is pre-release.
+- `roadmap.md`: Now row updated for the decisions.
+
+**Not verified:** CI for the branch (pushed, no pull request); rendering on GitHub.
+
+**Still pending (owner)**
+- Cold read of `docs/runbooks/restore.md` (closes P2). Approvals for the S1 spike (Colima start, image pulls). Pull request and merge of `feat/p2-5-plan` into `dev` when wanted.
+
+## 2026-10-21: P2.5 planning (docs only)
+
+**Done**
+- Planning session for the user system; no stack, script or container was touched. Owner answers: one owner now, two roles (admin, user) and a later agent role that is never admin; provider first; new phase P2.5 with only what is needed.
+- Plan written locally (`.claude/plans/p2-5-user-system.md`, not committed): five sessions, requirements with verification, interface contract, failure modes, backup and restore drill.
+
+**Doc changes and reasons**
+- `docs/roadmap.md`: P2.5 added after P2 (owner approved the change); the launchpad moved from P3 to P2.5 (P3 keeps health history, logs and notifications); a P8 note that the own expense app is an identity client; Now and Next rows and the dependency order updated. No version bump: the project is still 0.x. No Confirmed decision was touched; `project.md` and the ADRs are not edited yet (new Proposed rows and ADRs 0010 to 0012 arrive with session 1 and later).
+
+**Next:** P2.5 session 1, spike and ADRs (needs approval to start the container runtime and pull images).
+
+**Open questions**
+- The docs headers say "Version 1.0" while the project is 0.x; not changed, owner to decide.
+- Reword the Proposed register row "Single admin account; no SSO or identity provider until ..." (needs the owner's yes).
+- ADRs 0006 to 0009 are still Proposed; P2.5 builds on 0007 and 0008.
+
 ## 2026-10-21: P2 session 3, restore drill
 
 **Done**

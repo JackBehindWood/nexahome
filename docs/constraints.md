@@ -1,6 +1,6 @@
 # Principles, constraints and security
 
-Version 1.0 · Last reviewed 2026-10-21
+Version 0.1 · Last reviewed 2026-10-21
 
 Rules every change must follow. Decisions and their status are in the [register](project.md#decision-register).
 
@@ -71,4 +71,4 @@ Rules evaluate deny, then ask, then allow; the first match wins. Limits: rules m
 
 Preferences, not mandates; evaluate against requirements. Git, Markdown and ADRs, YAML and `.env` files, SSH keys for remote access, REST and MQTT as protocols. Not selected until a requirement appears: NAS operating system, orchestration platform, identity provider, configuration management (not before a second host).
 
-Changelog: 1.0 (2026-10-21): one-shot job exception; 1.0 (2026-10-21): volume label, project name and placeholder rules, Makefile conventions; 1.0 (2026-10-20): frugality expanded; reorganised into principles, Compose policy, tooling, security and guardrails; frugality and tooling policy added; Compose policy moved here from local files; VPN and SSH method preferences removed (open in the register).
+Changelog: 0.1 (2026-10-21): version renamed from 1.0 (pre-release project); 0.1 (2026-10-21): one-shot job exception; 0.1 (2026-10-21): volume label, project name and placeholder rules, Makefile conventions; 0.1 (2026-10-20): frugality expanded; reorganised into principles, Compose policy, tooling, security and guardrails; frugality and tooling policy added; Compose policy moved here from local files; VPN and SSH method preferences removed (open in the register).

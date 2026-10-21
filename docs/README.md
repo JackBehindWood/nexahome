@@ -1,12 +1,12 @@
 # Documentation
 
-Version 1.0 · Last reviewed 2026-10-21
+Version 0.1 · Last reviewed 2026-10-21
 
 Each fact lives in exactly one document; every other document links to it.
 
 ## Start here by role
 
-Roles follow [ADR 0006](adr/0006-concerns-and-audiences.md), which is not decided yet (see the register in [project.md](project.md)).
+Roles follow [ADR 0006](adr/0006-concerns-and-audiences.md), decided (see the register in [project.md](project.md)).
 
 - **Run a stack:** the root [README](../README.md). Nothing in `docs/` is required.
 - **Change or contribute:** [CONTRIBUTING.md](../CONTRIBUTING.md), then [constraints](constraints.md). To add a stack: [runbook](runbooks/add-a-stack.md).
@@ -31,12 +31,12 @@ Other owners: how to contribute is in [CONTRIBUTING.md](../CONTRIBUTING.md), ent
 
 ## Conventions
 
-- Each file in `docs/` (except ADRs and the session log) has a header line under the title, `Version 1.0 · Last reviewed <date>`, and a one-line changelog as its last line. ADRs carry their own status and date; the root README and SECURITY.md follow the other conventions without a header.
+- Each file in `docs/` (except ADRs and the session log) has a header line under the title, `Version 0.1 · Last reviewed <date>`, and a one-line changelog as its last line. ADRs carry their own status and date; the root README and SECURITY.md follow the other conventions without a header.
 - The labels Confirmed, Proposed and Open appear only in the decision register ([project.md](project.md)) and in ADRs. Elsewhere, prose says "decided" or "not decided yet" and links to the register.
 - Filenames are lowercase kebab-case. Links are relative. A tracked file never links to a file that is not tracked.
 - One H1 per file; headings in sentence case, not numbered.
 - British English. State a fact once, then link to it.
 - Nothing personal: no names, hostnames, IP addresses, emails or home paths.
-- The documentation set is versioned as a whole: version 1.0 is the first complete, consistent set. Per-document history is the changelog line and git.
+- The documentation set is versioned as a whole: version 0.1 is the first complete, consistent set (1.0 is reserved for the first release tag). Per-document history is the changelog line and git.
 
-Changelog: 1.0 (2026-10-21): restore runbook listed; 1.0 (2026-10-21): runbooks row, start-here block and audience column; 1.0 (2026-10-20): initial index and conventions.
+Changelog: 0.1 (2026-10-21): documentation version is 0.x until the first release tag; version renamed from 1.0; 0.1 (2026-10-21): restore runbook listed; 0.1 (2026-10-21): runbooks row, start-here block and audience column; 0.1 (2026-10-20): initial index and conventions.
