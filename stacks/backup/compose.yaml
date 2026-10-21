@@ -6,7 +6,7 @@ services:
   restic:
     image: restic/restic:0.19.1
     hostname: nexahome  # fixed: restic matches the previous snapshot by host name, so incremental runs need it
-    user: "${NEXAHOME_BACKUP_UID:-1001}"
+    user: "${NEXAHOME_BACKUP_UID:-1001}:${NEXAHOME_BACKUP_UID:-1001}"  # gid = uid; without a group, restored files get gid 0
     read_only: true
     cap_drop: [ALL]
     security_opt: ["no-new-privileges:true"]
@@ -20,6 +20,7 @@ services:
       RESTIC_CACHE_DIR: /tmp/restic-cache
     tmpfs:
       - /tmp
+      - /data  # restore with --target / sets metadata on /data, the parent of the volume mounts; the read-only root refuses
     volumes:
       - ${NEXAHOME_BACKUP_DIR:?set by scripts/backup.sh}:/repo
       - ${NEXAHOME_RESTIC_PASSWORD_FILE:?set by scripts/backup.sh}:/run/restic-password:ro

@@ -6,19 +6,20 @@ A one-shot [restic](https://restic.net) job that backs up every volume labelled 
 make backup-init     # once: creates the repository and the password file
 make backup          # every stack, or STACK=actual
 make snapshots       # list what is saved
+make restore STACK=actual   # restore into new volumes (TARGET=suffix for a copy, SNAPSHOT=id for an older one)
 make status          # stack health, how recent the last snapshot is, repository size
 ```
 
-Each stack is stopped for a consistent copy (a few seconds), saved as one snapshot tagged `stack=<name>`, then started again. `restic check` runs at the end. Restoring is session 3 of the persistence phase; until a restore has been tested, treat the backup as unproven and keep to dummy data.
+Each stack is stopped for a consistent copy (a few seconds), saved as one snapshot tagged `stack=<name>`, then started again. `restic check` runs at the end. `make restore STACK=actual` brings a stack back into new volumes and never overwrites ([restore runbook](../../docs/runbooks/restore.md)). A restore drill passed on 2026-10-21 with dummy data; keep to dummy data until you have run it on your own setup.
 
 **Save the password.** `make backup-init` writes a random password to `.config/restic-password` in this repository (mode 600, gitignored, never committed) and never prints it. Copy that file into a password manager. Losing it makes every snapshot unreadable, and deleting the repository folder deletes it too. To keep it elsewhere, set `NEXAHOME_RESTIC_PASSWORD_FILE`.
 
 | Item | Value |
 | :--- | :--- |
-| RAM, disk | not measured yet; the repository grows with your data, deduplicated and compressed (second run of the Actual test added 350 B) |
+| RAM, disk | RAM not measured (the job runs for seconds); repository 64 KB for the Actual drill data and 2 snapshots; it grows with your data, deduplicated and compressed (a repeat run added 684 B) |
 | Must run 24/7? | no; runs for seconds to minutes when you call it |
 | Backed up | not itself; it holds the repository, which is a directory on the host |
-| Verify | `make backup` ends with `backup ok`; a restore test is the only real proof |
+| Verify | `make backup` ends with `backup ok`; the restore drill is the real proof ([runbook](../../docs/runbooks/restore.md)) |
 
 ## Where the repository lives
 
@@ -39,6 +40,6 @@ Restic makes its files read-only, so a plain `rm -r` asks about every file. To d
 
 ## Limits
 
-- The job runs as one UID (`NEXAHOME_BACKUP_UID`, default 1001, the Actual user). A stack whose files only another UID can read will fail to back up; the fix is a decision for the first such stack ([ADR 0008](../../docs/adr/0008-backup-tool.md)).
+- The job runs as one UID, with the same number as GID (`NEXAHOME_BACKUP_UID`, default 1001, the Actual user). A stack whose files only another UID can read will fail to back up; the fix is a decision for the first such stack ([ADR 0008](../../docs/adr/0008-backup-tool.md)).
 - Tested on macOS with Colima (virtiofs). On Linux, bind-mounted directories keep their real owner, so the repository directory must be writable by `NEXAHOME_BACKUP_UID`; not tested.
 - Retention is manual: `sh scripts/backup.sh restic forget --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune`. The same form runs any other restic command (`restic` arguments after the word `restic`).

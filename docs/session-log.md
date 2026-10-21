@@ -2,6 +2,40 @@
 
 Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
+## 2026-10-21: P2 session 3, restore drill
+
+**Done**
+- On branch `feat/restore` (from `feat/backup`, stacked on `feat/persistence-restore`; none of the three pushed): `make restore STACK= [SNAPSHOT=] [TARGET=]`, `scripts/backup.sh restore` and `fingerprint`, `docs/runbooks/restore.md`, two fixes to the backup job, README section "Back up, restore, update".
+- Restore never overwrites: it refuses when the target volume exists, creates the volumes with `docker compose create` (copy-up gives the app's ownership), then runs `restic restore --target / --include --verify` with each new volume mounted at the original path. It restores a missing `.env` from the snapshot (written on the host, never printed). The copy-up flow works for real; no root container was needed or run.
+- Drill 1 (non-destructive, lost-machine simulation): fresh local clone, copied repository directory, project `nexahome-actual-clone` on port 5007. Fingerprint of ownership, mode and content equalled the original (F0, 4 files); `.env` restored; the owner saw the known transaction. Refusal with an existing volume checked.
+- Drill 2 (destructive, owner approved at that moment): live volume `nexahome-actual_data` deleted, `make restore STACK=actual`, fingerprint equal to F0, `make up`, healthy, the owner saw the known transaction.
+- Figures (dummy data, 4 files, same disk): each restore about 2 s; repository 64 KB with 2 snapshots at drill time, 3 after a final backup; `restic check --read-data` clean. Clone, repository copy and drill volumes were removed.
+- Surprises: (1) restic exits non-zero when setting metadata on `/data`, the read-only parent of the mount; fixed with a tmpfs `/data` in the job. (2) With `user: "1001"` restored files got gid 0, found by the fingerprint, not by `--verify`; the job now runs as `uid:uid`. (3) A backup taken after both fixes works (`make backup`, snapshot saved, check clean).
+- Branch order for the merge, by pull request into `dev`, one at a time with base `dev` (CI only runs for pull requests based on `main` or `dev`, and a changed base does not start a run): `feat/persistence-restore`, `feat/backup`, `feat/restore`. At session end nothing is pushed.
+
+**Doc changes and reasons**
+- Audit cuts agreed with the owner: `make upgrade`, `CHANGELOG.md`, a compatibility rule in CONTRIBUTING, `compose.override.yaml` in `.gitignore`, and a separate `upgrade.md` (nothing uses them before a release tag or an outside adopter; update is three commands in the README, rollback is in the restore runbook). The upgrade rehearsal waits for the first Dependabot bump of `actual`. `INPLACE=1` was dropped for the same reason of safety: restore never deletes. Drill 1, the swap test and the clean-clone test were run as one.
+- `docs/adr/0008-backup-tool.md`: drill evidence and the two fixes; still Proposed (the owner chose to decide it at the merge review). `architecture.md`: Layer 4 and backup paragraph (the drill passed on the laptop's own disk). `docs/README.md`: runbooks row. `stacks/backup/README.md`, `stacks/actual/README.md`, `README.md`: restore command, measured figures, verify step. No Confirmed decision was touched; `project.md` was not edited (register row "Backup tool" stays Open).
+- `.claude/plans/p2-persistence-restore.md` (local) now records the S2 and S3 deviations.
+
+**Verification**
+- `make check` passed; relative links resolve; failure paths of `restore` tested with a fake `docker` (no argument, unknown stack, runtime down, missing repository, no snapshot, existing volume); `git diff --staged` held no `.env`, key, `data/` or `.config/`. Colima was started for the drills and stopped by the owner at the end.
+- **Not verified:** CI for these branches (not pushed); Linux and `dash`; a real external disk; stacks with a UID other than 1001; large data or restore time at scale; an interrupted restore; the cold read of `restore.md` (the owner does this); an upgrade with an older Actual tag; Actual outbound calls; Dependabot parsing the new entries.
+
+**Next:** merge the three branches into `dev` by pull request (S1, S2, S3, each pushed, opened and merged on the owner's approval), then decide ADRs 0006 to 0009. After that: a planning session for a user system (P2.5, owner's direction: there is no user or identity layer yet; build it, keep Actual as a stand-in app, later replace it with the owner's own expense app), then P3 (health view). P2 closes when the owner has done the cold read of the restore runbook.
+
+**Open questions**
+- Accept, change or reject ADR 0008 (backup tool; the drill evidence is in it), and ADRs 0006, 0007, 0009 (0009 reads "drill subject only").
+- Where the restic password copy is kept (not decided; dummy data only until then). Real data waits for that and for a second copy.
+- User system (P2.5): scope and whether it is a new phase are not decided. The documents currently say no identity provider until a second user or about three apps with logins ([architecture](architecture.md#secrets-and-identity)); the owner wants it planned before the own expense app. The planning session decides, by ADR, and changes the roadmap only with the owner's approval.
+
+**Pending (owner actions, not actioned)**
+- Cold read of `docs/runbooks/restore.md`: follow its first block once on the drill volume and note gaps.
+- Merge approvals: push, pull request and merge for each of the three branches, in order (asked one by one in the next step); merges into `main` are out of scope.
+- Local `.claude/settings.json`: allow `make status`, `make snapshots`; ask for `make backup-init`, `make backup`, `make restore`.
+- The live volume `nexahome-actual_data` holds dummy data, and `data/backup` holds the test repository (`rm -rf data/backup .config` removes both).
+- Carried over: Dependabot parses under Insights, Dependency graph, Dependabot (includes `stacks/actual` and `stacks/backup`); delete the dummy `.env` in the working folder by hand; GitHub setting "Block command line pushes that expose my email"; Makefile, repository layout and security baseline still Proposed; delete the local plan `.claude/plans/concerns-and-audiences.md`.
+
 ## 2026-10-21: P2 session 2, backup
 
 **Done**

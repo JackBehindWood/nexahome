@@ -1,6 +1,6 @@
 # actual
 
-[Actual Budget](https://actualbudget.org): a local-first expense and budget tracker (MIT licence, SQLite, one container). It is the first stateful stack and the subject of the backup drill ([ADR 0009](../../docs/adr/0009-first-app-actual-budget.md)). Use dummy data until the restore drill has passed. It is the drill subject only; the owner plans an own expense app later, so this stack can be removed once another stateful stack exists.
+[Actual Budget](https://actualbudget.org): a local-first expense and budget tracker (MIT licence, SQLite, one container). It is the first stateful stack and the subject of the backup drill ([ADR 0009](../../docs/adr/0009-first-app-actual-budget.md)). Use dummy data: the restore drill passed on 2026-10-21 with it, but the repository is on the same disk. It is the drill subject only; the owner plans an own expense app later, so this stack can be removed once another stateful stack exists.
 
 ```sh
 make up STACK=actual      # start and wait until healthy
@@ -16,6 +16,6 @@ Open `http://127.0.0.1:5006/` and set a password on first use (it is stored in t
 | Disk (measured) | image about 70 MB; data volume about 70 KB when empty |
 | Must run 24/7? | no |
 | Backed up | volume `data` (`/data`: `server-files/account.sqlite`, `user-files/`), labelled `nexahome.backup: "true"` |
-| Verify after a restore | sign in and open a known budget file |
+| Verify after a restore | `make restore STACK=actual TARGET=check`, start it on another port ([runbook](../../docs/runbooks/restore.md)), sign in and open a budget file you know; the owner's drill used `drill-budget-1` with one known transaction |
 
 Runs as uid 1001 (the image's own `actual` user) with a read-only root filesystem and a tmpfs `/tmp`. The image ships no health check and runs as root by default; this stack overrides both.
