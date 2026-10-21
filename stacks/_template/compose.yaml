@@ -1,0 +1,28 @@
+# Copy this directory to stacks/<name>, then rename the project, service, volume and variables.
+# The project name must be nexahome-<directory name>.
+name: nexahome-_template
+
+services:
+  app:
+    image: busybox:1.37.0
+    command: ["httpd", "-f", "-p", "8080", "-h", "/data"]
+    user: "10001:10001"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${TEMPLATE_PORT:-8081}:8080"
+    volumes:
+      - data:/data
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 2s
+
+volumes:
+  data:
+    labels:
+      nexahome.backup: "true"  # "true" = backed up; "false" = disposable data

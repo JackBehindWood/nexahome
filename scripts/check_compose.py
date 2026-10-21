@@ -2,8 +2,9 @@
 """Validate every stacks/*/compose.yaml against the project's Compose policy.
 
 Policy: pinned image tag, health check, restart policy, published ports bound to
-127.0.0.1, no host networking, not privileged. Uses `docker compose config`, which
-needs the docker CLI but no running engine.
+127.0.0.1, no host networking, not privileged; every named volume labelled
+nexahome.backup "true" or "false"; project name nexahome-<directory>. Uses
+`docker compose config`, which needs the docker CLI but no running engine.
 """
 import json
 import shutil
@@ -32,6 +33,17 @@ def check_service(name: str, svc: dict) -> list[str]:
     return problems
 
 
+def check_project(directory: str, config: dict) -> list[str]:
+    problems = []
+    expected = f"nexahome-{directory}"
+    if config.get("name") != expected:
+        problems.append(f"project name must be '{expected}', found '{config.get('name')}'")
+    for volume, spec in (config.get("volumes") or {}).items():
+        if (spec or {}).get("labels", {}).get("nexahome.backup") not in ("true", "false"):
+            problems.append(f"volume {volume}: label nexahome.backup must be \"true\" or \"false\"")
+    return problems
+
+
 def main() -> int:
     stacks = sorted(Path("stacks").glob("*/compose.yaml"))
     if not stacks:
@@ -51,8 +63,9 @@ def main() -> int:
             print(f"{compose}: docker compose config failed\n{result.stderr}", file=sys.stderr)
             failures += 1
             continue
-        problems = []
-        for name, svc in json.loads(result.stdout).get("services", {}).items():
+        config = json.loads(result.stdout)
+        problems = check_project(compose.parent.name, config)
+        for name, svc in config.get("services", {}).items():
             problems += check_service(name, svc)
         for problem in problems:
             print(f"{compose}: {problem}")
