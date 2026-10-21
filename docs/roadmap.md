@@ -9,8 +9,8 @@ What gets built and in what order. Hardware has no dates; phases are ordered by 
 | When | Work |
 | :--- | :--- |
 | Now | Owner decisions on ADRs [0006](adr/0006-concerns-and-audiences.md), [0007](adr/0007-stack-contract.md), [0008](adr/0008-backup-tool.md) and [0009](adr/0009-first-app-actual-budget.md); P2 sessions 1 to 3 are done on `feat/persistence-restore`, `feat/backup` and `feat/restore` (merging into `dev` by pull request, in that order) |
-| Next | Owner: cold read of the restore runbook (closes P2) and the ADR decisions; then P3 health view or the own expense app plan |
-| Later | Health view, then the hardware phases in order: Mac mini, NAS and UPS, network, home automation, then personal applications and media |
+| Next | Owner: cold read of the restore runbook (closes P2) and the ADR decisions; then P2.5 identity, edge and portal (planned, five sessions, not started) |
+| Later | Health view (P3), then the hardware phases in order: Mac mini, NAS and UPS, network, home automation, then personal applications and media |
 
 Pending owner actions are tracked in the [session log](session-log.md), not here.
 
@@ -50,10 +50,19 @@ Goal: a safe, public, documented starting point. Exit criteria were met by Sessi
 - **Verification:** restore drill output recorded in the log. The VM stays at 2 GB, so one extra light stack at a time.
 - **Sessions:** (1) stack with a named volume (done); (2) backup (done, see session log); (3) restore drill and runbook (done; the owner's cold read of the runbook is the last open exit item).
 
+### P2.5 Identity, edge and portal
+
+- **Status:** planned, not started. All design choices are Proposed (ADRs 0010 to 0012 are written in session 1 and later).
+- **Goal:** one login for NexaHome apps with two roles (admin, user) and a reserved role for AI agents that is never admin, plus a launchpad with a health dot per stack. **Depends on:** P2 (backup and restore; the owner's cold read of the restore runbook is still open). **Hardware:** none.
+- **Scope:** a small OIDC identity provider in its own stack, a reverse-proxy edge stack with local hostnames on a shared network, Actual Budget as the first client (password login kept as fallback), a read-only portal without Docker socket access, and a recovery runbook. Own expense app as a client waits for P8; forward-auth, LDAP, mail, agent tokens, public TLS and uptime history are deferred (P3, P6, P8).
+- **Exit criteria:** both roles log in to Actual through the provider and a non-member is refused; the recovery runbook was followed once with the admin passkey treated as lost; the provider is backed up and restored with `make backup` and `make restore`, and a login works through the restored provider; the three new stacks fit the measured RAM budget on the 2 GB VM; `make check` passes.
+- **Verification:** drill output and RAM figures recorded in the session log and the ADRs.
+- **Sessions:** (1) spike and ADRs; (2) edge and identity stacks; (3) Actual as client and recovery runbook; (4) portal; (5) backup and restore drill, close. The step-by-step plan is local to the owner's machine.
+
 ### P3 Health view (optional)
 
-- **Goal:** one place to see service health, logs and notifications (the service dashboard). **Depends on:** P2 (a real service to watch). **Hardware:** none.
-- **Scope:** compare two tools from the [shortlist](observability.md#tool-shortlist), choose by ADR, deploy as a stack.
+- **Goal:** one place to see service health history, logs and notifications. The launchpad (central dashboard) moved to P2.5. **Depends on:** P2 (a real service to watch). **Hardware:** none.
+- **Scope:** compare two tools from the [shortlist](observability.md#tool-shortlist), choose by ADR, deploy as a stack; link it from the P2.5 portal.
 - **Exit criteria:** it shows the real stack's state; stopping the tool breaks nothing else (decoupling rule).
 - **Sessions:** (1) ADR and deployment.
 
@@ -84,7 +93,7 @@ Goal: a safe, public, documented starting point. Exit criteria were met by Sessi
 ### P8 Personal applications and media
 
 - **Goal:** the everyday applications. **Depends on:** P5 (storage and backups). **Hardware gate:** NAS for media; none for expense and portfolio tracking.
-- **Scope:** expense tracking, portfolio tracking, media streaming; each a separate stack chosen by ADR (open source, self-hosted, backed up). Not designed yet.
+- **Scope:** expense tracking, portfolio tracking, media streaming; each a separate stack chosen by ADR (open source, self-hosted, backed up). Not designed yet. The own expense app is a client of the P2.5 identity provider and holds no login code of its own.
 - **Exit criteria:** each application runs healthy and its data passes the restore drill.
 
 ## Claude Code sessions
@@ -93,7 +102,7 @@ A session has one verifiable outcome and can be resumed cold: it states its entr
 
 ## Dependency order
 
-P0, P1, then P2 and P4 (P4 waits for hardware), P3 after P2, P5 after P2 and P4, P6 after P5, P7 after P6, P8 after P5.
+P0, P1, then P2 and P4 (P4 waits for hardware), P2.5 after P2, P3 after P2.5 (the portal links it), P5 after P2 and P4, P6 after P5, P7 after P6, P8 after P5.
 
 ## Risks and assumptions
 
@@ -107,4 +116,4 @@ P0, P1, then P2 and P4 (P4 waits for hardware), P3 after P2, P5 after P2 and P4,
 
 Version 1.x changes progress or wording; a new major version means the phase structure changed. A phase may be split when it needs more than about five sessions or has two independent exit criteria. Phases are reordered only when a dependency or hardware change makes the current order impossible. Every split or reorder is logged with its reason; any change touching a decided item needs the owner's approval first.
 
-Changelog: 1.0 (2026-10-21): P2 session 3 done; 1.0 (2026-10-21): ADR 0008 in the Now row, S3 branch noted; 1.0 (2026-10-21): P2 session 2 done; 1.0 (2026-10-21): P2 session 1 done; 1.0 (2026-10-21): Now row corrected (merges done), entry-points work recorded; 1.0 (2026-10-20): P1 status; added P8 personal applications and media; restructured into phases with gates, exit criteria and a now/next/later view; CI proof made the first item.
+Changelog: 1.0 (2026-10-21): P2.5 added (identity, edge, portal; owner approved), launchpad moved from P3, P8 note; 1.0 (2026-10-21): P2 session 3 done; 1.0 (2026-10-21): ADR 0008 in the Now row, S3 branch noted; 1.0 (2026-10-21): P2 session 2 done; 1.0 (2026-10-21): P2 session 1 done; 1.0 (2026-10-21): Now row corrected (merges done), entry-points work recorded; 1.0 (2026-10-20): P1 status; added P8 personal applications and media; restructured into phases with gates, exit criteria and a now/next/later view; CI proof made the first item.
