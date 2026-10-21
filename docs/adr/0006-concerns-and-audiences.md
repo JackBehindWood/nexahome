@@ -1,6 +1,6 @@
 # 0006. Two entry points and an instance boundary
 
-* **Status:** Proposed
+* **Status:** Confirmed
 * **Date:** 2026-10-21
 
 ## Context

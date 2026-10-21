@@ -52,7 +52,7 @@ Status values: **Confirmed** (explicitly agreed), **Proposed** (suggested, not y
 | Foundation first: repository, docs, guardrails, secret scanning, one trivial service | Confirmed | Smallest useful first deliverable | n/a |
 | Commit identity: GitHub handle with noreply address, repository-local | Confirmed | Nothing personal in public history | n/a |
 | Documentation conventions and one-owner-per-fact rule ([docs/README.md](README.md)) | Proposed | Keeps the set consistent as it grows | n/a |
-| Two entry points (README to use, CONTRIBUTING to develop) and an upstream/instance boundary | Proposed | Each reader sees only what they need; owner data stays untracked | [0006](adr/0006-concerns-and-audiences.md) |
+| Two entry points (README to use, CONTRIBUTING to develop) and an upstream/instance boundary | Confirmed | Each reader sees only what they need; owner data stays untracked | [0006](adr/0006-concerns-and-audiences.md) |
 | Stack contract: `_template`, volume label `nexahome.backup`, project name `nexahome-<directory>`, `CHANGE_ME` placeholders | Confirmed | Backups and tooling treat every stack the same | [0007](adr/0007-stack-contract.md) |
 | **Platform** | | | |
 | Supported platforms: macOS and Linux | Confirmed | Portability to planned Linux hardware | n/a |
@@ -71,7 +71,7 @@ Status values: **Confirmed** (explicitly agreed), **Proposed** (suggested, not y
 | Open-source software first; no paid subscriptions; no always-on workload unless needed | Confirmed | Part of the same frugality aim, stated more precisely | n/a |
 | Dependabot for pinned image tags, Action SHAs and dev tools | Confirmed | Pins rot without updates | n/a |
 | Backup tool: restic in a one-shot container | Confirmed | Restore drill passed 2026-10-21; decision delegated by the owner | [0008](adr/0008-backup-tool.md) |
-| First application: Actual Budget (`stacks/actual`) | Proposed | Real SQLite data for the restore drill; drill subject only, an own expense app is planned for P8 | [0009](adr/0009-first-app-actual-budget.md) |
+| First application: Actual Budget (`stacks/actual`) | Confirmed | Real SQLite data for the restore drill; drill subject only, an own expense app is planned for P8 | [0009](adr/0009-first-app-actual-budget.md) |
 | **Users and availability** | | | |
 | One owner and administrator; hosting for others is a non-goal | Confirmed | Keeps trust and identity simple | n/a |
 | Best-effort availability, no service level | Confirmed | Hobby scale | n/a |
@@ -87,4 +87,4 @@ Status values: **Confirmed** (explicitly agreed), **Proposed** (suggested, not y
 
 Not decided and not blocking: capability priority order; local AI model size (the laptop has 8 GB, so no local model runs there); home automation scope (no devices yet); storage volume, budget and power limits; macOS version; optional SSH-signed commits; a trademark check on the name (a basic web search found no clash, not a trademark search).
 
-Changelog: 0.1 (2026-10-21): ADRs 0007 and 0008 Confirmed (owner delegated), identity row reworded (Proposed); version renamed from 1.0; 0.1 (2026-10-21): first-app row reworded (drill subject only); 0.1 (2026-10-21): stack contract and first-app rows (Proposed), status line; 0.1 (2026-10-21): entry-points row added (Proposed); 0.1 (2026-10-20): Dependabot confirmed; planned services list and open-source rule added; restructured; metadata and working-method sections removed; decisions regrouped; frugality, users, audience and hardware-order rows added.
+Changelog: 0.1 (2026-10-21): ADRs 0006 and 0009 Confirmed (owner delegated); 0.1 (2026-10-21): ADRs 0007 and 0008 Confirmed (owner delegated), identity row reworded (Proposed); version renamed from 1.0; 0.1 (2026-10-21): first-app row reworded (drill subject only); 0.1 (2026-10-21): stack contract and first-app rows (Proposed), status line; 0.1 (2026-10-21): entry-points row added (Proposed); 0.1 (2026-10-20): Dependabot confirmed; planned services list and open-source rule added; restructured; metadata and working-method sections removed; decisions regrouped; frugality, users, audience and hardware-order rows added.

@@ -6,7 +6,7 @@ Each fact lives in exactly one document; every other document links to it.
 
 ## Start here by role
 
-Roles follow [ADR 0006](adr/0006-concerns-and-audiences.md), which is not decided yet (see the register in [project.md](project.md)).
+Roles follow [ADR 0006](adr/0006-concerns-and-audiences.md), decided (see the register in [project.md](project.md)).
 
 - **Run a stack:** the root [README](../README.md). Nothing in `docs/` is required.
 - **Change or contribute:** [CONTRIBUTING.md](../CONTRIBUTING.md), then [constraints](constraints.md). To add a stack: [runbook](runbooks/add-a-stack.md).

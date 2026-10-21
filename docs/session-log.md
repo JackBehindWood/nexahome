@@ -8,7 +8,7 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 - Owner answers: push `feat/p2-5-plan` only (no pull request yet); ADR statuses left to me; yes to rewording the identity row and amending ADR 0009; documentation version renamed to 0.x.
 
 **Doc changes and reasons**
-- ADRs 0007 (stack contract) and 0008 (backup tool) set to Confirmed, and their register rows moved (the backup-tool row from Open). Reason: both are proven by the P2 drills, P2.5 builds on them, and the owner delegated the decision ("you decide"). That is delegation, not a per-ADR yes: the owner can reverse either one. ADRs 0006 and 0009 stay Proposed (0006 changes no behaviour yet; 0009 is a throwaway drill subject).
+- ADRs 0007 (stack contract) and 0008 (backup tool) set to Confirmed, and their register rows moved (the backup-tool row from Open). Reason: both are proven by the P2 drills, P2.5 builds on them, and the owner delegated the decision ("you decide"). That is delegation, not a per-ADR yes: the owner can reverse either one. ADRs 0006 and 0009 stay Proposed at this point; later the same day the owner asked to finalise the open items and both were Confirmed too, again by delegation (0009 still reads drill subject only).
 - `project.md` and `architecture.md`: the identity row and bullet reworded (still Proposed): sole administrator, roles `admin` and `users`, agent never admin, one small provider planned in P2.5. ADR 0009: one line, Actual is also the first client of that provider.
 - Version: documentation headers and changelogs renamed from 1.0 to 0.1; `docs/README.md` and the roadmap say 1.0 is reserved for the first release tag. Reason: the project is pre-release.
 - `roadmap.md`: Now row updated for the decisions.
@@ -16,7 +16,7 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 **Not verified:** CI for the branch (pushed, no pull request); rendering on GitHub.
 
 **Still pending (owner)**
-- Decide ADRs 0006 and 0009. Cold read of `docs/runbooks/restore.md` (closes P2). Approvals for the S1 spike (Colima start, image pulls). Pull request and merge of `feat/p2-5-plan` into `dev` when wanted.
+- Cold read of `docs/runbooks/restore.md` (closes P2). Approvals for the S1 spike (Colima start, image pulls). Pull request and merge of `feat/p2-5-plan` into `dev` when wanted.
 
 ## 2026-10-21: P2.5 planning (docs only)
 
