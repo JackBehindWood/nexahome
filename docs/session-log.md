@@ -2,6 +2,35 @@
 
 Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
+## 2026-10-21: Entry points and instance boundary (docs only)
+
+**Done**
+- On branch `feat/concerns-and-audiences` (from `dev`, not pushed): ADR 0006 (Proposed); the root README is now the use entry; CONTRIBUTING is the developer entry; `docs/README.md` has a start-here block and an Audience column; one new Proposed register row.
+- Ran the README quick start by hand: with Colima stopped `make up` failed, so a Colima start step was added to the README. After starting Colima, `make up STACK=hello` reached healthy, `make ps` showed `healthy`, the page returned HTTP 200 on `127.0.0.1:8080`; then `make down STACK=hello` and `colima stop`.
+
+**Doc changes and reasons**
+- ADR 0006 (Proposed): two entry points and an upstream/instance boundary. Reason: setup steps for developers sat in front of people who only want to run a stack. Deliberately lean: Makefile conventions, new layout directories, the release-tag update promise and an "operating" entry are deferred (to P2 and the first tag) because none exist yet.
+- `README.md`: developer setup moved to CONTRIBUTING; prerequisites kept (a runtime is needed to use it); quick start is `make up STACK=hello` because bare `make up` changes meaning in P2; update line says no releases yet, use `main`.
+- `CONTRIBUTING.md`: gained developer setup and a note that agent and editor config stays local (ADR 0005).
+- `docs/project.md`: one Proposed row added. No existing row was edited; the Confirmed audience and no-hosting rows are refined, not changed, by the ADR.
+- `docs/roadmap.md`: Now row corrected (the `dev` to `main` merge was already done); entry-points work recorded; next session set.
+
+**Verification**
+- `make check` passed. All `make` targets named in README and CONTRIBUTING exist. Relative links resolve. No `.env`, keys or `data/` in the diff against `dev`. No table row removed or edited in `project.md`.
+- **Not verified:** the cold-reader test (needs a fresh session given only README, CONTRIBUTING and `docs/README.md`); rendering on GitHub; CI for this branch (not pushed); the Linux path in the README (no Linux host).
+
+**Next:** P2 session 1, stack contract and first app (local plan; ADR numbers shift by one because 0006 is taken). Branch from `dev` after this branch is merged.
+
+**Open questions**
+- Accept, change or reject ADR 0006.
+- Push the branch and open a pull request into `dev`? (needs the owner's approval).
+- TLS and a reverse proxy are deferred until a service is reachable beyond `127.0.0.1` (P4 or P6).
+
+**Pending (owner actions, not actioned)**
+- Decide ADR 0006; push `feat/concerns-and-audiences` and merge into `dev` by pull request.
+- Carried over from 2026-10-20, status unconfirmed in this session: Dependabot parses under Insights, Dependency graph, Dependabot; delete the dummy `.env` in the working folder by hand; GitHub account setting "Block command line pushes that expose my email".
+- Still Proposed and undecided: Makefile, repository layout, security baseline; optional SSH-signed commits.
+
 ## 2026-10-20: Documentation foundation (version 1.0)
 
 **Done**

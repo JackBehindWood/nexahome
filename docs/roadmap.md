@@ -1,6 +1,6 @@
 # Roadmap
 
-Version 1.0 · Last reviewed 2026-10-20
+Version 1.0 · Last reviewed 2026-10-21
 
 What gets built and in what order. Hardware has no dates; phases are ordered by dependency. Update this file at the end of every working session.
 
@@ -8,8 +8,8 @@ What gets built and in what order. Hardware has no dates; phases are ordered by 
 
 | When | Work |
 | :--- | :--- |
-| Now | Merge `dev` into `main` so Dependabot activates; then P1 is closed |
-| Next | Persistence and restore drill on the laptop |
+| Now | Owner decision on [ADR 0006](adr/0006-concerns-and-audiences.md) (entry points); P1 is closed |
+| Next | Persistence and restore drill on the laptop, starting with P2 session 1 (stack with a named volume) |
 | Later | Health view, then the hardware phases in order: Mac mini, NAS and UPS, network, home automation, then personal applications and media |
 
 Pending owner actions are tracked in the [session log](session-log.md), not here.
@@ -20,6 +20,7 @@ Pending owner actions are tracked in the [session log](session-log.md), not here
 - **Session 1, pipeline proof:** Makefile, project-local tooling, opt-in pre-commit hook, Colima runtime, `hello` stack, Compose policy check, CI workflow file, PR template.
 - **Session 2, publish safely (done except the pending items):** history scan, public repository, secret scanning and push protection, `main` protected. CI was proven afterwards (first run 2026-10-20) once Actions was enabled.
 - **Documentation foundation:** this documentation set, version 1.0.
+- **Entry points (docs only):** README as the use entry, CONTRIBUTING as the developer entry, start-here block in the docs index; ADR 0006 awaits the owner's decision.
 
 ## Phases
 
@@ -103,4 +104,4 @@ P0, P1, then P2 and P4 (P4 waits for hardware), P3 after P2, P5 after P2 and P4,
 
 Version 1.x changes progress or wording; a new major version means the phase structure changed. A phase may be split when it needs more than about five sessions or has two independent exit criteria. Phases are reordered only when a dependency or hardware change makes the current order impossible. Every split or reorder is logged with its reason; any change touching a decided item needs the owner's approval first.
 
-Changelog: 1.0 (2026-10-20): P1 status; added P8 personal applications and media; restructured into phases with gates, exit criteria and a now/next/later view; CI proof made the first item.
+Changelog: 1.0 (2026-10-21): Now row corrected (merges done), entry-points work recorded; 1.0 (2026-10-20): P1 status; added P8 personal applications and media; restructured into phases with gates, exit criteria and a now/next/later view; CI proof made the first item.
