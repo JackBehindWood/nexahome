@@ -21,7 +21,7 @@ Each stack is stopped for a consistent copy (a few seconds), saved as one snapsh
 
 ## Where the repository lives
 
-Default: `~/.local/share/nexahome-backup` on the same disk as your data, which makes it a drill, not protection. Set `NEXAHOME_BACKUP_DIR` (shell or `stacks/backup/.env`, see `.env.example`) to put it elsewhere, such as an external disk.
+Default: `data/backup` in this repository (gitignored, visible, and removed by deleting that folder). It is on the same disk as your data, which makes it a drill, not protection. `make status` shows its size. Set `NEXAHOME_BACKUP_DIR` (shell or `stacks/backup/.env`, see `.env.example`) to put it elsewhere, such as an external disk. A Docker volume is deliberately not used: it would sit in the Colima VM's small disk, out of sight, and `colima delete` would remove it together with the data.
 
 On macOS the container runs in the Colima VM, which shares only your home directory by default. A directory outside it is not shared: Docker silently creates an empty directory inside the VM instead, and the repository would vanish with `colima delete`. `make backup-init` detects this and stops. To share another directory, list the home directory too (naming any `--mount` replaces the default) and restart Colima:
 

@@ -81,7 +81,7 @@ Administrative interfaces are never exposed to the public internet. No firewall 
 
 - Persistent data lives outside the code tree. Compose reads the data root from `NEXAHOME_DATA_DIR` (laptop default `./data`, gitignored). Use named volumes for database-style data on macOS and bind mounts for configuration.
 - Target: three copies of important data on two kinds of storage with one copy off-site (the "3-2-1" rule). Not reachable without a NAS and an off-site destination.
-- A backup counts only after a tested restore. Until a NAS exists, restore drills use a local volume. The backup tool is restic in a one-shot container, proposed in [ADR 0008](adr/0008-backup-tool.md) (the [register](project.md#decision-register) row stays Open until decided): `make backup` saves labelled volumes and `.env` files into an encrypted repository on the host, outside the repository tree and the VM. A repository on the laptop's own disk is a drill, not protection, and nothing is trusted until a restore has been tested.
+- A backup counts only after a tested restore. Until a NAS exists, restore drills use a local volume. The backup tool is restic in a one-shot container, proposed in [ADR 0008](adr/0008-backup-tool.md) (the [register](project.md#decision-register) row stays Open until decided): `make backup` saves labelled volumes and `.env` files into an encrypted repository on the host (default `data/backup`, gitignored, outside the VM). A repository on the laptop's own disk is a drill, not protection, and nothing is trusted until a restore has been tested.
 
 ## Secrets and identity
 

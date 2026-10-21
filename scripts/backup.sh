@@ -6,8 +6,8 @@ set -eu
 cd "$(dirname "$0")/.."
 
 [ -f stacks/backup/.env ] && { set -a; . stacks/backup/.env; set +a; }
-DIR=${NEXAHOME_BACKUP_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/nexahome-backup}
 ROOT=$(pwd)
+DIR=${NEXAHOME_BACKUP_DIR:-$ROOT/data/backup}
 PW=${NEXAHOME_RESTIC_PASSWORD_FILE:-$ROOT/.config/restic-password}
 export NEXAHOME_BACKUP_DIR="$DIR" NEXAHOME_RESTIC_PASSWORD_FILE="$PW"
 
@@ -37,9 +37,11 @@ restart_stopped() {
 cmd_init() {
 	[ ! -e "$PW" ] || die "password file already exists: $PW (not overwriting)"
 	[ ! -e "$DIR/config" ] || die "a repository already exists at $DIR (not overwriting)"
-	case "$PW" in "$ROOT"/*)
-		git check-ignore -q "$PW" || die "$PW is inside the repository but not gitignored; refusing to write a secret there." ;;
-	esac
+	for f in "$PW" "$DIR"; do
+		case "$f" in "$ROOT"/*)
+			git check-ignore -q "$f" || die "$f is inside the repository but not gitignored; refusing to write there." ;;
+		esac
+	done
 	need_runtime
 	mkdir -p "$DIR"
 	(umask 077; mkdir -p "$(dirname "$PW")"; LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 40 >"$PW")
@@ -49,12 +51,13 @@ cmd_init() {
 	fi
 	cat <<EOF
 
-Repository:    $DIR
+Repository:    $DIR   (delete this folder to remove all backups)
 Password file: $PW
 
 Save a copy of the password file in a password manager now. Without it every snapshot is
 unreadable, and nothing can recover it. Keep the copy away from this laptop and the backup disk.
-A repository on the same disk as your data is a drill, not protection.
+A repository on the same disk as your data is a drill, not protection: copy it to an
+external disk, or point NEXAHOME_BACKUP_DIR at one.
 
 Next: make backup
 EOF
@@ -99,6 +102,7 @@ cmd_backup() {
 cmd_status() {
 	if [ ! -f "$DIR/config" ]; then
 		echo "backup: no repository at $DIR (make backup-init)"
+		return 0
 	elif [ -n "$(find "$DIR/snapshots" -type f -mtime -7 2>/dev/null | head -n 1)" ]; then
 		echo "backup: last snapshot within 7 days"
 	elif [ -n "$(find "$DIR/snapshots" -type f 2>/dev/null | head -n 1)" ]; then
@@ -106,6 +110,7 @@ cmd_status() {
 	else
 		echo "backup: repository has no snapshots yet (make backup)"
 	fi
+	echo "backup: repository size $(du -sh "$DIR" | cut -f1) in $DIR"
 }
 
 case "${1:-}" in
