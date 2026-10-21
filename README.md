@@ -6,7 +6,13 @@ A modular, self-hosted homelab platform: local AI, development tools, storage, n
 
 ## Quick start
 
-Needs `git`, `make`, and a Docker CLI with Compose and a running engine (on macOS the project uses [Colima](docs/adr/0004-colima-runtime.md)). `hello` is a demo that serves one static page.
+Needs `git`, `make`, and a Docker CLI with Compose and a running engine. On Linux, Docker Engine runs directly. On macOS the project uses [Colima](docs/adr/0004-colima-runtime.md); start it once per boot:
+
+```sh
+colima start --cpu 2 --memory 2 --disk 20
+```
+
+`hello` is a demo that serves one static page.
 
 ```sh
 make up STACK=hello       # start the demo stack and wait until healthy
