@@ -1,6 +1,6 @@
 #!/bin/sh
 # Back up every volume labelled nexahome.backup=true, plus each backed-up stack's .env, with restic.
-# Usage: scripts/backup.sh init | backup [stack] | status   (run through make backup-init, backup, status)
+# Usage: scripts/backup.sh init | backup [stack] | status | restic <restic arguments>   (see make help)
 # Settings come from the environment or stacks/backup/.env; see stacks/backup/.env.example.
 set -eu
 cd "$(dirname "$0")/.."
@@ -117,5 +117,6 @@ case "${1:-}" in
 	init) cmd_init ;;
 	backup) shift; cmd_backup "$@" ;;
 	status) cmd_status ;;
-	*) die "usage: scripts/backup.sh init | backup [stack] | status" ;;
+	restic) shift; need_runtime; need_repo; job restic "$@" ;;
+	*) die "usage: scripts/backup.sh init | backup [stack] | status | restic <arguments>" ;;
 esac

@@ -5,7 +5,8 @@ A one-shot [restic](https://restic.net) job that backs up every volume labelled 
 ```sh
 make backup-init     # once: creates the repository and the password file
 make backup          # every stack, or STACK=actual
-make status          # stack health and how recent the last snapshot is
+make snapshots       # list what is saved
+make status          # stack health, how recent the last snapshot is, repository size
 ```
 
 Each stack is stopped for a consistent copy (a few seconds), saved as one snapshot tagged `stack=<name>`, then started again. `restic check` runs at the end. Restoring is session 3 of the persistence phase; until a restore has been tested, treat the backup as unproven and keep to dummy data.
@@ -36,4 +37,4 @@ Colima saves this in its own profile (`~/.colima/default/colima.yaml`). To undo 
 
 - The job runs as one UID (`NEXAHOME_BACKUP_UID`, default 1001, the Actual user). A stack whose files only another UID can read will fail to back up; the fix is a decision for the first such stack ([ADR 0008](../../docs/adr/0008-backup-tool.md)).
 - Tested on macOS with Colima (virtiofs). On Linux, bind-mounted directories keep their real owner, so the repository directory must be writable by `NEXAHOME_BACKUP_UID`; not tested.
-- Retention is manual: with `NEXAHOME_BACKUP_DIR` and `NEXAHOME_RESTIC_PASSWORD_FILE` set, run `docker compose -f stacks/backup/compose.yaml run --rm restic forget --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune`.
+- Retention is manual: `sh scripts/backup.sh restic forget --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune`. The same form runs any other restic command (`restic` arguments after the word `restic`).

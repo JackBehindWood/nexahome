@@ -15,6 +15,7 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 - Owner decision after the build: the password file defaults to a gitignored `.config/restic-password` inside the working copy instead of the home directory (override: `NEXAHOME_RESTIC_PASSWORD_FILE`). `make backup-init` refuses a path inside the repository that is not gitignored.
 - Trade-off recorded in ADR 0008: deleting the working copy deletes the password, so the separate copy matters more.
 - The repository directory followed: default `data/backup` (gitignored, visible, size in `make status`) instead of `~/.local/share`; a Docker volume was rejected (hidden in the 20 GB VM disk, lost with `colima delete`). `backup-init` applies the gitignore guard to both paths.
+- Owner direction: Actual is a throwaway drill subject; an own expense app is planned for P8. ADR 0009 (still Proposed) and its register row say so. Also added `make snapshots` and `scripts/backup.sh restic <args>` after the owner hit a missing-variable error running restic by hand.
 - Audit cuts from the P2 plan (owner agreed): no "newer tag" in status, no 7-day nudge in `make up`, no `scripts/stacks.py` (status is shell, backup age comes from the repository's `snapshots/` files), restore flags and fingerprint helper left to session 3. Added: fixed host name so runs are incremental; `.env` of a stack is saved only when the stack has a labelled volume.
 
 **Not verified**

@@ -71,7 +71,7 @@ Status values: **Confirmed** (explicitly agreed), **Proposed** (suggested, not y
 | Open-source software first; no paid subscriptions; no always-on workload unless needed | Confirmed | Part of the same frugality aim, stated more precisely | n/a |
 | Dependabot for pinned image tags, Action SHAs and dev tools | Confirmed | Pins rot without updates | n/a |
 | Backup tool (restic is the shortlist) | Open | Chosen when the restore drill is built | n/a |
-| First application: Actual Budget (`stacks/actual`) | Proposed | Real SQLite data for the restore drill; fits P8 expense tracking | [0009](adr/0009-first-app-actual-budget.md) |
+| First application: Actual Budget (`stacks/actual`) | Proposed | Real SQLite data for the restore drill; drill subject only, an own expense app is planned for P8 | [0009](adr/0009-first-app-actual-budget.md) |
 | **Users and availability** | | | |
 | One owner and administrator; hosting for others is a non-goal | Confirmed | Keeps trust and identity simple | n/a |
 | Best-effort availability, no service level | Confirmed | Hobby scale | n/a |
@@ -87,4 +87,4 @@ Status values: **Confirmed** (explicitly agreed), **Proposed** (suggested, not y
 
 Not decided and not blocking: capability priority order; local AI model size (the laptop has 8 GB, so no local model runs there); home automation scope (no devices yet); storage volume, budget and power limits; macOS version; optional SSH-signed commits; a trademark check on the name (a basic web search found no clash, not a trademark search).
 
-Changelog: 1.0 (2026-10-21): stack contract and first-app rows (Proposed), status line; 1.0 (2026-10-21): entry-points row added (Proposed); 1.0 (2026-10-20): Dependabot confirmed; planned services list and open-source rule added; restructured; metadata and working-method sections removed; decisions regrouped; frugality, users, audience and hardware-order rows added.
+Changelog: 1.0 (2026-10-21): first-app row reworded (drill subject only); 1.0 (2026-10-21): stack contract and first-app rows (Proposed), status line; 1.0 (2026-10-21): entry-points row added (Proposed); 1.0 (2026-10-20): Dependabot confirmed; planned services list and open-source rule added; restructured; metadata and working-method sections removed; decisions regrouped; frugality, users, audience and hardware-order rows added.
