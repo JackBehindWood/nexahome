@@ -3,7 +3,8 @@
 
 Policy: pinned image tag, health check, restart policy, published ports bound to
 127.0.0.1, no host networking, not privileged; every named volume labelled
-nexahome.backup "true" or "false"; project name nexahome-<directory>. A service
+nexahome.backup "true" or "false"; project name nexahome-<directory>; no cap_add except
+NET_BIND_SERVICE; no Docker socket mount; the only external network is nexahome-edge. A service
 labelled nexahome.oneshot "true" (a job run by a script, such as the backup) is
 exempt from the health check and restart rules only. Uses
 `docker compose config`, which needs the docker CLI but no running engine.
@@ -13,6 +14,9 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+
+SHARED_NETWORK = "nexahome-edge"
+ALLOWED_CAP_ADD = {"NET_BIND_SERVICE"}  # Caddy's file capability (ADR 0011)
 
 
 def check_service(name: str, svc: dict) -> list[str]:
@@ -33,6 +37,12 @@ def check_service(name: str, svc: dict) -> list[str]:
     for port in svc.get("ports", []):
         if port.get("host_ip") != "127.0.0.1":
             problems.append(f"{name}: port {port.get('published')} must bind to 127.0.0.1")
+    extra = set(svc.get("cap_add") or []) - ALLOWED_CAP_ADD
+    if extra:
+        problems.append(f"{name}: cap_add {sorted(extra)} is not allowed (only {sorted(ALLOWED_CAP_ADD)})")
+    for volume in svc.get("volumes") or []:
+        if "docker.sock" in str(volume.get("source", "")):
+            problems.append(f"{name}: the Docker socket must not be mounted")
     return problems
 
 
@@ -41,6 +51,9 @@ def check_project(directory: str, config: dict) -> list[str]:
     expected = f"nexahome-{directory}"
     if config.get("name") != expected:
         problems.append(f"project name must be '{expected}', found '{config.get('name')}'")
+    for network, spec in (config.get("networks") or {}).items():
+        if (spec or {}).get("external") and spec.get("name") != SHARED_NETWORK:
+            problems.append(f"network {network}: the only external network allowed is '{SHARED_NETWORK}'")
     for volume, spec in (config.get("volumes") or {}).items():
         if (spec or {}).get("labels", {}).get("nexahome.backup") not in ("true", "false"):
             problems.append(f"volume {volume}: label nexahome.backup must be \"true\" or \"false\"")
