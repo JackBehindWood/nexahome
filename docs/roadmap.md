@@ -1,6 +1,6 @@
 # Roadmap
 
-Version 0.1 · Last reviewed 2026-10-21
+Version 0.1 · Last reviewed 2026-10-22
 
 What gets built and in what order. Hardware has no dates; phases are ordered by dependency. Update this file at the end of every working session.
 
@@ -8,8 +8,8 @@ What gets built and in what order. Hardware has no dates; phases are ordered by 
 
 | When | Work |
 | :--- | :--- |
-| Now | ADRs 0006 to 0009 are decided; P2 sessions 1 to 3 are merged into `dev`; P2.5 is planned (see Next) |
-| Next | P2.5 identity, edge and portal (planned, five sessions, not started); session 1 is the spike and needs the owner's approval for the container runtime and image pulls |
+| Now | P2.5 sessions 1 and 2 are done on branches (stacks `edge` and `identity` exist; ADRs 0010 and 0011 Proposed); P2 is closed |
+| Next | P2.5 session 3: Actual as the first client, refusal tests, recovery runbook; then portal (4) and backup drill (5) |
 | Later | Health view (P3), then the hardware phases in order: Mac mini, NAS and UPS, network, home automation, then personal applications and media |
 
 Pending owner actions are tracked in the [session log](session-log.md), not here.
@@ -52,12 +52,12 @@ Goal: a safe, public, documented starting point. Exit criteria were met by Sessi
 
 ### P2.5 Identity, edge and portal
 
-- **Status:** planned, not started. All design choices are Proposed (ADRs 0010 to 0012 are written in session 1 and later).
+- **Status:** sessions 1 (spike) and 2 (edge and identity stacks) done 2026-10-22; all design choices are Proposed (ADRs 0010 and 0011; 0012 comes with the portal). Chosen design: Pocket ID's My Apps page is the one sign-in page; the portal is an open read-only status board on loopback; agents have no account yet.
 - **Goal:** one login for NexaHome apps with two roles (admin, user) and a reserved role for AI agents that is never admin, plus a launchpad with a health dot per stack. **Depends on:** P2 (backup and restore; closed). **Hardware:** none.
 - **Scope:** a small OIDC identity provider in its own stack, a reverse-proxy edge stack with local hostnames on a shared network, Actual Budget as the first client (password login kept as fallback), a read-only portal without Docker socket access, and a recovery runbook. Own expense app as a client waits for P8; forward-auth, LDAP, mail, agent tokens, public TLS and uptime history are deferred (P3, P6, P8).
 - **Exit criteria:** both roles log in to Actual through the provider and a non-member is refused; the recovery runbook was followed once with the admin passkey treated as lost; the provider is backed up and restored with `make backup` and `make restore`, and a login works through the restored provider; the three new stacks fit the measured RAM budget on the 2 GB VM; `make check` passes.
 - **Verification:** drill output and RAM figures recorded in the session log and the ADRs.
-- **Sessions:** (1) spike and ADRs; (2) edge and identity stacks; (3) Actual as client and recovery runbook; (4) portal; (5) backup and restore drill, close. The step-by-step plan is local to the owner's machine.
+- **Sessions:** (1) spike and ADRs; (2) edge and identity stacks; (3) Actual as client and recovery runbook; (4) portal; (5) backup and restore drill, close. Done: 1, 2. The step-by-step plan is local to the owner's machine.
 
 ### P3 Health view (optional)
 
@@ -116,4 +116,4 @@ P0, P1, then P2 and P4 (P4 waits for hardware), P2.5 after P2, P3 after P2.5 (th
 
 Version 0.x while the project is pre-release: changes to progress or wording keep the number; 1.0 is reserved for the first release tag. A phase may be split when it needs more than about five sessions or has two independent exit criteria. Phases are reordered only when a dependency or hardware change makes the current order impossible. Every split or reorder is logged with its reason; any change touching a decided item needs the owner's approval first.
 
-Changelog: 0.1 (2026-10-21): P2 closed after the owner's cold read of the restore runbook; 0.1 (2026-10-21): Now and Next rows after all four ADR decisions; 0.1 (2026-10-21): Now row after ADR decisions; versioning rule for 0.x; version renamed from 1.0; 0.1 (2026-10-21): P2.5 added (identity, edge, portal; owner approved), launchpad moved from P3, P8 note; 0.1 (2026-10-21): P2 session 3 done; 0.1 (2026-10-21): ADR 0008 in the Now row, S3 branch noted; 0.1 (2026-10-21): P2 session 2 done; 0.1 (2026-10-21): P2 session 1 done; 0.1 (2026-10-21): Now row corrected (merges done), entry-points work recorded; 0.1 (2026-10-20): P1 status; added P8 personal applications and media; restructured into phases with gates, exit criteria and a now/next/later view; CI proof made the first item.
+Changelog: 0.1 (2026-10-22): P2.5 sessions 1 and 2 done, Now and Next rows; 0.1 (2026-10-21): P2 closed after the owner's cold read of the restore runbook; 0.1 (2026-10-21): Now and Next rows after all four ADR decisions; 0.1 (2026-10-21): Now row after ADR decisions; versioning rule for 0.x; version renamed from 1.0; 0.1 (2026-10-21): P2.5 added (identity, edge, portal; owner approved), launchpad moved from P3, P8 note; 0.1 (2026-10-21): P2 session 3 done; 0.1 (2026-10-21): ADR 0008 in the Now row, S3 branch noted; 0.1 (2026-10-21): P2 session 2 done; 0.1 (2026-10-21): P2 session 1 done; 0.1 (2026-10-21): Now row corrected (merges done), entry-points work recorded; 0.1 (2026-10-20): P1 status; added P8 personal applications and media; restructured into phases with gates, exit criteria and a now/next/later view; CI proof made the first item.

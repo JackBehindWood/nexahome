@@ -2,6 +2,40 @@
 
 Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
+## 2026-10-22: P2.5 session 2, edge and identity stacks
+
+**Done**
+- Branch `feat/p2-5-s2-stacks` (commit `8789ec2`, not pushed). Part A design review first; the owner chose: Pocket ID's My Apps page as the one sign-in page, the portal stays an open read-only status board on loopback, agents rule only (no account), clients registered by hand in the UI, no static API key, secrets auto-generated.
+- Built `stacks/edge` (Caddy 2.11.7, 404 catch-all, hardening headers, limits, log rotation) and `stacks/identity` (Pocket ID v2.18.0-distroless). `make up` creates `nexahome-edge`, starts edge and identity first and replaces `GENERATE` values in a new `.env` (never printed). `check_compose.py` rejects other external networks, `cap_add` other than `NET_BIND_SERVICE` and a Docker socket mount; shown failing on mutated copies, then passing. Dependabot entries added.
+- Run on Colima (existing profile, started and stopped; images pulled: Caddy and Pocket ID; network `nexahome-edge` created and left in place). Measured: edge 10 MiB, identity 16 MiB idle, images 89 and 110 MB. `/health` 200, foreign `Host` 404, issuer `http://id.nexahome.localhost:8088`. Both run non-root, read-only, all capabilities dropped (edge keeps the flagged `NET_BIND_SERVICE`). `make down` then `make up` kept users, config and images. Restart count 0 after about 40 minutes.
+- Browser (owner): first admin and passkey; a second passkey was refused (same iCloud Keychain, one authenticator) and skipped. Audit log shows `PASSKEY_ADDED`, `SIGN_IN` (admin) and `TOKEN_SIGN_IN` (user). The owner reported that `user` sees only Actual Budget and `admin` also sees the admin-only test client; both launch links gave the edge's 404 (no route yet, expected).
+- Instance configured with a UI-created API key (named, expiring 2026-11-21), pasted into chat by the owner: app name `NexaHome`, session 1440 minutes, landing page My Apps, groups `admin`, `users`, `agents`, users `admin`, `user`, `agentx` (no passkey), clients `actual` (placeholder) and a temporary `admintest` (deleted). Logos (light, dark, favicon, email, default profile picture) drawn as SVG and uploaded; the owner uploaded the background. Key revoked through the API (a call then returned 401) and the local key file deleted.
+- Deviation to report: the API key was pasted into the conversation, so it exists in the transcript; it is revoked.
+
+**Doc changes and reasons**
+- ADRs 0010 and 0011 amended in place (both still Proposed, so editing is allowed): option chosen, access tiers, agent path and API key contract (Open), 404 catch-all and threat model, what was built and measured, portal gating added to the leaving-loopback gate, advisory check and recovery-token caveat. `project.md`: two Proposed rows (identity provider, edge). `constraints.md`: the `cap_add`, socket and external-network rules are now enforced; `GENERATE` placeholder documented. No Confirmed decision was touched.
+- New READMEs for both stacks with measured RAM and disk, first-run steps, client field table and the host-side recovery command.
+- Not done on purpose: `make secret` (replaced by `GENERATE`), a registration script, `STATIC_API_KEY`, tile or alias drift checks.
+
+**Verification**
+- `make check` passed (hooks and the Compose policy for all six stacks); nothing staged; the commit holds no `.env`, key, `data/` or the API key (scanned).
+- **Not verified:** a second passkey; Chrome, Firefox, Linux; restore of the identity volume (S5); the favicon and email logo in a real browser; `agentx` refusal, Actual's OIDC login and Actual boot with edge or identity down (S3); whether the S1 Pocket ID exit recurs (not seen in about 40 minutes); session length effect; whether the one-day session is accepted by Actual; CI for this branch (not pushed). My Apps and the role view are as reported by the owner.
+
+**Next:** P2.5 session 3: Actual as the first client (route and alias on the edge, client secret, OIDC variables, password fallback kept), refusals for a non-member and `agentx`, boot order with edge or identity down, `docs/runbooks/identity-recovery.md` followed once.
+
+**Open questions**
+- A paid tier would touch the Confirmed rules on open source and no subscriptions: owner decision when it becomes real.
+- Image digests for all stacks (tag plus digest)?
+- A real second authenticator (phone or security key) before real data exists.
+- Pocket ID `v2.18.0` or a later patch: Dependabot will propose; the agent path needs a newer release (not verified).
+
+**Pending (owner)**
+- Run nothing for the key: confirm in Settings, API Keys that `s2-config` is gone.
+- Approval to push `feat/p2-5-s2-stacks` and open a pull request into `dev`.
+- Watch security alerts for `pocket-id/pocket-id` and `caddyserver/caddy` on GitHub.
+- Remove `nexahome-edge` and the identity volume only if you want them gone (kept for S3).
+- Carried over: Dependabot parsing of the new stack entries; the local `.claude/plans/concerns-and-audiences.md`; GitHub setting "Block command line pushes that expose my email"; Makefile, repository layout and security baseline still Proposed.
+
 ## 2026-10-22: P2.5 session 1, spike and decision
 
 **Done**
