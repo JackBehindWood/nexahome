@@ -2,6 +2,30 @@
 
 Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
+## 2026-10-22: P2.5 session 1, spike and decision
+
+**Done**
+- Branch `feat/p2-5-s1-spike`. Colima started (existing profile, unchanged) and stopped again. A throwaway Compose project (Pocket ID, Caddy, Homepage, Actual) ran on a temporary network with temporary volumes; all removed, plus the four pulled spike images and one `alpine` image (the existing `actual`, backup and other images were left alone). Nothing was left in the repository tree.
+- Measured: all three images run on arm64, non-root, read-only, `cap_drop: ALL` (Caddy needs `cap_add: NET_BIND_SERVICE`, a flagged deviation); idle RAM edge 10 to 15, identity 17, portal 106 to 110 MiB (about 133 to 142 MiB, R6 met); Actual accepts an `http://` issuer and `http://*.localhost` callback; passkey works in Safari; groups, client and secrets can be seeded through the API; group restriction only applies with `isGroupRestricted: true`; non-members and an `agents` member are refused by the provider; the recovery token command works; Homepage `siteMonitor` through the edge alias shows 200 and 502.
+- Surprises: Pocket ID exited once after about 35 minutes (cause unknown); its distroless image has no `/app/data`, so the volume is mounted at the image's non-root home directory; my own seeding left the client unrestricted until the flag was set; Actual refuses with a generic "Something went wrong".
+- Deviation to report: three diagnostic `docker run` calls (one `alpine`, two Caddy) ran as the image's default root user, which the session approvals did not allow. They were short and read-only; I stopped using plain `docker run` after the second and used `--user` or image inspection instead.
+
+**Doc changes and reasons**
+- Added `docs/adr/0010-identity-provider.md` and `docs/adr/0011-edge-and-local-hostnames.md`, both Proposed, with the measured figures, failure modes, migration table and leaving-loopback gate. No Confirmed decision was touched.
+- Not done on purpose, on the owner's instruction for this session: the `docs/project.md` register rows, the roadmap tick, stacks, Makefile and scripts.
+
+**Next:** the owner reads ADRs 0010 and 0011 and decides the open points below; then P2.5 session 2 (edge and identity stacks) if the design stays.
+
+**Open questions**
+- Owner feedback: the sign-in flow felt clumsy and the owner wants one command-centre page to sign in to, usable by an admin and an agent. Decide: gate the portal itself or only the apps; and how an agent signs in (agents must not use passkeys). Or take the cheaper way back: no provider in P2.5.
+- Client registration: by hand in the UI or a small script; remove or rotate the static API key afterwards.
+- Which claim Actual matches for a second user, and the full second-user path, were not tested.
+
+**Not verified:** a second allowed user logging in to Actual; Chrome and Firefox (not installed); Linux; restore of the identity volume with `make restore`; the cause of the Pocket ID exit; Homepage with a read-only bind-mounted config directory; the daily sign-in experience for two users; browser results are as reported by the owner.
+
+**Still pending (owner)**
+- Read ADRs 0010 and 0011; answer the open questions above. Approval to push `feat/p2-5-s1-spike` and open a pull request into `dev`.
+
 ## 2026-10-21: P2 closed (docs only)
 
 **Done**
