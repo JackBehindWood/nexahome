@@ -24,7 +24,7 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 **Next:** P2.5 session 3: Actual as the first client (route and alias on the edge, client secret, OIDC variables, password fallback kept), refusals for a non-member and `agentx`, boot order with edge or identity down, `docs/runbooks/identity-recovery.md` followed once.
 
 **Open questions**
-- A paid tier would touch the Confirmed rules on open source and no subscriptions: owner decision when it becomes real.
+- Paid tier: deferred by the owner (2026-10-22). It would touch the Confirmed rules on open source and no subscriptions, so it needs the owner's decision when it becomes real; everything stays free.
 - Image digests for all stacks (tag plus digest)?
 - A real second authenticator (phone or security key) before real data exists.
 - Pocket ID `v2.18.0` or a later patch: Dependabot will propose; the agent path needs a newer release (not verified).
