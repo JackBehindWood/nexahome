@@ -26,6 +26,7 @@ services:
       edge:
         aliases:
           - id.${NEXAHOME_DOMAIN:-nexahome.localhost}
+          - actual.${NEXAHOME_DOMAIN:-nexahome.localhost}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
     tmpfs:

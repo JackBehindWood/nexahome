@@ -10,6 +10,19 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:${ACTUAL_PORT:-5006}:5006"
+    # Optional single sign-on (ADR 0010). Empty secret = password login only.
+    environment:
+      ACTUAL_OPENID_DISCOVERY_URL: ${ACTUAL_OPENID_CLIENT_SECRET:+http://id.${NEXAHOME_DOMAIN:-nexahome.localhost}:${EDGE_PORT:-8088}/.well-known/openid-configuration}
+      ACTUAL_OPENID_CLIENT_ID: ${ACTUAL_OPENID_CLIENT_ID:-actual}
+      ACTUAL_OPENID_CLIENT_SECRET: ${ACTUAL_OPENID_CLIENT_SECRET:-}
+      # Sessions in Actual never expire by default and ignore provider group changes (measured).
+      ACTUAL_TOKEN_EXPIRATION: ${ACTUAL_TOKEN_EXPIRATION:-86400}
+      # login = create the Actual user at first sign-in (the provider's groups decide who gets
+      # there); manual = the owner adds each user first.
+      ACTUAL_USER_CREATION_MODE: ${ACTUAL_USER_CREATION_MODE:-login}
+      ACTUAL_OPENID_SERVER_HOSTNAME: http://actual.${NEXAHOME_DOMAIN:-nexahome.localhost}:${EDGE_PORT:-8088}
+    networks:
+      - edge
     volumes:
       - data:/data
     tmpfs:
@@ -20,6 +33,11 @@ services:
       timeout: 5s
       retries: 3
       start_period: 20s
+
+networks:
+  edge:
+    external: true
+    name: nexahome-edge
 
 volumes:
   data:

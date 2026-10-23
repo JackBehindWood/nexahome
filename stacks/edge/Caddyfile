@@ -29,3 +29,8 @@ http://id.{$NEXAHOME_DOMAIN}:{$EDGE_PORT} {
 	import hardening
 	reverse_proxy identity:1411
 }
+
+http://actual.{$NEXAHOME_DOMAIN}:{$EDGE_PORT} {
+	import hardening
+	reverse_proxy actual:5006
+}
