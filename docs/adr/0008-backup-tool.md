@@ -1,7 +1,7 @@
 # 0008. Backup tool: restic in a one-shot container
 
 * **Status:** Confirmed
-* **Date:** 2026-10-21
+* **Date:** 2026-10-21 (amended 2026-10-23)
 
 ## Context
 Backups must treat every stack alike (found by the `nexahome.backup` label, [ADR 0007](0007-stack-contract.md)), be encrypted, deduplicated, verifiable, and live on the host, outside the Colima VM (`colima delete` would take data and backup together). Nothing may be installed on the host ([ADR 0003](0003-project-local-tooling.md)). The register row "Backup tool" is Open; restic was the shortlist.
@@ -20,6 +20,8 @@ Limits, accepted for now: the job runs as one non-root UID and the same number a
 
 ## Consequences
 Nothing is installed on the host; the tool version is one pinned tag. A restore was tested once on the laptop (see above); repeat it after an app image upgrade. A same-disk repository is a drill, not protection; 3-2-1 arrives with the NAS (P5). A lost password means lost snapshots. A one-shot job is exempt from the health check and restart rules via the label `nexahome.oneshot: "true"` (see [constraints](../constraints.md#compose-policy)). Not verified: Linux, stacks with other UIDs, a real external disk, an interrupted backup or restore, restore of a large volume.
+
+- **Amendment 2026-10-23 (owner approved, P2.5 session 5):** the job no longer runs as one fixed UID. It runs as the owner of each volume (uid:uid read with `stat`; still no root, no capabilities, no privileged), because Pocket ID's volume is 65532 with mode 700 and the fixed uid 1001 saved only that stack's `.env` (found by the identity drill). Stacks with volumes of different owners are not handled (the first volume decides). The decision itself (restic, one-shot job) is unchanged.
 
 ## Alternatives
 kopia or borg (second tool to learn; restic's official image and simple CLI win), a host binary installed with Homebrew (breaks ADR 0003), wrappers such as resticprofile, autorestic or backrest (another tool to pin for little gain now), tar archives from a generic volume-backup container (no deduplication or built-in integrity check), a repository inside the VM (lost with `colima delete`).

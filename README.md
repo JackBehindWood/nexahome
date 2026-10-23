@@ -17,7 +17,7 @@ make up                   # start every stack and wait until healthy
 make ps                   # shows each service as healthy
 make smoke                # read-only checks of everything that runs
 make verify               # after make down and make backup: prove each backup restores (copy compared, then removed)
-make open STACK=portal    # the status board (tiles and health dots)
+make portal               # start the edge and the portal, open the status board (tiles and health dots)
 curl http://127.0.0.1:8080/        # hello, a static demo page
 curl http://127.0.0.1:5006/info    # actual, an expense tracker (open it in a browser)
 make down                 # stop; your data volumes are kept

@@ -8,7 +8,7 @@ ALL = $(filter-out _template backup,$(notdir $(patsubst %/,%,$(wildcard stacks/*
 STACKS = $(if $(STACK),$(STACK),$(filter $(CORE),$(ALL)) $(filter-out $(CORE),$(ALL)))
 
 .DEFAULT_GOAL := help
-.PHONY: help up down ps status smoke open backup-init backup restore snapshots verify backup-check setup hooks unhooks check
+.PHONY: help up down ps status smoke open portal backup-init backup restore snapshots verify backup-check setup hooks unhooks check
 
 ##@ Use
 
@@ -52,6 +52,11 @@ open: ## Open a stack's page in the browser (STACK=name; none = the sign-in page
 	@d=$$(sed -n 's/^NEXAHOME_DOMAIN=//p' stacks/edge/.env 2>/dev/null); p=$$(sed -n 's/^EDGE_PORT=//p' stacks/edge/.env 2>/dev/null); \
 	url="http://$(if $(filter portal,$(STACK)),home,$(if $(filter-out identity,$(STACK)),$(STACK),id)).$${d:-nexahome.localhost}:$${p:-8088}/"; echo "$$url"; \
 	if [ "$$(uname)" = Darwin ]; then open "$$url"; else xdg-open "$$url"; fi
+
+portal: ## Start the edge and the portal, then open the status board
+	@$(MAKE) --no-print-directory up STACK=edge
+	@$(MAKE) --no-print-directory up STACK=portal
+	@$(MAKE) --no-print-directory open STACK=portal
 
 backup-init: ## Create the backup repository and password file (once)
 	@sh scripts/backup.sh init

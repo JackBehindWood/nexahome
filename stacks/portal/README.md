@@ -4,7 +4,7 @@
 
 ```sh
 make up STACK=portal      # start and wait until healthy
-make open STACK=portal    # http://home.<domain>:<port>/
+make portal               # starts the edge and the portal, opens http://home.<domain>:<port>/
 make smoke                # read-only checks of everything that runs
 make down STACK=portal
 ```
