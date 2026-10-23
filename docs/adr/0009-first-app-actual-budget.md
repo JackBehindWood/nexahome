@@ -9,7 +9,7 @@ The backup and restore drill (P2) needs one real stateful stack: a single contai
 ## Decision
 Use Actual Budget as `stacks/actual`, image `actualbudget/actual-server:26.10.0-alpine`. Checked on 2026-10-21: MIT licence; arm64 image published; SQLite; port 5006; data in `/data`. Run as uid 1001 with a read-only root and a tmpfs `/tmp`: the image runs as root and has no health check by default, so the stack overrides both. Proven here: healthy, uid 1001, writes `/data`, about 130 MiB RAM idle.
 
-Owner direction (2026-10-21): Actual is the drill subject only, not the long-term expense tracker. The owner plans to build an own expense app later (P8, its own ADR). Until then Actual stays, with dummy data, and can be removed once another stateful stack exists. It is also the first client of the planned identity provider (P2.5); its password login stays as fallback.
+Owner direction (2026-10-21): Actual is the drill subject only, not the long-term expense tracker. The owner plans to build an own expense app later (P8, its own ADR). Until then Actual stays, with dummy data, and can be removed once another stateful stack exists. It is also the first client of the planned identity provider (P2.5); its password login stays as fallback. Amendment 2026-10-23: Actual is now that first client ([ADR 0010](0010-identity-provider.md), Proposed); it is still the drill subject only.
 
 ## Consequences
 The drill covers a real SQLite file. The tag is pinned and updated by Dependabot. Not verified: outbound network calls (update or version checks), behaviour across upgrades, and that real financial data is safe before the restore drill passes (dummy data only until then).

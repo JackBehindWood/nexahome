@@ -1,7 +1,7 @@
 # 0010. Identity provider: Pocket ID
 
 * **Status:** Proposed
-* **Date:** 2026-10-22 (amended 2026-10-22 after P2.5 session 2; still Proposed)
+* **Date:** 2026-10-22 (amended 2026-10-22 after P2.5 session 2 and 2026-10-23 after session 3; still Proposed)
 
 ## Context
 P2.5 wants one login for NexaHome apps, two roles (`admin`, `users`) and a reserved `agents` group that is never admin and has no client access. Requirements R1 to R10 are in the P2.5 plan. Apps stay replaceable clients: they rely only on an OIDC discovery URL, a client id and secret, and a `groups` claim (R9). Spike on 2026-10-21 and 2026-10-22 (macOS, Colima 2 CPU / 2 GB, Safari; the throwaway project and its volumes are removed). Related: [ADR 0007](0007-stack-contract.md), [ADR 0008](0008-backup-tool.md), [ADR 0011](0011-edge-and-local-hostnames.md).
@@ -40,8 +40,17 @@ Interface a client must provide: discovery URL `http://id.${NEXAHOME_DOMAIN}:${E
 - Pinned `v2.18.0`; `v2.19.1` (2026-10-22) only bumps the base images. Pocket ID has many 2026 security advisories fixed up to v2.15.0; none newer was listed on 2026-10-22. Dependabot proposes later tags.
 - A one-time access token satisfied the passkey step-up check before 2.6.0; treat the host-side recovery command as admin power.
 - In S2 the container ran 40 minutes with no restart (restarts 0; the S1 exit was not seen again, not proven gone). `restart: unless-stopped` is set.
-- A second Actual user must be created in Actual first (default creation mode `manual`, per upstream docs; unknown user refusal measured).
+- Superseded by session 3: `ACTUAL_USER_CREATION_MODE=login` is set in the stack, so the Actual user is created at first sign-in (Basic role); `manual` stays available.
 - R6: identity adds 17 MiB (see ADR 0011 for the total).
+- **Amendment, session 3 (measured 2026-10-23, Actual 26.10.0, Safari, owner's browser reports plus the provider audit log and the Actual log):**
+  - R1, R3 met: `admin` (becomes Actual owner) and `user` (Basic) both signed in through My Apps. A member removed from `users` loses the tile in My Apps and is refused with "You are not allowed to access this service"; no code is issued and Actual gets no callback. Refusals are not in the audit log (successes only), so the evidence is the missing `CLIENT_AUTHORIZATION` plus the Actual log.
+  - R2 met: `agentx` (group `agents`, no passkey) sees no apps and cannot finish an app sign-in; the interaction needs a passkey login, and a one-time link does not count.
+  - **Every account needs a passkey.** A user signed in only through a one-time link gets a blank interaction page when launching an app (hypothesis confirmed when the passkey was added). The identity README now says so. Agents therefore cannot sign in to apps interactively, as intended.
+  - **Actual stores its login method and a copy of the client secret in its own database;** the OpenID variables only prefill a one-time switch. Emptying them is not a rollback (measured). Rollback and recovery are host-side Actual scripts ([runbook](../runbooks/identity-recovery.md)). R5 is met as: password login still works and the budget data was intact after a password reset; removing the variables is not the switch.
+  - **Actual sessions never expire by default and survive provider group changes.** Proposed: `ACTUAL_TOKEN_EXPIRATION=86400` (set in the stack, applies to new logins). Access removal is only effective for new sign-ins until the session ends.
+  - Boot order: Actual started with edge and identity down logs `configuration-error`, stays healthy (0 restarts) and accepts OpenID logins after they return, with no restart. Provider down: existing sessions work, new logins fail (`openid-setup-failed`).
+  - Recovery drill of 2026-10-23: one-time link, passkey removed then added (same Keychain refuses add-first), sign-in with the new passkey, Actual opened.
+  - Not verified: a second authenticator, Chrome, Firefox, Linux; whether the first-login owner rule can be avoided on a fresh Actual instance; a rotated client secret end to end; the S1 provider exit cause.
 
 ## Alternatives
 Authelia (file users and forward auth; fallback), Authentik, Keycloak, Zitadel (need Postgres; not measured), Kanidm (larger operating model), no provider in P2.5 (portal only; each app keeps its own login: the cheaper way back, cost is a login per app and no roles), a custom login (rejected: no custom login code).

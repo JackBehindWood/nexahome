@@ -38,7 +38,7 @@ Enforced by `make check` (`scripts/check_compose.py`) unless marked review.
 - Target names are bare lowercase verbs, with a hyphen for verb-noun. Variables are UPPERCASE (`STACK`); environment variables are `NEXAHOME_*` with defaults.
 - `up`, `down` and `ps` act on every stack except `_template` and `backup` unless `STACK=name` is given. `down` never removes volumes.
 - GNU make 3.81 syntax only (the version macOS ships), so no `$(file ...)` or `.ONESHELL`. One Makefile until it passes about 150 lines.
-- The run path is Make and POSIX shell; Python is for checks.
+- The run path is Make and POSIX shell; Python is for checks. The one platform-specific line is `make open` (`open` on macOS, `xdg-open` elsewhere; not tested on Linux).
 
 ## Tooling policy
 
@@ -71,4 +71,4 @@ Rules evaluate deny, then ask, then allow; the first match wins. Limits: rules m
 
 Preferences, not mandates; evaluate against requirements. Git, Markdown and ADRs, YAML and `.env` files, SSH keys for remote access, REST and MQTT as protocols. Not selected until a requirement appears: NAS operating system, orchestration platform, identity provider, configuration management (not before a second host).
 
-Changelog: 0.1 (2026-10-22): `cap_add`, socket and external-network rules enforced; `GENERATE` placeholder; 0.1 (2026-10-21): version renamed from 1.0 (pre-release project); 0.1 (2026-10-21): one-shot job exception; 0.1 (2026-10-21): volume label, project name and placeholder rules, Makefile conventions; 0.1 (2026-10-20): frugality expanded; reorganised into principles, Compose policy, tooling, security and guardrails; frugality and tooling policy added; Compose policy moved here from local files; VPN and SSH method preferences removed (open in the register).
+Changelog: 0.1 (2026-10-23): `make open` platform note; 0.1 (2026-10-22): `cap_add`, socket and external-network rules enforced; `GENERATE` placeholder; 0.1 (2026-10-21): version renamed from 1.0 (pre-release project); 0.1 (2026-10-21): one-shot job exception; 0.1 (2026-10-21): volume label, project name and placeholder rules, Makefile conventions; 0.1 (2026-10-20): frugality expanded; reorganised into principles, Compose policy, tooling, security and guardrails; frugality and tooling policy added; Compose policy moved here from local files; VPN and SSH method preferences removed (open in the register).
