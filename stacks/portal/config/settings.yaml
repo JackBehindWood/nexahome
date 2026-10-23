@@ -1,0 +1,15 @@
+# Open, read-only status board. No remote assets, no providers, no search, no update check.
+title: NexaHome
+headerStyle: clean
+theme: dark
+color: slate
+hideVersion: true
+disableUpdateCheck: true
+statusStyle: dot
+layout:
+  Platform:
+    style: row
+    columns: 3
+  Apps:
+    style: row
+    columns: 3
