@@ -48,7 +48,7 @@ run() {
 	# 1 and 2: every running NexaHome container: health, restarts, and what actually runs.
 	edge=""
 	for id in $ids; do
-		line=$(docker inspect --format '{{.Name}}|{{index .Config.Labels "com.docker.compose.project"}}|{{.Config.User}}|{{.HostConfig.ReadonlyRootfs}}|{{.HostConfig.CapDrop}}|{{.HostConfig.CapAdd}}|{{with .State.Health}}{{.Status}}{{end}}|{{.RestartCount}}|{{range .Mounts}}{{.Source}} {{end}}|{{range $p, $b := .HostConfig.PortBindings}}{{range $b}}{{.HostIp}} {{end}}{{end}}' "$id")
+		line=$(docker inspect --format '{{.Name}}|{{index .Config.Labels "com.docker.compose.project"}}|{{.Config.User}}|{{.HostConfig.ReadonlyRootfs}}|{{.HostConfig.CapDrop}}|{{.HostConfig.CapAdd}}|{{with .State.Health}}{{.Status}}{{end}}|{{.RestartCount}}|{{range .Mounts}}{{.Source}} {{end}}|{{range $p, $b := .HostConfig.PortBindings}}{{range $b}}{{if .HostIp}}{{.HostIp}}{{else}}ANY{{end}} {{end}}{{end}}' "$id")
 		name=${line%%|*}; name=${name#/}; rest=${line#*|}
 		project=${rest%%|*}; rest=${rest#*|}
 		case "$project" in "$PREFIX"*) ;; *) continue ;; esac
@@ -62,7 +62,7 @@ run() {
 		stack=${project#"$PREFIX"}
 		[ "$stack" = edge ] && edge=$id
 		if [ "$health" = healthy ]; then ok "$stack healthy" "$name, restarts $restarts"
-		else bad "$stack health" "$health. logs: $(docker logs --tail 3 "$id" 2>&1 | tr '\n' ' ')"; fi
+		else bad "$stack health" "${health:-no healthcheck}. logs: $(docker logs --tail 3 "$id" 2>&1 | tr '\n' ' ')"; fi
 		[ "$restarts" = 0 ] || bad "$stack restarts" "$restarts (see docker logs $name)"
 		problems=""
 		case "$user" in ""|0|root|0:*|root:*) problems="$problems runs as root;" ;; esac
@@ -114,8 +114,9 @@ run() {
 	page=$(curl -s --max-time 10 "http://home.$base/")
 	if [ -z "$page" ]; then bad "portal page" "empty. fix: make up STACK=portal"
 	else
-		ext=$(echo "$page" | grep -oE '(src|href)="https?://[^"]*"' | grep -v "$domain" | head -3)
-		sec=$(echo "$page" | grep -ioE '(client_secret|api[_-]?key|password|bearer|token)[^<]{0,20}' | head -3)
+		# Tiles are rendered in the browser, so also read the config (what the portal will fetch) and /api/services.
+		ext=$({ echo "$page" | grep -oE '(src|href)="https?://[^"]*"'; grep -hE 'https?://' stacks/portal/config/*.yaml | grep -v '^[[:space:]]*#' | grep -v HOMEPAGE_VAR_DOMAIN; } | grep -v "$domain" | head -3)
+		sec=$({ echo "$page"; curl -s --max-time 10 "http://home.$base/api/services"; } | grep -ioE '(client_secret|api[_-]?key|password|bearer|token)[^<"]{0,20}' | head -3)
 		[ -z "$ext" ] && ok "portal remote assets" "none in the page" || bad "portal remote assets" "$ext"
 		[ -z "$sec" ] && ok "portal secrets" "none in the page" || bad "portal secrets" "$sec"
 	fi
