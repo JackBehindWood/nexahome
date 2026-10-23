@@ -79,6 +79,7 @@ Status values: **Confirmed** (explicitly agreed), **Proposed** (suggested, not y
 | The owner is the sole administrator; roles `admin` and `users`, an AI agent is never admin; one small shared identity provider (OIDC) is planned in P2.5 | Proposed | The planned apps and roles meet the old trigger; built small ([roadmap](roadmap.md#p25-identity-edge-and-portal)) | n/a |
 | Identity provider: Pocket ID in `stacks/identity`; its My Apps page is the one sign-in page; status board stays open on loopback; agents have no account yet ([ADR 0010](adr/0010-identity-provider.md)) | Proposed | Smallest design meeting the owner's roles and agent rule; no extra service | n/a |
 | Edge: Caddy in `stacks/edge`, local names under `NEXAHOME_DOMAIN`, shared network `nexahome-edge` ([ADR 0011](adr/0011-edge-and-local-hostnames.md)) | Proposed | OIDC needs one issuer name for browser and containers | n/a |
+| Portal: Homepage in `stacks/portal`, an open read-only status board at `home.<domain>`, no Docker socket, tiles as YAML in Git, health dots through the edge ([ADR 0012](adr/0012-portal.md)) | Proposed | Smallest board that meets the launchpad need without a socket or its own users | n/a |
 | **Hardware** | | | |
 | Hardware order: Mac mini, then NAS and UPS, then network upgrades | Confirmed | Owner's plan | n/a |
 | Timing of each hardware step | Open | No dates yet | n/a |
