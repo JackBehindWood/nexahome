@@ -1,6 +1,6 @@
 #!/bin/sh
 # Back up every volume labelled nexahome.backup=true, plus each backed-up stack's .env, with restic.
-# Usage: scripts/backup.sh init | backup [stack] | restore <stack> | fingerprint <volume> | status | restic <restic arguments>   (see make help)
+# Usage: scripts/backup.sh init | backup [stack] | restore <stack> | verify [stack] | check | snapshots | fingerprint <volume> | status | restic <restic arguments>   (see make help)
 # Settings come from the environment or stacks/backup/.env; see stacks/backup/.env.example.
 set -eu
 cd "$(dirname "$0")/.."
@@ -16,6 +16,10 @@ die() { echo "backup: $*" >&2; exit 1; }
 # Run restic in the one-shot job container; extra docker options (volumes) come before "restic".
 job() { docker compose -f stacks/backup/compose.yaml run --rm -T "$@"; }
 
+# Owner uid of a volume's top directory. The job runs as that uid (uid:uid) so it can read a volume that is
+# mode 700 for its app (identity: 65532) and so restored files keep their owner; no root, no capabilities.
+vuid() { job -v "$1:/v:ro" --entrypoint stat restic -c %u /v; }
+
 need_runtime() {
 	docker info >/dev/null 2>&1 ||
 		die "no container runtime is running. On macOS start Colima as in the README (colima start --cpu 2 --memory 2 --disk 20)."
@@ -26,6 +30,14 @@ need_repo() {
 	[ -f "$PW" ] || die "password file missing: $PW. Run 'make backup-init' (first time), or restore your saved copy there."
 	[ "$(ls -ld "$PW" | cut -c5-10)" = "------" ] || die "password file is readable by others; run: chmod 600 '$PW'"
 	[ -f "$DIR/config" ] || die "no repository at $DIR. Run 'make backup-init', or mount the right directory. If it is outside your home directory it must be shared with the Colima VM (stacks/backup/README.md)."
+}
+
+# "<stack> <volume>" for every volume labelled nexahome.backup=true.
+labelled() {
+	docker volume ls -q --filter label=nexahome.backup=true | while read -r v; do
+		p=$(docker volume inspect -f '{{index .Labels "com.docker.compose.project"}}' "$v")
+		echo "${p#nexahome-} $v"
+	done
 }
 
 STOPPED=
@@ -67,10 +79,7 @@ cmd_backup() {
 	only=${1:-}
 	need_runtime
 	need_repo
-	pairs=$(docker volume ls -q --filter label=nexahome.backup=true | while read -r v; do
-		p=$(docker volume inspect -f '{{index .Labels "com.docker.compose.project"}}' "$v")
-		echo "${p#nexahome-} $v"
-	done)
+	pairs=$(labelled)
 	[ -n "$pairs" ] || die "no volume is labelled nexahome.backup=true; start a stack first (make up)."
 	stacks=$(echo "$pairs" | cut -d' ' -f1 | sort -u)
 	if [ -n "$only" ]; then
@@ -78,10 +87,16 @@ cmd_backup() {
 		stacks=$only
 	fi
 	trap restart_stopped EXIT INT TERM
+	t0=$(date +%s)
 	n=0
 	for s in $stacks; do
 		set --
-		for v in $(echo "$pairs" | awk -v s="$s" '$1 == s {print $2}'); do set -- "$@" -v "$v:/data/$v:ro"; done
+		first=
+		for v in $(echo "$pairs" | awk -v s="$s" '$1 == s {print $2}'); do
+			[ -n "$first" ] || first=$(vuid "$v")
+			set -- "$@" -v "$v:/data/$v:ro"
+		done
+		set -- --user "$first:$first" "$@"
 		paths=/data
 		[ -f "stacks/$s/.env" ] && paths="$paths /stacks/$s/.env"
 		if [ -d "stacks/$s" ] && [ -n "$(cd "stacks/$s" && docker compose ps -q 2>/dev/null)" ]; then
@@ -96,7 +111,7 @@ cmd_backup() {
 		n=$((n + 1))
 	done
 	job restic check
-	echo "backup ok: $n stack(s) saved, repository checked. Not trusted until you have restored it once: docs/runbooks/restore.md."
+	echo "backup ok: $n stack(s) saved, repository checked, $(($(date +%s) - t0)) s. Not trusted until you have restored it once: docs/runbooks/restore.md."
 }
 
 # Restore a stack's snapshot into new volumes (project nexahome-<stack>[-<TARGET>]). Never deletes anything.
@@ -109,6 +124,7 @@ cmd_restore() {
 	snap=${SNAPSHOT:-latest}
 	proj=nexahome-$s${TARGET:+-$TARGET}
 	cleanup="(cd stacks/$s && docker compose -p $proj down -v)"
+	t0=$(date +%s)
 	need_runtime
 	need_repo
 	keys=$(job restic ls --tag "stack=$s" "$snap" /data | sed -n 's|^/data/\([^/][^/]*\)$|\1|p') || keys=
@@ -129,12 +145,13 @@ cmd_restore() {
 	for key in $keys; do
 		nv=${proj}_${key#nexahome-"${s}"_}
 		echo "restoring $key into volume $nv"
-		job -v "$nv:/data/$key" restic restore "$snap" --tag "stack=$s" --target / --include "/data/$key" --verify ||
+		u=$(vuid "$nv")
+		job --user "$u:$u" -v "$nv:/data/$key" restic restore "$snap" --tag "stack=$s" --target / --include "/data/$key" --verify ||
 			die "restore failed. Remove the partial copy with: $cleanup"
 	done
 	cat <<EOF
 
-Restored into project $proj (snapshot: $snap).
+Restored into project $proj (snapshot: $snap) in $(($(date +%s) - t0)) s.
 EOF
 	if [ -n "${TARGET:-}" ]; then
 		echo "Start it:   (cd stacks/$s && docker compose -p $proj up -d --wait)   (set the stack's port variable to a free port)"
@@ -151,8 +168,59 @@ cmd_fingerprint() {
 	[ -n "$v" ] || die "usage: scripts/backup.sh fingerprint <volume>"
 	need_runtime
 	need_repo
-	job -v "$v:/v:ro" --entrypoint sh restic -c \
+	u=$(vuid "$v")
+	job --user "$u:$u" -v "$v:/v:ro" --entrypoint sh restic -c \
 		'cd /v && find . -type f | sort | while read -r f; do echo "$(stat -c "%u:%g %a" "$f") $(sha256sum "$f")"; done | sha256sum; find . -type f | wc -l'
+}
+
+# Drill 1 in one command: for each stopped stack, compare the live volumes with a copy restored from the
+# latest snapshot (copy = project nexahome-<stack>-check, never started), then remove the copy.
+cmd_verify() {
+	only=${1:-}
+	need_runtime
+	need_repo
+	pairs=$(labelled)
+	[ -n "$pairs" ] || die "no volume is labelled nexahome.backup=true."
+	stacks=$(echo "$pairs" | cut -d' ' -f1 | sort -u)
+	if [ -n "$only" ]; then
+		echo "$stacks" | grep -qx "$only" || die "no labelled volume for stack '$only'."
+		stacks=$only
+	fi
+	for s in $stacks; do
+		[ -z "$(cd "stacks/$s" && docker compose ps -q 2>/dev/null)" ] ||
+			die "$s is running; a live volume changes while it runs. Stop it first: make down STACK=$s"
+	done
+	t0=$(date +%s)
+	bad=0
+	for s in $stacks; do
+		vols=$(echo "$pairs" | awk -v s="$s" '$1 == s {print $2}')
+		(TARGET=check SNAPSHOT=latest cmd_restore "$s" >/dev/null) ||
+			die "restore of $s into a check copy failed (leftover copy? remove: (cd stacks/$s && docker compose -p nexahome-$s-check down -v))"
+		for v in $vols; do
+			key=${v#nexahome-"${s}"_}
+			flive=$(cmd_fingerprint "$v" | tr '\n' ' ')
+			fcopy=$(cmd_fingerprint "nexahome-$s-check_$key" | tr '\n' ' ')
+			if [ "$flive" = "$fcopy" ]; then echo "verify $s/$key: equal ($(echo "$fcopy" | awk '{print $NF}') files)"
+			else echo "verify $s/$key: DIFFERENT (changed since the last backup? run make backup first)"; bad=1; fi
+		done
+		(cd "stacks/$s" && docker compose -p "nexahome-$s-check" down -v >/dev/null 2>&1) || bad=1
+	done
+	echo "verify done in $(($(date +%s) - t0)) s; copies removed."
+	[ "$bad" = 0 ] || exit 1
+}
+
+cmd_check() {
+	need_runtime
+	need_repo
+	if [ -n "${READ:-}" ]; then job restic check --read-data-subset="$READ"; else job restic check --read-data; fi
+}
+
+cmd_snapshots() {
+	need_runtime
+	need_repo
+	job restic snapshots
+	job restic stats --mode raw-data
+	echo "repository on disk: $(du -sh "$DIR" | cut -f1)"
 }
 
 cmd_status() {
@@ -173,8 +241,11 @@ case "${1:-}" in
 	init) cmd_init ;;
 	backup) shift; cmd_backup "$@" ;;
 	restore) shift; cmd_restore "$@" ;;
+	verify) shift; cmd_verify "$@" ;;
+	check) cmd_check ;;
+	snapshots) cmd_snapshots ;;
 	fingerprint) shift; cmd_fingerprint "$@" ;;
 	status) cmd_status ;;
 	restic) shift; need_runtime; need_repo; job restic "$@" ;;
-	*) die "usage: scripts/backup.sh init | backup [stack] | restore <stack> | fingerprint <volume> | status | restic <arguments>" ;;
+	*) die "usage: scripts/backup.sh init | backup [stack] | restore <stack> | verify [stack] | check | snapshots | fingerprint <volume> | status | restic <arguments>" ;;
 esac

@@ -8,7 +8,7 @@ ALL = $(filter-out _template backup,$(notdir $(patsubst %/,%,$(wildcard stacks/*
 STACKS = $(if $(STACK),$(STACK),$(filter $(CORE),$(ALL)) $(filter-out $(CORE),$(ALL)))
 
 .DEFAULT_GOAL := help
-.PHONY: help up down ps status smoke open backup-init backup restore snapshots setup hooks unhooks check
+.PHONY: help up down ps status smoke open backup-init backup restore snapshots verify backup-check setup hooks unhooks check
 
 ##@ Use
 
@@ -62,8 +62,14 @@ backup: ## Back up labelled volumes and .env files (all, or STACK=name)
 restore: ## Restore a stack into new volumes: STACK=name [SNAPSHOT=id] [TARGET=suffix]
 	@SNAPSHOT=$(SNAPSHOT) TARGET=$(TARGET) sh scripts/backup.sh restore $(STACK)
 
-snapshots: ## List the snapshots in the backup repository
-	@sh scripts/backup.sh restic snapshots
+snapshots: ## List the snapshots and the repository size
+	@sh scripts/backup.sh snapshots
+
+verify: ## Compare stopped stacks' volumes with a restored copy, then remove the copy (STACK=name)
+	@sh scripts/backup.sh verify $(STACK)
+
+backup-check: ## Read the whole repository to prove it is intact (READ=1/10 reads a tenth)
+	@READ=$(READ) sh scripts/backup.sh check
 
 ##@ Develop
 
