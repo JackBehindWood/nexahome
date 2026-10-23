@@ -22,7 +22,7 @@ Roles follow [ADR 0006](adr/0006-concerns-and-audiences.md), decided (see the re
 | [observability.md](observability.md) | How we see what is running | Operators | Monitoring approach, decoupling rule, tool shortlist, inventory template |
 | [roadmap.md](roadmap.md) | What gets built, in what order | All | Phases, sessions, hardware gates, now/next/later |
 | [session-log.md](session-log.md) | What happened, newest first | Maintainer | History, CI status, pending owner actions |
-| [runbooks/](runbooks/add-a-stack.md) | Step-by-step how-tos, each opening with audience and admin need | Per runbook | Procedures (add a stack, [restore](runbooks/restore.md)) |
+| [runbooks/](runbooks/add-a-stack.md) | Step-by-step how-tos, each opening with audience and admin need | Per runbook | Procedures (add a stack, [restore](runbooks/restore.md), [identity recovery](runbooks/identity-recovery.md)) |
 | [adr/](adr/) | Why a decision was made | Developers | Decision rationale, one record per decision |
 
 Reading order for the design: project, constraints, architecture, observability, roadmap. The session log and ADRs are reference.

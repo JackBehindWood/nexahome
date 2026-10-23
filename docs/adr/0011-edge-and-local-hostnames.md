@@ -1,7 +1,7 @@
 # 0011. Edge, local hostnames and shared network
 
 * **Status:** Proposed
-* **Date:** 2026-10-22 (amended 2026-10-22 after P2.5 session 2; still Proposed)
+* **Date:** 2026-10-22 (amended 2026-10-22 after P2.5 session 2 and 2026-10-23 after session 3; still Proposed)
 
 ## Context
 OIDC needs an issuer URL that resolves under the same name from the browser and from app containers, so `127.0.0.1` cannot be used ([ADR 0010](0010-identity-provider.md)). The smallest fix is a reverse proxy with local names on a shared network, without public TLS and without ports below 1024. Spike on 2026-10-21 and 2026-10-22 (macOS, Colima 2 CPU / 2 GB, Safari). The measured figures below come from a throwaway Compose project that is removed.
@@ -35,6 +35,8 @@ OIDC needs an issuer URL that resolves under the same name from the browser and 
 Unknown hostnames get 404 (built in session 2, verified with a foreign `Host` header). This also limits DNS rebinding against loopback services.
 
 **Built in session 2:** `stacks/edge` and `stacks/identity`, `make up` creates `nexahome-edge` and starts edge and identity first, `check_compose.py` rejects other external networks, `cap_add` other than `NET_BIND_SERVICE` and a Docker socket mount. Measured: edge 10 MiB, identity 16 MiB idle (about 26 MiB, R6 met without the portal), images 89 MB and 110 MB, limits 64 MiB and 128 MiB, log rotation 10 MB x 3, response headers `nosniff`, `no-referrer`, `X-Frame-Options: DENY`. Pocket ID trusts the proxy header (`TRUST_PROXY`); its audit log shows the Docker gateway address, not the browser's.
+
+**Session 3 (2026-10-23):** `actual.<domain>` added: one alias on the edge, one Caddyfile block (`reverse_proxy actual:5006`), Actual joins `nexahome-edge` (the alias sits on the edge, not on the app). The page through the edge is byte-identical to the direct one, including Actual's cross-origin isolation headers. With the edge stopped, the named address is unreachable and `127.0.0.1:5006` still works. Measured idle RAM: edge 13 MiB, identity 15 MiB, Actual 129 MiB. `make open` opens a stack's named address.
 
 **Threat model:** loopback services are reachable by local processes and by web pages through DNS rebinding. Controls: the 404 rule, groups on clients, SSO for apps with data. Every stack on `nexahome-edge` can reach every other; per-app networks are the next step when a less trusted stack joins.
 
