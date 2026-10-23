@@ -2,9 +2,57 @@
 
 Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
-## 2026-10-23: ADR 0012 (portal)
+## 2026-10-23: P2.5 session 4, portal, four-step contract, make smoke
 
-- Added `docs/adr/0012-portal.md` (Proposed) with the session 4 figures; register row in `docs/project.md` already links it. The full session 4 entry comes with `/session-end`.
+**Done**
+- Branch `feat/p2-5-s4-portal` from `dev` after PR #19 (`feat/p2-5-s3-actual`, merge commit `44e9d17`) was confirmed merged; 8 commits, not pushed. Colima started (existing profile) twice and stopped again; image pulled: Homepage `v2.6.0`; edge, identity and Actual started with `make up` and left running only during the session.
+- Built `stacks/portal` (Homepage v2.6.0, GPL-3.0 unmodified): no published port, no login, no widgets, no Docker socket; `home.<domain>` alias and Caddyfile block on the edge; tiles in `config/services.yaml` with hostnames from `HOMEPAGE_VAR_DOMAIN` and `HOMEPAGE_VAR_PORT` (templating works in `href` and `siteMonitor`); `make open STACK=portal` maps to `home`. Read-only config bind mount works with tmpfs for logs and cache, but needs the `config/logs` mount point in the repository and every skeleton file in `config/` (empty files). Config edits apply without a restart. Status API: `/api/siteMonitor?groupName=&serviceName=`.
+- Measured: 96 MiB anonymous (104 MiB in `docker stats`), image 369 MB, limit 256m, no OOM, no non-private connections, no socket, no published port; R6 met. `docker stats` counts page cache (edge 50 MiB, 10 MiB anonymous).
+- Added `make smoke` (`scripts/smoke.sh`, POSIX, read-only, no `.env` reads): health and restarts, hardening of what actually runs, outbound, edge `/health`, foreign Host 404, headers, live four-step contract (aliases, Caddyfile blocks, tiles), named URLs, portal page, each tile's dot. `WAIT=n` retries, `VERBOSE=1` shows evidence. Its failure branches were tested: four drift cases (scratch copies), hardening (throwaway non-root busybox), outbound parser (synthetic data), three edge checks (curl shim), remote URL and secret in portal config. Bugs found and fixed: a port published without host IP was accepted; remote-URL and secret checks only read the page HTML although tiles render in the browser.
+- Four-step contract written in `docs/runbooks/add-a-stack.md`. R10 dry run: `hello` put on the edge and in the portal in about 30 s of tool time using only the checklist; the checklist was wrong or silent in four places (portal restart not needed, running app must be recreated to join the network, which tile group, Caddyfile-only change needs an edge restart); fixed. Smoke caught no drift, so `make check` was not changed (missing tile or alias stays deferred to the first miss).
+- Tests (owner in the browser, verified server-side): T1 each tile opens the right stack, no login box seen; T2 Actual dot red on opening while stopped, green after start, API status 502 then 200; T3 with the portal stopped, Actual by name loads and My Apps sign-in works; T4 foreign Host 404, T5 no secrets or remote assets (smoke). Failure checks: identity down (its dot red, Actual green, Actual page 200); edge down (names and portal unreachable, Actual on 5006 and hello on 8080 still answer); portal started before the edge (red, green unaided once the edge was up). `make down` then `make up`: both volumes kept, smoke green.
+- `make check` passed on the final tree; nothing staged; no `.env`, key or `data/` in the commits.
+
+**Doc changes and reasons**
+- New `docs/adr/0012-portal.md` (Proposed) and a register row in `docs/project.md`: the portal decision, requirements PR1 to PR9, failure modes, evolution, licence note.
+- `docs/adr/0011` (still Proposed): Homepage read-only config now measured; session 4 paragraph (`home` alias, `make smoke`, page-cache note). `docs/constraints.md`: `make smoke` in the Makefile conventions. `docs/roadmap.md`: sessions 1 to 4 done, Next is session 5. `README.md`: `make smoke`, `make open STACK=portal`. `stacks/edge/README.md`, `stacks/hello/README.md`: names. `.github/dependabot.yml`: portal entry. No Confirmed decision was touched.
+- Not done on purpose: `make audit`, `make login-link`, `make env-set` (no login or secrets in the portal; build at the next OIDC client), a smoke self-test script (trigger: the next edit to `smoke.sh`), generation of Caddyfile, aliases and tiles from one manifest (trigger: a second drift miss or about six stacks), Playwright, image scanning, digest pinning.
+
+**Verification**
+- Passed: `make check`; `make smoke` (all checks, repeated); failure branches as listed; `make down` keeps volumes; `git status` clean after the last commit.
+- **Not verified:** "runs as root" detection in smoke (needs a root container, not approved); a real established outbound connection (parser tested on synthetic data); Chrome, Firefox, Linux; the browser's dot refresh interval; a second authenticator; restore of the identity volume (S5); CI for this branch (not pushed); the T1 to T3 results are as the owner reported them.
+- Deviations: a Colima restart for the follow-up tests was inside the session approvals. The tests used one non-root busybox container and a regular file named `docker.sock` (not the socket); both removed.
+
+**Next:** P2.5 session 5: `make backup`, integrity-copy drill for identity and Actual (copies must not join the edge network), in-place restore of the `identity` volume and an Actual login through the restored provider, update docs and tick the roadmap. Useful first: a test-sso runbook (account x expected x evidence) using `make smoke VERBOSE=1`, one Safari profile per test account and a permanent outsider account.
+
+**Open questions**
+- Keep `hello` on the edge and in the portal? (It is its own commit, `4109083`, so a revert drops it.) Recommendation: keep, it gives S5 a second named app.
+- Digest pinning for all stacks (carried from session 2); paid tier vs the open-source rule (deferred).
+- Portal dots refresh interval in the browser (red on opening, green after start seen; timing not measured).
+
+**Pending (owner actions, consolidated)**
+- Approval to push `feat/p2-5-s4-portal` and open a pull request into `dev`.
+- Confirm in Pocket ID that the first Actual client secret is deleted (it was pasted into chat in session 3 and rotated).
+- Confirm in Pocket ID, Settings, API Keys, that the session 2 key `s2-config` is gone.
+- Run `make backup-init` before session 5 if not done; keep `ENCRYPTION_KEY` and the restic password in a password manager.
+- A real second authenticator (phone or security key) before real data exists.
+- Watch security alerts for `pocket-id/pocket-id`, `caddyserver/caddy`, `gethomepage/homepage`; Dependabot proposes later tags.
+- Carried over: Dependabot parsing of the new stack entries (Insights, Dependency graph, Dependabot); delete the local plan `.claude/plans/concerns-and-audiences.md`; GitHub setting "Block command line pushes that expose my email"; Makefile, repository layout and security baseline still Proposed; the volumes `nexahome-actual_data` and `nexahome-identity_data` and the network `nexahome-edge` stay until you remove them.
+
+## 2026-10-23: P2.5 session 3, Actual as first client (written afterwards)
+
+This entry was missing when session 3 ended; it is reconstructed from the commits (`5669937`, `63ec604`, merged by PR #19), ADR 0010's session 3 amendment and the local plan.
+
+**Done**
+- Actual joined the edge (alias on the edge, not on Actual), OIDC variables optional, `ACTUAL_USER_CREATION_MODE=login`, `ACTUAL_TOKEN_EXPIRATION=86400`, `make open`; `docs/runbooks/identity-recovery.md` written and followed once.
+- Measured: `admin` (becomes the Actual owner) and `user` (Basic) sign in; a non-member is refused ("not allowed", no callback); `agentx` cannot finish an app sign-in; idle RAM edge 13, identity 15, Actual 129 MiB. Boot order: Actual starts with edge or identity down and recovers unaided.
+- Surprises: Actual stores the login method and a copy of the secret in its own database (variables only prefill; removing them is not a rollback; host scripts exist); an account without a passkey gets a blank interaction page; Actual sessions never expire by default and ignore group changes; private Safari windows break Actual; a rotated secret must be re-entered in Actual's UI.
+
+**Doc changes and reasons:** ADRs 0010 and 0011 amended (both still Proposed); identity README and the recovery runbook. No Confirmed decision was touched.
+
+**Deviations:** the client secret and its first value were pasted into chat (rotated; old one to delete in the UI: see Pending); a `.env` edit by `sed` was denied and an empty-variable override was used; one provider token link was consumed by a private window.
+
+**Not verified:** click counts for the login flows, Chrome, Firefox, Linux, a second authenticator, restore of the identity volume (S5).
 
 ## 2026-10-22: P2.5 session 2, edge and identity stacks
 
