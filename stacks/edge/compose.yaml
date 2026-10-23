@@ -28,6 +28,7 @@ services:
           - id.${NEXAHOME_DOMAIN:-nexahome.localhost}
           - actual.${NEXAHOME_DOMAIN:-nexahome.localhost}
           - home.${NEXAHOME_DOMAIN:-nexahome.localhost}
+          - hello.${NEXAHOME_DOMAIN:-nexahome.localhost}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
     tmpfs:

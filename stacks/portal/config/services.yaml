@@ -12,3 +12,7 @@
         href: http://actual.{{HOMEPAGE_VAR_DOMAIN}}:{{HOMEPAGE_VAR_PORT}}/
         description: Budgeting
         siteMonitor: http://actual.{{HOMEPAGE_VAR_DOMAIN}}:{{HOMEPAGE_VAR_PORT}}/
+    - Hello:
+        href: http://hello.{{HOMEPAGE_VAR_DOMAIN}}:{{HOMEPAGE_VAR_PORT}}/
+        description: Pipeline test page
+        siteMonitor: http://hello.{{HOMEPAGE_VAR_DOMAIN}}:{{HOMEPAGE_VAR_PORT}}/

@@ -39,3 +39,8 @@ http://home.{$NEXAHOME_DOMAIN}:{$EDGE_PORT} {
 	import hardening
 	reverse_proxy portal:3000
 }
+
+http://hello.{$NEXAHOME_DOMAIN}:{$EDGE_PORT} {
+	import hardening
+	reverse_proxy hello:8080
+}
