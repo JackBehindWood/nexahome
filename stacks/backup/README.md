@@ -5,7 +5,9 @@ A one-shot [restic](https://restic.net) job that backs up every volume labelled 
 ```sh
 make backup-init     # once: creates the repository and the password file
 make backup          # every stack, or STACK=actual
-make snapshots       # list what is saved
+make snapshots       # list what is saved, with sizes
+make verify          # stacks stopped: compare each volume with a restored copy, then remove the copy
+make backup-check    # read the whole repository (READ=1/10 reads a tenth)
 make restore STACK=actual   # restore into new volumes (TARGET=suffix for a copy, SNAPSHOT=id for an older one)
 make status          # stack health, how recent the last snapshot is, repository size
 ```
@@ -40,6 +42,6 @@ Restic makes its files read-only, so a plain `rm -r` asks about every file. To d
 
 ## Limits
 
-- The job runs as one UID, with the same number as GID (`NEXAHOME_BACKUP_UID`, default 1001, the Actual user). A stack whose files only another UID can read will fail to back up; the fix is a decision for the first such stack ([ADR 0008](../../docs/adr/0008-backup-tool.md)).
+- The job runs as the owner of each volume (uid:uid, read from the volume with `stat`; `NEXAHOME_BACKUP_UID` is only the default for the repository checks). Needed because Pocket ID's volume is 65532, mode 700: with the old fixed uid 1001 the identity backup silently saved only its `.env` (found in the S5 drill, 2026-10-23). No root and no capabilities. A stack with volumes of different owners is not handled (the first volume decides); the first such stack needs a decision.
 - Tested on macOS with Colima (virtiofs). On Linux, bind-mounted directories keep their real owner, so the repository directory must be writable by `NEXAHOME_BACKUP_UID`; not tested.
 - Retention is manual: `sh scripts/backup.sh restic forget --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune`. The same form runs any other restic command (`restic` arguments after the word `restic`).

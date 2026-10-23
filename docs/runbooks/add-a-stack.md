@@ -15,7 +15,7 @@ Checklist before the pull request:
 1. `name:` is `nexahome-<name>`; the image has an exact tag and supports arm64.
 2. Every named volume has `nexahome.backup: "true"` or `"false"`.
 3. Ports bind to `127.0.0.1` with the host port from a variable that has a default; every variable is in `.env.example` (placeholders only; `CHANGE_ME` makes `make up` stop).
-4. The README records measured RAM and disk, whether the stack must run 24/7, what is backed up and how to verify a restore.
+4. The README records measured RAM and disk, whether the stack must run 24/7, what is backed up and how to verify a restore. A stack with a backed-up volume is drilled once: `make down STACK=<name>`, `make backup`, `make verify STACK=<name>` must print `equal`.
 5. Add a `docker-compose` entry for `/stacks/<name>` to `.github/dependabot.yml`.
 6. A significant choice (for example the application itself) gets an ADR.
 

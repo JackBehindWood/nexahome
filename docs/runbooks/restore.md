@@ -2,7 +2,13 @@
 
 **Audience:** anyone running NexaHome. **Admin rights needed:** no. Needs the container runtime running, the repository and the saved password. Tool: restic 0.19.1 (pinned in [stacks/backup/compose.yaml](../../stacks/backup/compose.yaml); [ADR 0008](../adr/0008-backup-tool.md)).
 
-Check that a backup restores, without touching your live data (replace `actual` with your stack):
+Quick proof, one command (stacks stopped; it restores a copy, compares ownership, mode and content, removes the copy):
+
+```sh
+make down STACK=actual && make backup && make verify STACK=actual   # expect: verify actual/data: equal
+```
+
+By hand, and to look at the copy in a browser (replace `actual` with your stack; never start a copy of identity on the edge network):
 
 ```sh
 make snapshots                                   # list snapshots (the newest is used by default)
@@ -48,3 +54,5 @@ Nothing can recover it: restic encrypts the repository, and without the password
 ## Evidence
 
 Drill of 2026-10-21 (laptop, same disk, Actual with dummy data, 4 files, 2 snapshots, repository 64 KB): restore into a new project from a fresh clone and a copy of the repository took about 2 seconds, `--verify` clean, a fingerprint of ownership, mode and content equal to the original, the known budget item visible. Deleting the live volume and restoring it under its own name took about 2 seconds with the same result. `restic check --read-data` was clean. Figures grow with the data. This was a drill on one disk, not protection; see [architecture](../architecture.md#data-backup-and-restore).
+
+Drill of 2026-10-23 (S5, identity and Actual, pinned Pocket ID v2.18.0, Actual 26.10.0, restic 0.19.1): `make verify` equal for both, 6 s; identity restored in place in 3 s (volume deleted by the owner, 12 files), the passkey sign-in and Actual's OpenID sign-in (authorize, token, userinfo) worked on the restored provider; `restic check --read-data` clean. Finding: identity had not been backed up before (volume mode 700, owner 65532, job ran as 1001); fixed by running the job as the volume owner. See [ADR 0010](../adr/0010-identity-provider.md).

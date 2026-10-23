@@ -38,7 +38,7 @@ Enforced by `make check` (`scripts/check_compose.py`) unless marked review.
 - Target names are bare lowercase verbs, with a hyphen for verb-noun. Variables are UPPERCASE (`STACK`); environment variables are `NEXAHOME_*` with defaults.
 - `up`, `down` and `ps` act on every stack except `_template` and `backup` unless `STACK=name` is given. `down` never removes volumes.
 - GNU make 3.81 syntax only (the version macOS ships), so no `$(file ...)` or `.ONESHELL`. One Makefile until it passes about 150 lines.
-- `make smoke` is read-only (never starts or stops anything). The run path is Make and POSIX shell; Python is for checks. The one platform-specific line is `make open` (`open` on macOS, `xdg-open` elsewhere; not tested on Linux).
+- `make smoke` is read-only (never starts or stops anything). The run path is Make and POSIX shell; Python is for checks. `make verify` refuses to run on a running stack and always removes its check copy. The one platform-specific line is `make open` (`open` on macOS, `xdg-open` elsewhere; not tested on Linux).
 
 ## Tooling policy
 

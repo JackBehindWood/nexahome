@@ -14,7 +14,7 @@ make down STACK=identity # the data volume is kept
 | Disk (measured) | image 110 MB; data volume small (database, uploads, a background image of about 0.5 MB) |
 | Must run 24/7? | no |
 | Backed up | volume `data` (database, uploaded images), labelled `nexahome.backup: "true"`; `.env` with `ENCRYPTION_KEY` is saved by `make backup` |
-| Verify after a restore | sign in with a registered passkey and see the same users and clients (restore drill is S5, not yet run) |
+| Verify after a restore | `make down STACK=identity`, `make verify STACK=identity` prints `equal`; after a restore `make up`, sign in with a registered passkey and see the same users and clients (drilled 2026-10-23: [ADR 0010](../../docs/adr/0010-identity-provider.md)) |
 | Clients | `actual` ([stack](../actual/README.md)) |
 
 ## First run
