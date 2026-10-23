@@ -2,6 +2,10 @@
 
 Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
+## 2026-10-23: ADR 0012 (portal)
+
+- Added `docs/adr/0012-portal.md` (Proposed) with the session 4 figures; register row in `docs/project.md` already links it. The full session 4 entry comes with `/session-end`.
+
 ## 2026-10-22: P2.5 session 2, edge and identity stacks
 
 **Done**
