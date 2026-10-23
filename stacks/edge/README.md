@@ -1,6 +1,6 @@
 # edge
 
-[Caddy](https://caddyserver.com) reverse proxy that gives every app a local name (`id.`, `actual.`, `home.`, `hello.` + `<domain>`) on one port, so browsers and containers use the same OIDC issuer URL ([ADR 0011](../../docs/adr/0011-edge-and-local-hostnames.md), Proposed). Stateless; plain http on `127.0.0.1`, no TLS and no admin API. Anything not matched, including a foreign `Host` header, gets 404.
+[Caddy](https://caddyserver.com) reverse proxy that gives every app a local name (`id.`, `actual.`, `home.`, `hello.` + `<domain>`) on one port, so browsers and containers use the same OIDC issuer URL ([ADR 0011](../../docs/adr/0011-edge-and-local-hostnames.md), Proposed). Stateless; plain http on `127.0.0.1`, no TLS and no admin API. Anything not matched, including a foreign `Host` header, gets 404, except that the exact Host `localhost` is redirected (302) to the portal, so `http://localhost:<port>/` works.
 
 ```sh
 make up STACK=edge      # creates the shared network nexahome-edge if missing

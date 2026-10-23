@@ -25,6 +25,12 @@
 	}
 }
 
+# The address you type first: send bare localhost to the portal. Only this exact Host; others still get 404.
+http://localhost:{$EDGE_PORT} {
+	import hardening
+	redir http://home.{$NEXAHOME_DOMAIN}:{$EDGE_PORT}/ 302
+}
+
 http://id.{$NEXAHOME_DOMAIN}:{$EDGE_PORT} {
 	import hardening
 	reverse_proxy identity:1411
