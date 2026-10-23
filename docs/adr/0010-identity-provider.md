@@ -1,7 +1,7 @@
 # 0010. Identity provider: Pocket ID
 
 * **Status:** Proposed
-* **Date:** 2026-10-22
+* **Date:** 2026-10-22 (amended 2026-10-22 after P2.5 session 2; still Proposed)
 
 ## Context
 P2.5 wants one login for NexaHome apps, two roles (`admin`, `users`) and a reserved `agents` group that is never admin and has no client access. Requirements R1 to R10 are in the P2.5 plan. Apps stay replaceable clients: they rely only on an OIDC discovery URL, a client id and secret, and a `groups` claim (R9). Spike on 2026-10-21 and 2026-10-22 (macOS, Colima 2 CPU / 2 GB, Safari; the throwaway project and its volumes are removed). Related: [ADR 0007](0007-stack-contract.md), [ADR 0008](0008-backup-tool.md), [ADR 0011](0011-edge-and-local-hostnames.md).
@@ -30,8 +30,16 @@ Interface a client must provide: discovery URL `http://id.${NEXAHOME_DOMAIN}:${E
 - Lost `ENCRYPTION_KEY`: a restored database is unusable; keep it with the restic password.
 
 ## Consequences
+- **Amendment, session 2 (owner decided):** the one sign-in page is Pocket ID's own My Apps page (since v1.7.0, per its documentation); the portal stays an open, read-only status board on loopback and is not gated. Gating it (forward auth through the edge, OAuth2 Proxy or similar) moves to the leaving-loopback gate in ADR 0011. Measured in session 2 (owner's report, not independently observed): `user` sees only Actual Budget, `admin` also saw a temporary admin-only test client (deleted). The launch links gave the edge's 404 because no route for them exists yet.
+- **Access tiers (Proposed):** status board open on loopback; apps with personal data behind SSO with a long session (set to 1440 minutes; Pocket ID has one session setting for everyone, so there is no shorter admin session); machines and agents never sign in interactively.
+- **Agents (Open):** agents get no account yet; the `agents` group is empty and has no client access. Planned path: a machine client with the client-credentials grant and scoped permissions (Pocket ID "custom API permissions"), which the documentation describes for a newer release than the pinned one; not verified. An API key is the wrong tool (admin power).
+- **API key contract (Proposed):** a key has an id, an account type (admin, user, agent), scopes, an expiry and a revoked flag; the secret is shown once. While everything is free every account has every scope; a later paid tier would map a group to extra scopes. No issuer is built until a first resource server exists. A paid tier touches the Confirmed rules on open source and no subscriptions: Deferred by the owner on 2026-10-22; nothing changed and everything stays free.
+- **Registration:** by hand in the UI with a field table in the identity README; `STATIC_API_KEY` is not set. A session-2 key created in the UI (named, with an expiry date, revocable) was used once to configure the instance and was revoked afterwards; its scope is admin-level in practice (not documented). Scripting is reconsidered at the third client.
 - **Owner feedback (2026-10-22):** the test flow (one-time links, private windows, passkey prompts, "Something went wrong" in Actual when refused) felt poor, and the owner wants one command-centre page to sign in to, usable by an admin and an agent. The daily path (one passkey sign-in, then tiles) was measured only for one user. Agents never use passkeys (R2), so an agent login to the page needs a separate mechanism. **Open:** gate the portal itself, or only the apps; owner to decide.
-- Open for S2: create the client by hand in the UI or with a small script; remove or rotate `STATIC_API_KEY` after seeding.
+- Settled in S2: client by hand in the UI; no static API key.
+- Pinned `v2.18.0`; `v2.19.1` (2026-10-22) only bumps the base images. Pocket ID has many 2026 security advisories fixed up to v2.15.0; none newer was listed on 2026-10-22. Dependabot proposes later tags.
+- A one-time access token satisfied the passkey step-up check before 2.6.0; treat the host-side recovery command as admin power.
+- In S2 the container ran 40 minutes with no restart (restarts 0; the S1 exit was not seen again, not proven gone). `restart: unless-stopped` is set.
 - A second Actual user must be created in Actual first (default creation mode `manual`, per upstream docs; unknown user refusal measured).
 - R6: identity adds 17 MiB (see ADR 0011 for the total).
 

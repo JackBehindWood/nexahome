@@ -1,7 +1,11 @@
 VENV  := .venv
 BIN   := $(VENV)/bin
-# STACK=name acts on one stack. Without it, every stack except the template and the backup tool.
-STACKS = $(if $(STACK),$(STACK),$(filter-out _template backup,$(notdir $(patsubst %/,%,$(wildcard stacks/*/)))))
+EDGE_NET := nexahome-edge
+CORE := edge identity
+ALL = $(filter-out _template backup,$(notdir $(patsubst %/,%,$(wildcard stacks/*/))))
+# STACK=name acts on one stack. Without it, every stack except the template and the backup tool,
+# with the core stacks (edge, identity) first.
+STACKS = $(if $(STACK),$(STACK),$(filter $(CORE),$(ALL)) $(filter-out $(CORE),$(ALL)))
 
 .DEFAULT_GOAL := help
 .PHONY: help up down ps status backup-init backup restore snapshots setup hooks unhooks check
@@ -20,8 +24,16 @@ up: ## Start stacks and wait until healthy (all, or STACK=name)
 		if [ -f $$d/.env ] && grep -qE '^[A-Za-z_][A-Za-z0-9_]*=CHANGE_ME' $$d/.env; then \
 			echo "$$d/.env: set a real value for each of these, then run make up again:"; \
 			grep -E '^[A-Za-z_][A-Za-z0-9_]*=CHANGE_ME' $$d/.env | cut -d= -f1 | sed 's/^/  /'; exit 1; fi; \
+		if [ -f $$d/.env ] && grep -q '=GENERATE$$' $$d/.env; then \
+			(umask 077; while IFS= read -r l || [ -n "$$l" ]; do \
+				case "$$l" in *=GENERATE) printf '%s=%s\n' "$${l%%=*}" "$$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 48)";; \
+				*) printf '%s\n' "$$l";; esac; done <$$d/.env >$$d/.env.tmp) && mv $$d/.env.tmp $$d/.env; \
+			echo "generated secrets in $$d/.env (not shown); copy them to your password manager"; fi; \
 	done
-	@set -e; for s in $(STACKS); do (cd stacks/$$s && docker compose up -d --wait); done
+	@set -e; for s in $(STACKS); do \
+		if grep -q 'name: $(EDGE_NET)' stacks/$$s/compose.yaml; then \
+			docker network inspect $(EDGE_NET) >/dev/null 2>&1 || docker network create $(EDGE_NET) >/dev/null; fi; \
+		(cd stacks/$$s && docker compose up -d --wait); done
 
 down: ## Stop stacks; data volumes are kept (all, or STACK=name)
 	@set -e; for s in $(STACKS); do (cd stacks/$$s && docker compose down); done

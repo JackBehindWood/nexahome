@@ -1,0 +1,50 @@
+name: nexahome-identity
+
+# Pocket ID: passkey-only OIDC provider (ADR 0010). No published port; reached through the
+# edge at id.<NEXAHOME_DOMAIN>:<EDGE_PORT>.
+services:
+  identity:
+    image: ghcr.io/pocket-id/pocket-id:v2.18.0-distroless
+    user: "65532:65532"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+    mem_limit: 128m  # about 4x idle RAM, protects the 2 GB VM
+    pids_limit: 128
+    environment:
+      APP_URL: http://id.${NEXAHOME_DOMAIN:-nexahome.localhost}:${EDGE_PORT:-8088}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      # No published port, so only containers on nexahome-edge can reach this service; the edge
+      # is the only one that should set the client address.
+      TRUST_PROXY: "true"
+      ANALYTICS_DISABLED: "true"
+      VERSION_CHECK_DISABLED: "true"
+      # The image has no /app/data; its non-root home directory is the only writable-by-copy-up
+      # path, so the volume is mounted there and all data paths point into it.
+      DB_CONNECTION_STRING: /home/nonroot/pocket-id.db  # personal-data: ok (container path)
+      UPLOAD_PATH: /home/nonroot/uploads  # personal-data: ok (container path)
+      GEOLITE_DB_PATH: /home/nonroot/GeoLite2-City.mmdb  # personal-data: ok (container path)
+    networks:
+      - edge
+    volumes:
+      - data:/home/nonroot  # personal-data: ok (container path)
+    healthcheck:
+      test: ["CMD", "/app/pocket-id", "healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: "3"}
+
+networks:
+  edge:
+    external: true
+    name: nexahome-edge
+
+volumes:
+  data:
+    labels:
+      nexahome.backup: "true"

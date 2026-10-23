@@ -16,6 +16,14 @@ updates:
     directory: /stacks/backup
     schedule:
       interval: weekly
+  - package-ecosystem: docker-compose
+    directory: /stacks/edge
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker-compose
+    directory: /stacks/identity
+    schedule:
+      interval: weekly
   - package-ecosystem: pip
     directory: /
     schedule:

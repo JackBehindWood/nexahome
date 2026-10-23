@@ -24,12 +24,12 @@ Enforced by `make check` (`scripts/check_compose.py`) unless marked review.
 - Image pinned to an exact tag; never `latest`; multi-arch (arm64 and amd64), no amd64-only images (review).
 - Health check and restart policy on every service. Exception: a one-shot job started by a script (the backup) carries the label `nexahome.oneshot: "true"` and is exempt from these two rules only; the image pin, port, privilege and network rules still apply ([ADR 0008](adr/0008-backup-tool.md)).
 - Published ports bind to `127.0.0.1`, with the host port from an environment variable with a default.
-- No `network_mode: host` and no `privileged`. No Docker socket mount (review).
+- No `network_mode: host` and no `privileged`. No Docker socket mount (enforced). No `cap_add` except `NET_BIND_SERVICE` (Caddy's file capability, [ADR 0011](adr/0011-edge-and-local-hostnames.md)). The only external network is `nexahome-edge`, which `make up` creates; both enforced.
 - Run as non-root, `cap_drop: [ALL]`, `no-new-privileges`, read-only root filesystem where possible (review).
 - No inline secrets: values come from a gitignored `.env`; every variable is listed in `.env.example` with a placeholder.
 - Persistent data uses a named volume or `NEXAHOME_DATA_DIR`, never the stack or repository directory. Read-only static content that ships in the repository (as in `stacks/hello`) is not persistent data.
 - Every named volume carries the label `nexahome.backup` with `"true"` or `"false"`; the project name is `nexahome-<directory>`. Both are enforced by `make check` ([ADR 0007](adr/0007-stack-contract.md)).
-- A `.env` value of `CHANGE_ME` is a placeholder: `make up` stops until it is replaced.
+- A `.env` value of `CHANGE_ME` is a placeholder: `make up` stops until it is replaced. A value of `GENERATE` is replaced by a random value when `make up` first creates `.env`; it is never printed.
 - New stacks start from `stacks/_template/` ([runbook](runbooks/add-a-stack.md)).
 
 ## Makefile conventions
@@ -71,4 +71,4 @@ Rules evaluate deny, then ask, then allow; the first match wins. Limits: rules m
 
 Preferences, not mandates; evaluate against requirements. Git, Markdown and ADRs, YAML and `.env` files, SSH keys for remote access, REST and MQTT as protocols. Not selected until a requirement appears: NAS operating system, orchestration platform, identity provider, configuration management (not before a second host).
 
-Changelog: 0.1 (2026-10-21): version renamed from 1.0 (pre-release project); 0.1 (2026-10-21): one-shot job exception; 0.1 (2026-10-21): volume label, project name and placeholder rules, Makefile conventions; 0.1 (2026-10-20): frugality expanded; reorganised into principles, Compose policy, tooling, security and guardrails; frugality and tooling policy added; Compose policy moved here from local files; VPN and SSH method preferences removed (open in the register).
+Changelog: 0.1 (2026-10-22): `cap_add`, socket and external-network rules enforced; `GENERATE` placeholder; 0.1 (2026-10-21): version renamed from 1.0 (pre-release project); 0.1 (2026-10-21): one-shot job exception; 0.1 (2026-10-21): volume label, project name and placeholder rules, Makefile conventions; 0.1 (2026-10-20): frugality expanded; reorganised into principles, Compose policy, tooling, security and guardrails; frugality and tooling policy added; Compose policy moved here from local files; VPN and SSH method preferences removed (open in the register).
