@@ -1,0 +1,14 @@
+# One tile per stack with a web UI (docs/runbooks/add-a-stack.md, step 4). Hostnames come from
+# NEXAHOME_DOMAIN and EDGE_PORT through the HOMEPAGE_VAR_ variables; siteMonitor goes through the
+# edge alias like the browser does.
+- Platform:
+    - Sign in:
+        href: http://id.{{HOMEPAGE_VAR_DOMAIN}}:{{HOMEPAGE_VAR_PORT}}/
+        description: Identity provider, My Apps
+        siteMonitor: http://id.{{HOMEPAGE_VAR_DOMAIN}}:{{HOMEPAGE_VAR_PORT}}/
+
+- Apps:
+    - Actual Budget:
+        href: http://actual.{{HOMEPAGE_VAR_DOMAIN}}:{{HOMEPAGE_VAR_PORT}}/
+        description: Budgeting
+        siteMonitor: http://actual.{{HOMEPAGE_VAR_DOMAIN}}:{{HOMEPAGE_VAR_PORT}}/
