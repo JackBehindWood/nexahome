@@ -2,6 +2,44 @@
 
 Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
+## 2026-10-23: P2.5 session 5, backup and restore drill, P2.5 closed
+
+**Done**
+- Branch `feat/p2-5-s5-restore` from `dev` after PR #20 (merge commit `603f952`); 5 commits. Colima started (existing profile) and stopped again; pinned images only; no sudo, root container, privileged mode, socket or low port.
+- `make backup` first showed a gap: the job (uid 1001) could not read the identity volume (owner 65532, mode 700), so identity had never been backed up (only its `.env`). Fixed: the job runs as each volume's owner (uid read with `stat`), no root, no capabilities. Actual (1001) never showed it.
+- New: `make verify [STACK=]` (stacks stopped; fingerprint live volume, restore a `-check` copy, compare, remove the copy, exit non-zero on a difference), `make backup-check [READ=1/10]`, `make snapshots` with sizes, elapsed seconds in `make backup` and `make restore`, `make portal` (starts edge and portal, opens the status board), and a Caddy redirect of the exact Host `localhost` to the portal.
+- Drill 1: `make verify` equal for identity (12 files) and actual (6 files), 6 s; copies removed; `restic check --read-data` clean. The refusal on a running stack and on an unknown stack were shown.
+- Drill 2: the owner deleted `nexahome-identity_data`; `make restore STACK=identity` took 3 s (snapshot 466362b1, 5.4 MiB, `--verify` clean); restored volume equal to a fresh copy of the snapshot; `make up`; `make smoke` green. Owner: same admin passkey, users, groups and client intact. Server side: `webauthn/login/finish` 200, then after a real Actual sign-out `/authorize` 303, `/api/oidc/token` 200, `/api/oidc/userinfo` 200, Actual listed its files. A first Actual open showed no provider calls (valid old session), so it was repeated. About 3 to 4 minutes from deletion to the budget, mostly browser steps.
+- Sizes: four snapshots for two stacks, repository 1.1 MiB on disk; backup of both stacks 4 to 5 s. After the restore a further `make backup` worked.
+- `make check` passed; `make down` kept both volumes and the network; nothing staged; no `.env`, key, `data/` or `.config/` tracked.
+
+**Doc changes and reasons**
+- ADR 0010 (Proposed): session 5 amendment with the finding, figures and next-hop notes; the "restore not tested" row updated. ADR 0008 (Confirmed): dated amendment that the job runs as the volume owner, on the owner's yes; the decision itself is unchanged.
+- New `docs/runbooks/test-sso.md` (account x expected x evidence matrix). `restore.md`: one-command quick proof and the drill evidence. `add-a-stack.md`: drill a stateful stack once with `make verify`. READMEs for backup, identity, edge, root; `constraints.md` (`make verify`); `docs/README.md` runbook row.
+- `roadmap.md`: P2.5 closed, Now and Next set. Next is P3 (Proposed, awaiting the owner's yes). No other Confirmed decision was touched.
+- Not done on purpose: portal as a My Apps entry (only a launcher, changes the drilled identity data, suggests a gate that does not exist; real gating is forward-auth, deferred), a backup tile (needs a status file), runbook or provider tiles, `make drill` wrapper, scheduler.
+
+**Verification**
+- Passed: `make check`; `make smoke` (full stack, after the restore and again after the redirect); failure branches of `make verify`; `make down` keeps volumes.
+- **Not verified:** the `DIFFERENT` branch of `make verify`; whether the unstarted `-check` copy attaches to `nexahome-edge`; the "runs as root" branch of smoke; a second authenticator; Chrome, Firefox, Linux; a restore without `ENCRYPTION_KEY`; an interrupted restore; volumes of different owners in one stack; CI for this branch. Browser results are as the owner reported them, the provider log is server-side evidence.
+- Deviation: the repository safety copy was deleted by the owner's request after the drill (a first `rm -rf` was denied).
+
+**Next:** P3 health view (optional), if the owner confirms; ADR 0012 follow-ups: forward-auth for the portal belongs to the leaving-loopback gate (ADR 0011).
+
+**Open questions**
+- Confirm P3 as the next phase.
+- Accept, change or reject ADRs 0010, 0011, 0012 (all Proposed; the drills are now in them).
+- Digest pinning for all stacks; paid tier vs the open-source rule (deferred).
+- Keep `hello` on the edge and in the portal? (commit `4109083`.)
+
+**Pending (owner actions, consolidated)**
+- Approval to push `dev` (and `feat/p2-5-s5-restore`) and open pull requests as needed; merging `dev` into `main` is by pull request only.
+- Keep `ENCRYPTION_KEY` and the restic password in a password manager (the repository is on this disk: a drill, not protection).
+- Confirm in Pocket ID that the first Actual client secret and the session 2 key `s2-config` are gone.
+- A real second authenticator (phone or security key) before real data exists; create the permanent outsider test account and one Safari profile per test account ([test-sso](runbooks/test-sso.md)).
+- Watch security alerts for `pocket-id/pocket-id`, `caddyserver/caddy`, `gethomepage/homepage`.
+- Carried over: Dependabot parsing of the stack entries; delete the local plan `.claude/plans/concerns-and-audiences.md`; GitHub setting "Block command line pushes that expose my email"; Makefile, repository layout and security baseline still Proposed; the volumes `nexahome-actual_data` and `nexahome-identity_data` and the network `nexahome-edge` stay until you remove them.
+
 ## 2026-10-23: P2.5 session 4, portal, four-step contract, make smoke
 
 **Done**
