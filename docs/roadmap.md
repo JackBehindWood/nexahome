@@ -9,7 +9,7 @@ What gets built and in what order. Hardware has no dates; phases are ordered by 
 | When | Work |
 | :--- | :--- |
 | Now | P2.5 is done (sessions 1 to 5): stacks `edge`, `identity` and `portal` exist, Actual is the first client, identity restores and a login works through the restored provider; ADRs 0010 to 0012 stay Proposed; P2 is closed |
-| Next | P3 health view is built (ADR 0013, Proposed): accept or change the ADR; then the hardware phases |
+| Next | P3 is done (ADR 0013 Confirmed, session 3 results in it): merge `feat/p3-s3-verify`, diagnose the Pocket ID self-restart, optional admin-only OIDC for the health view; then the hardware phases |
 | Later | The hardware phases in order: Mac mini, NAS and UPS, network, home automation, then personal applications and media |
 
 Pending owner actions are tracked in the [session log](session-log.md), not here.
@@ -73,7 +73,10 @@ Goal: a safe, public, documented starting point. Exit criteria were met by Sessi
 - **Goal:** the Mac mini is a usable workstation reachable from the laptop. **Depends on:** P1. **Hardware gate:** Mac mini.
 - **Scope:** SSH with keys (method decided here; runbook with placeholders), VPN decision (ADR), sleep policy, VS Code Remote-SSH, Claude Code on the mini (local agent files are copied by hand), deploy flow (`git pull`, `make check`, `make up`), backups by file transfer, native local AI sized to the chosen model.
 - **Exit criteria:** SSH login works from the laptop; `make check` passes on the mini; a stack starts healthy there; a model answers a prompt natively.
-- **Sessions:** (1) SSH and runbook; (2) VPN ADR; (3) deploy flow; (4) Remote-SSH and agent setup; (5) native AI. No self-hosted CI runner on a public repository.
+- **Sessions (Proposed, to be planned in session 0):** (0) order the Mac mini: choose the configuration (RAM and disk sized to the model chosen for native AI, constraints R6) within budget, order it, and plan sessions 1 to 5 in detail in two tracks, each with requirement IDs and how each is verified (below). Then (1) SSH and runbook; (2) VPN ADR; (3) deploy flow; (4) Remote-SSH and agent setup; (5) native AI. No self-hosted CI runner on a public repository.
+  - **Track A, without the Mac mini (can run now, laptop only):** decisions and documents that need no hardware: SSH method and a runbook with placeholders, VPN ADR, sleep policy ADR, the deploy-flow design (`git pull`, `make check`, `make up`) rehearsed against a second checkout or a Linux container on the laptop, and the model-size sizing. Verified by review and by the rehearsal, never by claiming the mini exists.
+  - **Track B, with the Mac mini (after it arrives):** first boot and updates, SSH login from the laptop, the sleep policy applied, `make check` and a stack started on it, Remote-SSH and Claude Code on it, a native model answering a prompt, backup by file transfer. Each Track A document is confirmed or corrected here against the real machine.
+  - Session 0 also records what changes between the tracks per hardware hop (laptop, Mac mini, always-on host) and what stays, so no config written in Track A needs the mini.
 
 ### P5 NAS and UPS
 
