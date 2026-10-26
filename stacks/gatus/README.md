@@ -18,9 +18,13 @@ make down STACK=gatus     # stopping it breaks nothing else
 
 **Targets:** `config/config.yaml`, one entry per named URL, hostnames from `NEXAHOME_DOMAIN` and `EDGE_PORT`. A new app needs one entry here and one portal tile ([add a stack](../../docs/runbooks/add-a-stack.md)); `make smoke` lists a tile without a target. After editing run `docker compose restart` in this directory.
 
-**Portal:** the Health tile shows Gatus counts through Homepage's widget (read from `http://gatus:8080` over the edge network); the tiles' own dots keep working if this stack is down.
+**Portal:** the Health tile is a link with its own up/down dot, no widget (a widget shows a DNS error when this stack is down). The dots keep working if this stack is down.
 
-**Alerts:** none wired, the `alerting:` section is documented but empty in `config/config.yaml`. A sleeping laptop cannot alert and remote channels leave the machine.
+**Alerts:** off by default (`NTFY_TOPIC` empty, nothing leaves the machine). Channel: [ntfy](https://ntfy.sh), free to use without an account (paid plans only raise limits such as messages per day; you can run your own ntfy server and set `NTFY_URL`). A target alerts after 2 failed checks and resolves after 2 passes (`alerting.ntfy.default-alert` in `config/config.yaml`). To turn on:
+1. In `stacks/gatus/.env` set `NTFY_URL=https://ntfy.sh` and `NTFY_TOPIC=GENERATE`, then `make up STACK=gatus` (creates a random topic, not printed).
+2. Open `.env` yourself to read the topic and subscribe to it in the ntfy app. The topic is the secret: anyone who knows it can read and post.
+3. What leaves the machine: the alert title and text (target name, status code, time) to `NTFY_URL`, only when a state changes; ntfy.sh keeps messages about 12 hours. To rotate, change the topic.
+Another channel: replace the `alerting:` block with another provider from the [Gatus docs](https://github.com/TwiN/gatus#alerting) and keep `alerts: [{type: <provider>}]` on the endpoints. A sleeping laptop cannot alert.
 
 **Limits:** on this laptop the monitor sleeps with what it watches, so it proves the tool, not an always-on system. The page is read-only without a login and reachable by name from any local web page; it shows service names only. Logs are not shown (no socket): use `docker compose logs`.
 
