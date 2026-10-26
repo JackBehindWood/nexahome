@@ -20,10 +20,14 @@ repo_hosts() {
 tile_hosts() {
 	sed -n 's|.*href: http://\([a-z0-9-]*\)\.{{HOMEPAGE_VAR_DOMAIN}}.*|\1|p' stacks/portal/config/services.yaml | sort -u
 }
+# Hosts the health tool checks (stacks/gatus/config/config.yaml); the edge target uses the service name.
+target_hosts() {
+	sed -n 's|.*url: "http://\([a-z0-9-]*\)\.\${NEXAHOME_DOMAIN}.*|\1|p' stacks/gatus/config/config.yaml | sort -u
+}
 
 # Remote addresses of established TCP connections that are not private (needs cat in the image).
 outbound() {
-	docker exec "$1" cat /proc/net/tcp /proc/net/tcp6 2>/dev/null | awk '
+	{ docker exec "$1" cat /proc/net/tcp /proc/net/tcp6 2>/dev/null || docker exec "$1" /busybox/busybox cat /proc/net/tcp /proc/net/tcp6 2>/dev/null; } | awk '
 	function hex(s,  i, n) { n = 0; for (i = 1; i <= length(s); i++) n = n * 16 + index("0123456789ABCDEF", substr(s, i, 1)) - 1; return n }
 	$4 == "01" {
 		split($3, a, ":"); r = a[1]
@@ -73,10 +77,10 @@ run() {
 		for h in $ports; do [ "$h" = 127.0.0.1 ] || problems="$problems port on '$h';"; done
 		if [ -n "$problems" ]; then bad "$stack hardening" "$problems"
 		else ok "$stack hardening" "user $user, read-only, cap_drop $capdrop, cap_add $capadd, ports on ${ports:-none}"; fi
-		case "$stack" in edge|identity|portal)
+		case "$stack" in edge|identity|portal|gatus)
 			out=$(outbound "$id")
 			if [ -n "$out" ]; then bad "$stack outbound" "established to $(echo "$out" | tr '\n' ' ')"
-			elif ! docker exec "$id" cat /proc/net/tcp >/dev/null 2>&1; then ok "$stack outbound" "not inspectable (no tools in the image)"
+			elif ! docker exec "$id" cat /proc/net/tcp >/dev/null 2>&1 && ! docker exec "$id" /busybox/busybox cat /proc/net/tcp >/dev/null 2>&1; then ok "$stack outbound" "not inspectable (no tools in the image)"
 			else ok "$stack outbound" "no non-private established connections"; fi ;;
 		esac
 	done
@@ -92,7 +96,7 @@ run() {
 
 	# 3: the four-step contract, live: edge aliases, Caddyfile blocks, portal tiles.
 	aliases=$(docker inspect --format '{{range $k, $v := .NetworkSettings.Networks}}{{range $v.Aliases}}{{println .}}{{end}}{{end}}' "$edge" | sed -n "s/\\.$domain\$//p" | sort -u)
-	blocks=$(repo_hosts); tiles=$(tile_hosts)
+	blocks=$(repo_hosts); tiles=$(tile_hosts); targets=$(target_hosts)
 	drift=""
 	for h in $aliases; do
 		echo "$blocks" | grep -qx "$h" || drift="$drift $h.(alias without Caddyfile block: step 2);"
@@ -100,8 +104,11 @@ run() {
 	done
 	for h in $blocks; do echo "$aliases" | grep -qx "$h" || drift="$drift $h.(Caddyfile block without alias: step 1);"; done
 	for h in $tiles; do echo "$aliases" | grep -qx "$h" || drift="$drift $h.(tile without alias: step 1);"; done
+	# Health targets = tiles; the portal (home) has no tile and the tool does not check itself.
+	for h in $tiles; do [ "$h" = gatus ] || echo "$targets" | grep -qx "$h" || drift="$drift $h.(tile without health target: stacks/gatus/config/config.yaml);"; done
+	for h in $targets; do [ "$h" = home ] || echo "$tiles" | grep -qx "$h" || drift="$drift $h.(health target without tile);"; done
 	if [ -n "$drift" ]; then bad "contract (add-a-stack steps)" "$drift"
-	else ok "contract (add-a-stack steps)" "aliases = blocks = tiles: $(echo $aliases)"; fi
+	else ok "contract (add-a-stack steps)" "aliases = blocks = tiles = health targets: $(echo $aliases)"; fi
 
 	for h in $aliases; do
 		code=$(curl -s --max-time 5 -o /dev/null -w '%{http_code}' "http://$h.$base/")
@@ -115,7 +122,7 @@ run() {
 	if [ -z "$page" ]; then bad "portal page" "empty. fix: make up STACK=portal"
 	else
 		# Tiles are rendered in the browser, so also read the config (what the portal will fetch) and /api/services.
-		ext=$({ echo "$page" | grep -oE '(src|href)="https?://[^"]*"'; grep -hE 'https?://' stacks/portal/config/*.yaml | grep -v '^[[:space:]]*#' | grep -v HOMEPAGE_VAR_DOMAIN; } | grep -v "$domain" | head -3)
+		ext=$({ echo "$page" | grep -oE '(src|href)="https?://[^"]*"'; grep -hE 'https?://' stacks/portal/config/*.yaml | grep -v '^[[:space:]]*#' | grep -v HOMEPAGE_VAR_DOMAIN | grep -vE 'https?://[a-z0-9-]+(:[0-9]+)?/?$'; } | grep -v "$domain" | head -3)
 		sec=$({ echo "$page"; curl -s --max-time 10 "http://home.$base/api/services"; } | grep -ioE '(client_secret|api[_-]?key|password|bearer|token)[^<"]{0,20}' | head -3)
 		[ -z "$ext" ] && ok "portal remote assets" "none in the page" || bad "portal remote assets" "$ext"
 		[ -z "$sec" ] && ok "portal secrets" "none in the page" || bad "portal secrets" "$sec"
@@ -130,6 +137,11 @@ run() {
 	while IFS='|' read -r _ n st; do
 		case "$st" in 200|2??|3??) ok "tile dot $n" "monitor status $st" ;; *) bad "tile dot $n" "monitor status ${st:-none} (red). fix: is the stack running and on the edge?" ;; esac
 	done < "$tmp"
+	# The Health tile's widget reads the health tool through the portal (only when the tool runs).
+	if docker ps --format '{{.Names}}' | grep -q '^nexahome-gatus-'; then
+		w=$(curl -s --max-time 10 --get --data-urlencode "type=gatus" --data-urlencode "group=Platform" --data-urlencode "service=Health" --data-urlencode "endpoint=status" "http://home.$base/api/services/proxy" | grep -o '"success":true' | head -1)
+		[ -n "$w" ] && ok "health widget" "portal reads the health tool" || bad "health widget" "portal got no results from gatus:8080"
+	fi
 	return $((fails > 0))
 }
 

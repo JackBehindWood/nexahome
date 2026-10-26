@@ -6,6 +6,14 @@
         href: http://id.{{HOMEPAGE_VAR_DOMAIN}}:{{HOMEPAGE_VAR_PORT}}/
         description: Identity provider, My Apps
         siteMonitor: http://id.{{HOMEPAGE_VAR_DOMAIN}}:{{HOMEPAGE_VAR_PORT}}/
+    - Health:
+        href: http://gatus.{{HOMEPAGE_VAR_DOMAIN}}:{{HOMEPAGE_VAR_PORT}}/
+        description: Up/down history of every stack
+        siteMonitor: http://gatus.{{HOMEPAGE_VAR_DOMAIN}}:{{HOMEPAGE_VAR_PORT}}/
+        # Counts come from the Gatus API over the edge network (server-side, no secret).
+        widget:
+          type: gatus
+          url: http://gatus:8080
 
 - Apps:
     - Actual Budget:

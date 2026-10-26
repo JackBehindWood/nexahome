@@ -30,5 +30,25 @@ Easier: one YAML file in Git is the whole configuration, 5 to 7 MiB leaves the R
 Evolution: laptop (now), then Mac mini (may sleep, so not the monitor's home), then an always-on Linux host or NAS: the monitor, a heartbeat for the backup and a real notifier move there; the YAML, the Dockerfile and the alias names stay. Honest limit: on the laptop the monitor shares its failure domain with what it watches, so it proves the tool, not the health of an always-on system. Auth for the tool UI waits for the leaving-loopback gate ([ADR 0011](0011-edge-and-local-hostnames.md)).
 Not verified: Chrome, Firefox, Linux, a real notifier, laptop sleep and clock drift, long-run disk growth, an upgrade between tags, the UI scenarios (owner cards in session 2), alert body capture (the listener saw the request, not the body), Kuma beyond the setup page.
 
+## Session 2 results (2026-10-26, stack built; status stays Proposed)
+Built `stacks/gatus` as decided. `make check` accepts a stack with `build:` (no change to `check_compose.py`); Compose uses `pull_policy: build` so the local image name is never pulled from a registry. Dependabot: a `docker` entry for `/stacks/gatus` (the pinned tags are in the Dockerfile `FROM` lines; the compose ecosystem does not read them); whether GitHub parses it is not verified. Measured: 6.6 MiB idle against `mem_limit` 32m, no OOM, no restarts, image 75 MB; `make smoke` green including hardening, outbound (busybox `cat` fallback) and the contract row, which now also compares portal tiles with Gatus targets.
+Correction to the ADR text: `failure-threshold` and `success-threshold` belong to alerts in Gatus, not to endpoints; with no alert wired, a target is red after one failed check.
+Portal integration added: the Health tile has Homepage's Gatus widget (counts read server-side from `http://gatus:8080`, no secret); each tile keeps its own dot, so the portal still shows red/green when Gatus is down. `make smoke` has a `health widget` row.
+
+Owner cards (all "as expected"): C1 open by name, five targets green, no login; C2 Actual red in Gatus and the portal dot after stopping it; C3 green and recovery in history; C4 stopping the tool leaves portal, Actual and My Apps working; C5 history kept after restart; C6 portal tile opens the same page.
+
+| Scenario | Result |
+| :-- | :-- |
+| S-a find the red stack cold | pass (C2: one page, one red row) |
+| S-b read an outage in history | pass (C3: failed and recovered results listed; retention beyond the page not measured) |
+| S-c add a target | pass: one entry in `config.yaml`, restart; a tile without a target (or the reverse) fails `make smoke` (tested with a renamed target) |
+| S-d change interval or threshold | pass: one line in one file, readable diff |
+| S-e rebuild from config only | pass for build and start from Git files; no fresh clone run |
+| S-f notification | not re-run; S1 proof stands |
+| S-g phone width | not verified |
+| S-h swap cost | the 5 URLs and names move to another tool's format; alias, tile and contract stay |
+
+Open follow-up (Proposed, not built): gate the Gatus UI with OIDC for an `admins` group, like Actual (Pocket ID has no platform or app categories, only clients and user groups, so the split is a group restriction on the client). It depends on ADR 0011's leaving-loopback gate and must keep the API reachable for the portal widget and `make smoke` (for example by gating only the UI), so it needs its own design and session.
+
 ## Alternatives
 Uptime Kuma: rejected on HV6 and HV8 and on size; its built-in health check and notifier list are better. Homepage only: no history. Beszel, Prometheus with Grafana and Loki, Netdata: socket or host access, or several services on a 2 GB VM. A monitor of our own: no gain over a 24 MB tool.

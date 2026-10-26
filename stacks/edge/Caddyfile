@@ -50,3 +50,8 @@ http://hello.{$NEXAHOME_DOMAIN}:{$EDGE_PORT} {
 	import hardening
 	reverse_proxy hello:8080
 }
+
+http://gatus.{$NEXAHOME_DOMAIN}:{$EDGE_PORT} {
+	import hardening
+	reverse_proxy gatus:8080
+}

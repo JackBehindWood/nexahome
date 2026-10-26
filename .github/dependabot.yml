@@ -28,6 +28,10 @@ updates:
     directory: /stacks/portal
     schedule:
       interval: weekly
+  - package-ecosystem: docker
+    directory: /stacks/gatus
+    schedule:
+      interval: weekly
   - package-ecosystem: pip
     directory: /
     schedule:

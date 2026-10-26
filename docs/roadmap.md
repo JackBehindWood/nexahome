@@ -9,8 +9,8 @@ What gets built and in what order. Hardware has no dates; phases are ordered by 
 | When | Work |
 | :--- | :--- |
 | Now | P2.5 is done (sessions 1 to 5): stacks `edge`, `identity` and `portal` exist, Actual is the first client, identity restores and a login works through the restored provider; ADRs 0010 to 0012 stay Proposed; P2 is closed |
-| Next | P3 health view, confirmed by the owner 2026-10-26: session 1 (spike and ADR 0013, Proposed) is done; session 2 builds the stack. The portal is the only health view until then |
-| Later | Health view (P3), then the hardware phases in order: Mac mini, NAS and UPS, network, home automation, then personal applications and media |
+| Next | P3 health view is built (ADR 0013, Proposed): accept or change the ADR; then the hardware phases |
+| Later | The hardware phases in order: Mac mini, NAS and UPS, network, home automation, then personal applications and media |
 
 Pending owner actions are tracked in the [session log](session-log.md), not here.
 
@@ -62,7 +62,7 @@ Goal: a safe, public, documented starting point. Exit criteria were met by Sessi
 
 ### P3 Health view
 
-- **Status:** confirmed by the owner 2026-10-26. Session 1 done: Gatus and Uptime Kuma measured, [ADR 0013](adr/0013-health-view.md) Proposed (Gatus). Session 2 not started.
+- **Status:** confirmed by the owner 2026-10-26. Session 1 done: Gatus and Uptime Kuma measured, [ADR 0013](adr/0013-health-view.md) Proposed (Gatus). Session 2 done: `stacks/gatus` built, portal tile with Gatus widget, owner cards C1 to C6 passed, scenarios in the ADR; the ADR stays Proposed. Admin-only access (OIDC for the UI) is a Proposed follow-up.
 - **Goal:** one place to see service health, history and notifications. Logs stay with `docker compose logs`: without the Docker socket no tool can show them (Proposed, ADR 0013). The launchpad (central dashboard) moved to P2.5. **Depends on:** P2 (a real service to watch). **Hardware:** none.
 - **Scope:** compare two tools from the [shortlist](observability.md#tool-shortlist), choose by ADR, deploy as a stack; link it from the P2.5 portal.
 - **Exit criteria:** it shows the real stack's state; stopping the tool breaks nothing else (decoupling rule).

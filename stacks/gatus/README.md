@@ -1,0 +1,27 @@
+# gatus
+
+[Gatus](https://github.com/TwiN/gatus) as the health view: it checks every named URL through the edge like a browser, shows red/green with history, and can notify ([ADR 0013](../../docs/adr/0013-health-view.md), Proposed). Reached by name at `gatus.<domain>:<port>`; it publishes no port, has no login (read-only page) and no Docker socket. Built locally from a six-line `Dockerfile` because the upstream image has no shell for a health check and a fresh volume is root-owned.
+
+```sh
+make up STACK=gatus       # build, start and wait until healthy
+make open STACK=gatus     # opens http://gatus.<domain>:<port>/
+make down STACK=gatus     # stopping it breaks nothing else
+```
+
+| Item | Value |
+| :--- | :--- |
+| RAM (measured, idle, 2026-10-26) | 6.6 MiB in `docker stats` with 5 targets at 30 s (limit 32 MiB) |
+| Disk (measured) | image 75 MB; history in SQLite in the volume `data` (growth not measured long-term) |
+| Must run 24/7? | no (history has a gap while it is off) |
+| Backed up | nothing: volume `data` is labelled `"false"`, targets are in `config/` (Git) |
+| Verify after a rebuild | `make smoke` prints `ok gatus healthy` and `ok contract`; all targets green on the page |
+
+**Targets:** `config/config.yaml`, one entry per named URL, hostnames from `NEXAHOME_DOMAIN` and `EDGE_PORT`. A new app needs one entry here and one portal tile ([add a stack](../../docs/runbooks/add-a-stack.md)); `make smoke` lists a tile without a target. After editing run `docker compose restart` in this directory.
+
+**Portal:** the Health tile shows Gatus counts through Homepage's widget (read from `http://gatus:8080` over the edge network); the tiles' own dots keep working if this stack is down.
+
+**Alerts:** none wired, the `alerting:` section is documented but empty in `config/config.yaml`. A sleeping laptop cannot alert and remote channels leave the machine.
+
+**Limits:** on this laptop the monitor sleeps with what it watches, so it proves the tool, not an always-on system. The page is read-only without a login and reachable by name from any local web page; it shows service names only. Logs are not shown (no socket): use `docker compose logs`.
+
+Hardening: uid 1001, read-only root, `config/` mounted read-only, all capabilities dropped. Telemetry is not enabled. Remove: `make down STACK=gatus`, delete this directory and its edits; the volume only if you no longer want the history.
