@@ -1,6 +1,6 @@
 # Roadmap
 
-Version 0.1 · Last reviewed 2026-10-22
+Version 0.1 · Last reviewed 2026-10-26
 
 What gets built and in what order. Hardware has no dates; phases are ordered by dependency. Update this file at the end of every working session.
 
@@ -9,7 +9,7 @@ What gets built and in what order. Hardware has no dates; phases are ordered by 
 | When | Work |
 | :--- | :--- |
 | Now | P2.5 is done (sessions 1 to 5): stacks `edge`, `identity` and `portal` exist, Actual is the first client, identity restores and a login works through the restored provider; ADRs 0010 to 0012 stay Proposed; P2 is closed |
-| Next | P3 health view (optional), by the dependency order; the portal is the only health view until then. Proposed, not yet confirmed by the owner |
+| Next | P3 health view, confirmed by the owner 2026-10-26: session 1 (spike and ADR 0013, Proposed) is done; session 2 builds the stack. The portal is the only health view until then |
 | Later | Health view (P3), then the hardware phases in order: Mac mini, NAS and UPS, network, home automation, then personal applications and media |
 
 Pending owner actions are tracked in the [session log](session-log.md), not here.
@@ -60,12 +60,13 @@ Goal: a safe, public, documented starting point. Exit criteria were met by Sessi
 - **Verification:** drill output and RAM figures recorded in the session log and the ADRs.
 - **Sessions:** (1) spike and ADRs; (2) edge and identity stacks; (3) Actual as client and recovery runbook; (4) portal; (5) backup and restore drill, close. Done: 1, 2, 3, 4, 5. The step-by-step plan is local to the owner's machine.
 
-### P3 Health view (optional)
+### P3 Health view
 
-- **Goal:** one place to see service health history, logs and notifications. The launchpad (central dashboard) moved to P2.5. **Depends on:** P2 (a real service to watch). **Hardware:** none.
+- **Status:** confirmed by the owner 2026-10-26. Session 1 done: Gatus and Uptime Kuma measured, [ADR 0013](adr/0013-health-view.md) Proposed (Gatus). Session 2 not started.
+- **Goal:** one place to see service health, history and notifications. Logs stay with `docker compose logs`: without the Docker socket no tool can show them (Proposed, ADR 0013). The launchpad (central dashboard) moved to P2.5. **Depends on:** P2 (a real service to watch). **Hardware:** none.
 - **Scope:** compare two tools from the [shortlist](observability.md#tool-shortlist), choose by ADR, deploy as a stack; link it from the P2.5 portal.
 - **Exit criteria:** it shows the real stack's state; stopping the tool breaks nothing else (decoupling rule).
-- **Sessions:** (1) ADR and deployment.
+- **Sessions:** (1) spike and ADR (done); (2) stack, browser checks and restore-drill decision. Split with the owner's agreement on 2026-10-26: the spike and ADR come first, nothing is built before the ADR exists.
 
 ### P4 Mac mini bootstrap
 
@@ -117,4 +118,4 @@ P0, P1, then P2 and P4 (P4 waits for hardware), P2.5 after P2, P3 after P2.5 (th
 
 Version 0.x while the project is pre-release: changes to progress or wording keep the number; 1.0 is reserved for the first release tag. A phase may be split when it needs more than about five sessions or has two independent exit criteria. Phases are reordered only when a dependency or hardware change makes the current order impossible. Every split or reorder is logged with its reason; any change touching a decided item needs the owner's approval first.
 
-Changelog: 0.1 (2026-10-23): P2.5 session 5 done, P2.5 closed, next P3; 0.1 (2026-10-23): P2.5 session 4 done; 0.1 (2026-10-23): P2.5 session 3 done; 0.1 (2026-10-22): P2.5 sessions 1 and 2 done, Now and Next rows; 0.1 (2026-10-21): P2 closed after the owner's cold read of the restore runbook; 0.1 (2026-10-21): Now and Next rows after all four ADR decisions; 0.1 (2026-10-21): Now row after ADR decisions; versioning rule for 0.x; version renamed from 1.0; 0.1 (2026-10-21): P2.5 added (identity, edge, portal; owner approved), launchpad moved from P3, P8 note; 0.1 (2026-10-21): P2 session 3 done; 0.1 (2026-10-21): ADR 0008 in the Now row, S3 branch noted; 0.1 (2026-10-21): P2 session 2 done; 0.1 (2026-10-21): P2 session 1 done; 0.1 (2026-10-21): Now row corrected (merges done), entry-points work recorded; 0.1 (2026-10-20): P1 status; added P8 personal applications and media; restructured into phases with gates, exit criteria and a now/next/later view; CI proof made the first item.
+Changelog: 0.1 (2026-10-26): P3 confirmed, session 1 done, P3 split into two sessions; 0.1 (2026-10-23): P2.5 session 5 done, P2.5 closed, next P3; 0.1 (2026-10-23): P2.5 session 4 done; 0.1 (2026-10-23): P2.5 session 3 done; 0.1 (2026-10-22): P2.5 sessions 1 and 2 done, Now and Next rows; 0.1 (2026-10-21): P2 closed after the owner's cold read of the restore runbook; 0.1 (2026-10-21): Now and Next rows after all four ADR decisions; 0.1 (2026-10-21): Now row after ADR decisions; versioning rule for 0.x; version renamed from 1.0; 0.1 (2026-10-21): P2.5 added (identity, edge, portal; owner approved), launchpad moved from P3, P8 note; 0.1 (2026-10-21): P2 session 3 done; 0.1 (2026-10-21): ADR 0008 in the Now row, S3 branch noted; 0.1 (2026-10-21): P2 session 2 done; 0.1 (2026-10-21): P2 session 1 done; 0.1 (2026-10-21): Now row corrected (merges done), entry-points work recorded; 0.1 (2026-10-20): P1 status; added P8 personal applications and media; restructured into phases with gates, exit criteria and a now/next/later view; CI proof made the first item.
