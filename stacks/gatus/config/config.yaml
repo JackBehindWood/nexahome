@@ -1,0 +1,41 @@
+# Targets (docs/runbooks/add-a-stack.md, step 4): one entry per named URL, through the edge like a
+# browser. Hostnames come from NEXAHOME_DOMAIN and EDGE_PORT. Gatus itself is not listed.
+storage:
+  type: sqlite
+  path: /data/data.db
+
+web:
+  port: 8080
+
+# A check that fails is red at once. Thresholds (red/green after N results) belong to alerts, below.
+endpoints:
+  - name: Edge
+    group: Platform
+    url: "http://edge:${EDGE_PORT}/health"
+    interval: 30s
+    conditions: ["[STATUS] == 200"]
+  - name: Sign in
+    group: Platform
+    url: "http://id.${NEXAHOME_DOMAIN}:${EDGE_PORT}/"
+    interval: 30s
+    conditions: ["[STATUS] < 400"]
+  - name: Portal
+    group: Platform
+    url: "http://home.${NEXAHOME_DOMAIN}:${EDGE_PORT}/"
+    interval: 30s
+    conditions: ["[STATUS] < 400"]
+  - name: Actual Budget
+    group: Apps
+    url: "http://actual.${NEXAHOME_DOMAIN}:${EDGE_PORT}/"
+    interval: 30s
+    conditions: ["[STATUS] < 400"]
+  - name: Hello
+    group: Apps
+    url: "http://hello.${NEXAHOME_DOMAIN}:${EDGE_PORT}/"
+    interval: 30s
+    conditions: ["[STATUS] < 400"]
+
+# Notifications: none wired (a sleeping laptop cannot alert; remote channels leave the machine).
+# To add one: a provider under `alerting:` and, on each endpoint,
+#   alerts: [{type: <provider>, failure-threshold: 2, success-threshold: 2, send-on-resolved: true}]
+# (ADR 0013; S1 proved this with a local webhook). Empty on purpose: nothing leaves the machine.

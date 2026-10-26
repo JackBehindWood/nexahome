@@ -1,0 +1,46 @@
+name: nexahome-gatus
+
+# Health view (ADR 0013): checks the named URLs like a browser and keeps history. Reached only
+# through the edge at gatus.<NEXAHOME_DOMAIN>:<EDGE_PORT>, so it publishes no port. No Docker socket.
+# Built locally (stacks/gatus/Dockerfile); pull_policy build means the name below is never pulled
+# from a registry.
+services:
+  gatus:
+    build: .
+    image: nexahome/gatus:v5.37.0
+    pull_policy: build
+    user: "1001:1001"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+    mem_limit: 32m  # about 4x idle RAM (5 to 6.5 MiB), protects the 2 GB VM
+    pids_limit: 64
+    environment:
+      NEXAHOME_DOMAIN: ${NEXAHOME_DOMAIN:-nexahome.localhost}
+      EDGE_PORT: ${EDGE_PORT:-8088}
+      GATUS_CONFIG_PATH: /config/config.yaml
+    networks:
+      - edge
+    volumes:
+      - ./config:/config:ro
+      - data:/data
+    healthcheck:
+      test: ["CMD", "/busybox/busybox", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: "3"}
+
+networks:
+  edge:
+    external: true
+    name: nexahome-edge
+
+volumes:
+  data:
+    labels:
+      nexahome.backup: "false"  # history is disposable; the targets are in config/ (Git)
