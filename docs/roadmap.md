@@ -9,7 +9,7 @@ What gets built and in what order. Hardware has no dates; phases are ordered by 
 | When | Work |
 | :--- | :--- |
 | Now | P2.5 is done (sessions 1 to 5): stacks `edge`, `identity` and `portal` exist, Actual is the first client, identity restores and a login works through the restored provider; ADRs 0010 to 0012 stay Proposed; P2 is closed |
-| Next | P3 health view is built (ADR 0013, Proposed): accept or change the ADR; then the hardware phases |
+| Next | P3 is done (ADR 0013 Confirmed, session 3 results in it): merge `feat/p3-s3-verify`, diagnose the Pocket ID self-restart, optional admin-only OIDC for the health view; then the hardware phases |
 | Later | The hardware phases in order: Mac mini, NAS and UPS, network, home automation, then personal applications and media |
 
 Pending owner actions are tracked in the [session log](session-log.md), not here.
@@ -62,18 +62,21 @@ Goal: a safe, public, documented starting point. Exit criteria were met by Sessi
 
 ### P3 Health view
 
-- **Status:** confirmed by the owner 2026-10-26. Session 1 done: Gatus and Uptime Kuma measured, [ADR 0013](adr/0013-health-view.md) Proposed (Gatus). Session 2 done: `stacks/gatus` built, portal tile with Gatus widget, owner cards C1 to C6 passed, scenarios in the ADR; the ADR stays Proposed. ADR 0013 is Confirmed (owner, 2026-10-26). Admin-only access (OIDC for the UI) is a Proposed follow-up. Session 3 below closes what S2 did not verify.
+- **Status:** confirmed by the owner 2026-10-26. Session 1 done: Gatus and Uptime Kuma measured, [ADR 0013](adr/0013-health-view.md) Proposed (Gatus). Session 2 done: `stacks/gatus` built, portal tile with Gatus widget, owner cards C1 to C6 passed, scenarios in the ADR; the ADR stays Proposed. ADR 0013 is Confirmed (owner, 2026-10-26). Admin-only access (OIDC for the UI) is a Proposed follow-up. Session 3 done 2026-10-26: Health widget removed, ntfy notifier (opt-in) proven end to end, sleep, fresh clone checked; tag upgrade (no newer tag) and Dependabot parsing not verified; results in the ADR.
 - **Goal:** one place to see service health, history and notifications. Logs stay with `docker compose logs`: without the Docker socket no tool can show them (Proposed, ADR 0013). The launchpad (central dashboard) moved to P2.5. **Depends on:** P2 (a real service to watch). **Hardware:** none.
 - **Scope:** compare two tools from the [shortlist](observability.md#tool-shortlist), choose by ADR, deploy as a stack; link it from the P2.5 portal.
 - **Exit criteria:** it shows the real stack's state; stopping the tool breaks nothing else (decoupling rule).
-- **Sessions:** (1) spike and ADR (done); (2) stack, browser checks (done); (3) not started: a real notifier (owner picks the channel; S1 proved the webhook only), laptop sleep and clock drift after wake, disk growth over days, phone-width layout, a tag upgrade, a fresh-clone rebuild, and the `make portal` question (start Gatus with the portal so the Health widget shows no DNS error when Gatus is down). Split with the owner's agreement on 2026-10-26: the spike and ADR come first, nothing is built before the ADR exists.
+- **Sessions:** (1) spike and ADR (done); (2) stack, browser checks (done); (3) done 2026-10-26, scope was: a real notifier (owner picks the channel; S1 proved the webhook only), laptop sleep and clock drift after wake, disk growth over days, phone-width layout, a tag upgrade, a fresh-clone rebuild, and the `make portal` question (start Gatus with the portal so the Health widget shows no DNS error when Gatus is down; resolved by removing the widget). Split with the owner's agreement on 2026-10-26: the spike and ADR come first, nothing is built before the ADR exists.
 
 ### P4 Mac mini bootstrap
 
 - **Goal:** the Mac mini is a usable workstation reachable from the laptop. **Depends on:** P1. **Hardware gate:** Mac mini.
 - **Scope:** SSH with keys (method decided here; runbook with placeholders), VPN decision (ADR), sleep policy, VS Code Remote-SSH, Claude Code on the mini (local agent files are copied by hand), deploy flow (`git pull`, `make check`, `make up`), backups by file transfer, native local AI sized to the chosen model.
 - **Exit criteria:** SSH login works from the laptop; `make check` passes on the mini; a stack starts healthy there; a model answers a prompt natively.
-- **Sessions:** (1) SSH and runbook; (2) VPN ADR; (3) deploy flow; (4) Remote-SSH and agent setup; (5) native AI. No self-hosted CI runner on a public repository.
+- **Sessions (Proposed, to be planned in session 0):** (0) order the Mac mini: choose the configuration (RAM and disk sized to the model chosen for native AI, constraints R6) within budget, order it, and plan sessions 1 to 5 in detail in two tracks, each with requirement IDs and how each is verified (below). Then (1) SSH and runbook; (2) VPN ADR; (3) deploy flow; (4) Remote-SSH and agent setup; (5) native AI. No self-hosted CI runner on a public repository.
+  - **Track A, without the Mac mini (can run now, laptop only):** decisions and documents that need no hardware: SSH method and a runbook with placeholders, VPN ADR, sleep policy ADR, the deploy-flow design (`git pull`, `make check`, `make up`) rehearsed against a second checkout or a Linux container on the laptop, and the model-size sizing. Verified by review and by the rehearsal, never by claiming the mini exists.
+  - **Track B, with the Mac mini (after it arrives):** first boot and updates, SSH login from the laptop, the sleep policy applied, `make check` and a stack started on it, Remote-SSH and Claude Code on it, a native model answering a prompt, backup by file transfer. Each Track A document is confirmed or corrected here against the real machine.
+  - Session 0 also records what changes between the tracks per hardware hop (laptop, Mac mini, always-on host) and what stays, so no config written in Track A needs the mini.
 
 ### P5 NAS and UPS
 

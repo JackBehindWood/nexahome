@@ -19,6 +19,8 @@ services:
     environment:
       NEXAHOME_DOMAIN: ${NEXAHOME_DOMAIN:-nexahome.localhost}
       EDGE_PORT: ${EDGE_PORT:-8088}
+      NTFY_URL: ${NTFY_URL:-https://ntfy.sh}
+      NTFY_TOPIC: ${NTFY_TOPIC:-}
       GATUS_CONFIG_PATH: /config/config.yaml
     networks:
       - edge

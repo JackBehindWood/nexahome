@@ -50,5 +50,24 @@ Owner cards (all "as expected"): C1 open by name, five targets green, no login; 
 
 Open follow-up (Proposed, not built): gate the Gatus UI with OIDC for an `admins` group, like Actual (Pocket ID has no platform or app categories, only clients and user groups, so the split is a group restriction on the client). It depends on ADR 0011's leaving-loopback gate and must keep the API reachable for the portal widget and `make smoke` (for example by gating only the UI), so it needs its own design and session.
 
+## Session 3 results (2026-10-26)
+New requirements: HV10 the Health tile shows no error when Gatus is down (portal page, services API, `make smoke`); HV11 a real notifier, off by default, thresholds on the alert, send-on-resolved, proven down and back (alert body capture, delivery on the real channel); HV12 to HV17 as the items below. HV6 now reads: no outbound except the configured notifier, and none at all while `NTFY_TOPIC` is empty.
+
+Decisions on the owner's instruction (the second changes a consequence of this Confirmed ADR): `make portal` does not start Gatus; the Health tile loses Homepage's Gatus widget (a widget error cannot be silenced, and the tile's own dot already shows up/down). The counts on the tile are gone. Notifier: ntfy (free to use without an account; paid plans only raise limits such as messages per day; self-hostable by setting `NTFY_URL`). The owner delegated the choice and excluded Telegram and Discord.
+
+| # | Item | Result |
+| :-- | :-- | :-- |
+| 1 | `make portal` and the Health tile | pass: with Gatus stopped the tile has `widgets: []`, no error text on the page or in the services API; the red `named URL gatus` and Health dot rows in `make smoke` are the expected result of stopping it |
+| 2 | Real notifier | pass. Config: `alerting.ntfy.default-alert` failure-threshold 2, success-threshold 2, send-on-resolved. Empty topic: provider ignored (`configuredProviders=[]`), startup fine. Local capture, triggered: `{"topic":"captest","title":"Gatus: Apps/Actual Budget","message":"An alert has been triggered due to having failed 2 time(s) in a row\n🔴 [STATUS] (502) < 400","tags":["rotating_light"],"priority":3}`; resolved: `...resolved after passing successfully 2 time(s) in a row\n🟢 [STATUS] < 400`, tag `white_check_mark`. Real channel: both messages delivered to ntfy.sh (triggered 42 s after Actual was stopped, resolved 30 s after `make up` returned; times from the Gatus log); ntfy.sh keeps them 12 h (`expires` = time + 43200 s). Topic never printed. What leaves the machine: title and text above. |
+| 3 | Laptop sleep (lid closed about 3 min) | pass: one gap of 127 s in the 30 s checks (13:01:42 to 13:03:49), host and VM clocks equal after wake (1 s apart), no false red, no alert. Side finding: Pocket ID restarted itself at wake (13:03:52, "host is not registered" from its own health check), and once earlier at 12:52:55; not diagnosed, recovers in about 1 s; `make smoke` fails on `restarts` until the stack is recreated |
+| 4 | Disk growth | measured over 22 min only: `data.db` 96 KiB to 120 KiB, WAL 0.5 to 4.1 MiB (SQLite checkpoint size, not growth). Retention (v5.37.0 source): 100 results and 50 events per target (default, about 50 min at 30 s), hourly uptime about 48 h then daily, cleanup after 32 days. So size is bounded by design; a per-day extrapolation from 21 min would mislead. Multi-day size: not verified |
+| 5 | Phone width | pass on the owner's report ("all looks good"); no per-page detail |
+| 6 | Tag upgrade | not verified: v5.37.0 (2026-09-24) is the newest release, so there is no tag to move to. The downgrade-then-upgrade variant was not run |
+| 7 | Fresh-clone rebuild | pass: clone of the branch commit, `COMPOSE_PROJECT_NAME=nexahome-fresh make up STACK=gatus` with `.env.example` defaults, no edits: new volume, healthy, five targets green through the edge, notifier off. The scratch container and volume were removed |
+| 8 | Dependabot | not verified: the `docker` entry for `/stacks/gatus` parses as YAML, but GitHub reads the default branch (`main`) and the entry is not there yet; no API shows parsing. After `dev` reaches `main`, look at Insights, Dependency graph, Dependabot |
+
+Failure modes shown: ntfy.sh unreachable means a lost alert (Gatus logs it; not tested); topic leaked means anyone can post, so rotate it in `.env`; a sleeping laptop sends nothing. Evolution: a self-hosted ntfy on the always-on host is a change of `NTFY_URL`.
+Still not verified: Chrome, Firefox, Linux, multi-day disk size, ntfy.sh unreachable, the admin-only OIDC follow-up (unchanged, Proposed).
+
 ## Alternatives
 Uptime Kuma: rejected on HV6 and HV8 and on size; its built-in health check and notifier list are better. Homepage only: no history. Beszel, Prometheus with Grafana and Loki, Netdata: socket or host access, or several services on a 2 GB VM. A monitor of our own: no gain over a 24 MB tool.

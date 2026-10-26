@@ -137,11 +137,6 @@ run() {
 	while IFS='|' read -r _ n st; do
 		case "$st" in 200|2??|3??) ok "tile dot $n" "monitor status $st" ;; *) bad "tile dot $n" "monitor status ${st:-none} (red). fix: is the stack running and on the edge?" ;; esac
 	done < "$tmp"
-	# The Health tile's widget reads the health tool through the portal (only when the tool runs).
-	if docker ps --format '{{.Names}}' | grep -q '^nexahome-gatus-'; then
-		w=$(curl -s --max-time 10 --get --data-urlencode "type=gatus" --data-urlencode "group=Platform" --data-urlencode "service=Health" --data-urlencode "endpoint=status" "http://home.$base/api/services/proxy" | grep -o '"success":true' | head -1)
-		[ -n "$w" ] && ok "health widget" "portal reads the health tool" || bad "health widget" "portal got no results from gatus:8080"
-	fi
 	return $((fails > 0))
 }
 

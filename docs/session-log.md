@@ -2,12 +2,79 @@
 
 Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
+## 2026-10-26: P3 session 3, notifier, quiet Health tile, verification of S2 gaps
+
+**Done**
+- Entry: `dev` = `origin/dev` = `61cf16d`; `docs/session-log.md` was modified (S2 close entry), carried to `feat/p3-s3-verify` and committed as `8d11ca1`. Colima was stopped; volumes `nexahome-actual_data`, `nexahome-identity_data`, `nexahome-gatus_data`, network `nexahome-edge` and image `nexahome/gatus:v5.37.0` present.
+- Item 1: Health widget removed from the portal tile (owner chose: `make portal` does not start Gatus, the tile must show no error); `health widget` row removed from `scripts/smoke.sh`. Pass.
+- Item 2: ntfy notifier, opt-in (`NTFY_TOPIC` empty = off, ignored by Gatus), thresholds 2/2 and send-on-resolved under `alerting.ntfy.default-alert`. Bodies captured on a local listener; both alerts delivered on the real ntfy.sh and read back without printing the topic. Pass. Commit `2e48206`.
+- Item 3: lid closed about 3 min: 127 s gap, clocks equal after wake, no false red or alert. Pass.
+- Item 4: 22 min measured (`data.db` 96 to 120 KiB); retention from source (100 results, 50 events per target, hourly uptime about 48 h then daily, cleanup at 32 days). Multi-day: not verified.
+- Item 5: pass on the owner's report. Item 6: not verified, v5.37.0 is the newest release. Item 7: pass (clone, `COMPOSE_PROJECT_NAME=nexahome-fresh`, defaults, five targets green; container and volume removed). Item 8: not verified (entry not on `main`; parses locally).
+- Finding: Pocket ID restarted itself at 12:52:55 and at wake 13:03:52 ("host is not registered"); undiagnosed; `make smoke` fails on `restarts` until the stack is recreated (I recreated it with `make down/up STACK=identity`, volume kept).
+- The deny rule blocked my writes to `stacks/gatus/.env` even after the owner said once was allowed; the owner added the two lines.
+- Close: `make check` passed; `make smoke` passed (31 ok, notifier on); `make down` kept the three volumes and the network; Colima stopped.
+
+**Doc changes and reasons**
+- ADR 0013 (Confirmed): "Session 3 results" added with HV10 to HV17 and the HV6 wording (outbound only to the configured notifier, none while the topic is empty). One consequence changed on the owner's instruction: the Health tile no longer shows Gatus counts (widget removed). Decision unchanged otherwise.
+- `docs/roadmap.md`: P3 session 3 done; Next row. `docs/project.md` changelog. `stacks/gatus/README.md`: alerts, cost note and turn-on steps; `.env.example`: `NTFY_URL`, `NTFY_TOPIC`.
+
+**Verification:** passed: `make check`, `make smoke`, `sh -n scripts/smoke.sh`, `check_compose.py`; `stacks/gatus/.env` and `data/` gitignored; nothing staged. **Not verified:** Chrome, Firefox, Linux, multi-day disk size, ntfy.sh unreachable, tag upgrade, Dependabot parsing, CI (no push). Branch `feat/p3-s3-verify` has 3 commits (4 with this log) not merged or pushed.
+
+**Next:** P3 is functionally closed. Candidates (owner picks): merge `feat/p3-s3-verify` into `dev`; a short session to diagnose the Pocket ID self-restart (it will matter on an always-on host); admin-only OIDC for the Gatus UI (own design); then the hardware phases when hardware exists.
+
+**Open questions**
+- Downgrade-then-upgrade test for the Gatus tag, or wait for the next release?
+- Pocket ID restart: own session now?
+- Admin-only OIDC for the Gatus UI (Proposed follow-up).
+
+**Pending (owner actions, consolidated)**
+- Merge `feat/p3-s3-verify` into `dev` (approval needed); push `dev`; later `dev` into `main` by pull request, then check Dependabot's `/stacks/gatus` row (Insights, Dependency graph).
+- Delete the leftover scratch clone `data/fresh-s3` (gitignored; my delete was denied). Keep your ntfy topic (in `stacks/gatus/.env`) secret.
+- Add `TwiN/gatus` to the GitHub security-alert watch (Watch, Custom, Security alerts); also `pocket-id/pocket-id`, `caddyserver/caddy`, `gethomepage/homepage`.
+- Keep `ENCRYPTION_KEY` and the restic password in a password manager (the repository is on this disk: a drill, not protection).
+- Confirm in Pocket ID that the first Actual client secret and the session 2 key `s2-config` are gone.
+- A real second authenticator before real data exists; permanent outsider test account and one Safari profile per test account ([test-sso](runbooks/test-sso.md)).
+- Accept, change or reject ADRs 0010, 0011 and 0012 (all Proposed); digest pinning; paid tier vs the open-source rule; keep `hello` on the edge and in the portal?
+- Carried over: delete the local plan `.claude/plans/concerns-and-audiences.md`; GitHub setting "Block command line pushes that expose my email"; Makefile, repository layout and security baseline still Proposed; the volumes `nexahome-actual_data`, `nexahome-identity_data`, `nexahome-gatus_data` and the network `nexahome-edge` stay until you remove them.
+- `main` is behind `dev`: merge `dev` into `main` by pull request when you want the P2.5 and P3 work there.
+
 ## 2026-10-26: P3 session 2, Gatus stack built; ADR 0013 accepted
 
-**Done:** `stacks/gatus` built and checked (details in ADR 0013, "Session 2 results"): owner cards C1 to C6 passed, RAM 6.6 MiB, `make check` and `make smoke` green, Health tile with the Gatus widget, `make down` kept all volumes. Committed `c636cad` on `feat/p3-s2-stack`. A DNS error on the widget when Gatus is not running (e.g. after `make portal`) was reported; fix proposed, not applied.
-**Doc changes and reasons:** ADR 0013 and its register row set to Confirmed on the owner's "I accept ADR 0013" (no other Confirmed item touched); roadmap: P3 session 2 done, session 3 defined (real notifier, sleep and clock drift, disk growth, phone width, tag upgrade, fresh-clone rebuild, `make portal` widget question); project.md changelog.
-**Next:** P3 session 3 as above. **Open:** start Gatus with `make portal`? Admin-only OIDC for the UI (Proposed follow-up).
-**Pending (owner):** add `TwiN/gatus` to the security-alert watch on GitHub (Watch, Custom, Security alerts; the API cannot set that); push of `dev` (not requested yet).
+**Done**
+- Entry: branched `feat/p3-s2-stack` from `feat/p3-s1-health` (owner's choice; S1 was not in `dev`). The tree was not clean (the S1 log entry was uncommitted): committed it as `493e9ff` with the owner's yes. Volumes `nexahome-actual_data`, `nexahome-identity_data`, network `nexahome-edge` and the images `ghcr.io/twin/gatus:v5.37.0`, `busybox:1.37.0-musl` were present. Baseline `make smoke` green; VM 1496 MiB available after Gatus started.
+- Built `stacks/gatus` (Dockerfile with named busybox stage, `compose.yaml` with `build:` and `pull_policy: build`, config with five targets at 30 s, README), edge alias and Caddyfile block, portal tile "Health" with Homepage's Gatus widget, Dependabot `docker` entry, `smoke.sh` (outbound with busybox `cat` fallback, target-list contract check, `health widget` row, remote-assets check exempts internal single-label URLs). Commit `c636cad`.
+- Measured: 6.6 MiB idle (limit 32 MiB), no OOM or restart, image 75 MB. `make check` accepts a `build:` stack unchanged. All five targets green (200).
+- Owner cards C1 to C6 passed. Scenario results are in ADR 0013 ("Session 2 results"). Drift test: a renamed target made `make smoke` report the mismatch; config restored.
+- `make down` kept `nexahome-actual_data`, `nexahome-identity_data`, `nexahome-gatus_data` and `nexahome-edge`.
+- Owner then accepted ADR 0013 and asked for session 3, pushes and merges: pushed `feat/p3-s1-health`, `feat/p3-s2-stack` and `dev` (`1144865..61cf16d`); both branches merged into `dev` with `--no-ff` on the owner's approval. Colima stopped.
+- Reported after the session: the Health widget shows `queryAaaa ENODATA gatus` when Gatus is not running (for example after `make portal`, which does not start it). Not fixed; decision left to session 3.
+
+**Doc changes and reasons**
+- ADR 0013 and its register row: Proposed to Confirmed on the owner's "I accept ADR 0013"; "Session 2 results" added (also records that `failure-threshold` belongs to alerts in Gatus, not endpoints). Changelog in `docs/project.md`. No other Confirmed item touched.
+- `docs/roadmap.md`: P3 session 2 done, session 3 defined, Now/Next/Later updated. `docs/runbooks/add-a-stack.md`: one sentence on the Gatus target list. `stacks/gatus/README.md` new.
+
+**Verification (session close)**
+- Passed: `scripts/check_compose.py` (all eight stacks ok); `sh -n scripts/smoke.sh`; no staged changes; `stacks/gatus/.env` and `data/` are gitignored; no home path in tracked files. During the stack work: `make check`, `make smoke` (incl. gatus, contract, health widget), cards C1 to C6.
+- Not re-run at close: `make smoke` (Colima stopped). The full `make check` stops at the "no direct commits to main or dev" hook because the working tree is on `dev` (expected, not a defect).
+- **Not verified:** Dependabot parsing of the `docker` entry, CI building the image (CI only runs `make check`), Chrome, Firefox, Linux, a real notifier, alert body, sleep and clock drift, long-run disk growth, phone-width layout (S-g), a tag upgrade, a fresh-clone rebuild.
+
+**Next:** P3 session 3 (prompt given to the owner): the items under "Not verified" above plus the `make portal` widget question; branch `feat/p3-s3-<topic>` from `dev`.
+
+**Open questions**
+- Start Gatus with `make portal` (recommended) or drop the widget?
+- Which notifier channel for session 3 (what leaves the machine)?
+- Admin-only OIDC for the Gatus UI (Proposed follow-up, needs its own design).
+
+**Pending (owner actions, consolidated)**
+- Uncommitted: this log and roadmap edit sits on `dev` in the working tree; the hook blocks commits on `dev`, so commit it on a branch (for example `docs/p3-s2-close`) and merge by your approval.
+- Add `TwiN/gatus` to the GitHub security-alert watch (Watch, Custom, Security alerts); also `pocket-id/pocket-id`, `caddyserver/caddy`, `gethomepage/homepage`.
+- Keep `ENCRYPTION_KEY` and the restic password in a password manager (the repository is on this disk: a drill, not protection).
+- Confirm in Pocket ID that the first Actual client secret and the session 2 key `s2-config` are gone.
+- A real second authenticator before real data exists; permanent outsider test account and one Safari profile per test account ([test-sso](runbooks/test-sso.md)).
+- Accept, change or reject ADRs 0010, 0011 and 0012 (all Proposed; 0013 is now Confirmed); digest pinning; paid tier vs the open-source rule; keep `hello` on the edge and in the portal?
+- Carried over: delete the local plan `.claude/plans/concerns-and-audiences.md`; GitHub setting "Block command line pushes that expose my email"; Makefile, repository layout and security baseline still Proposed; the volumes `nexahome-actual_data`, `nexahome-identity_data`, `nexahome-gatus_data` and the network `nexahome-edge` stay until you remove them. Dependabot parsing of the stack entries is checked in session 3.
+- `main` is behind `dev`: merge `dev` into `main` by pull request when you want the P2.5 and P3 work there.
 
 ## 2026-10-26: P3 session 1, health view spike and ADR 0013
 

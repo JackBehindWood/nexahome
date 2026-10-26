@@ -7,35 +7,47 @@ storage:
 web:
   port: 8080
 
-# A check that fails is red at once. Thresholds (red/green after N results) belong to alerts, below.
+# A check that fails is red at once. Thresholds (alert/resolve after N results) are in `alerting:`, below.
 endpoints:
   - name: Edge
     group: Platform
     url: "http://edge:${EDGE_PORT}/health"
     interval: 30s
     conditions: ["[STATUS] == 200"]
+    alerts: [{type: ntfy}]
   - name: Sign in
     group: Platform
     url: "http://id.${NEXAHOME_DOMAIN}:${EDGE_PORT}/"
     interval: 30s
     conditions: ["[STATUS] < 400"]
+    alerts: [{type: ntfy}]
   - name: Portal
     group: Platform
     url: "http://home.${NEXAHOME_DOMAIN}:${EDGE_PORT}/"
     interval: 30s
     conditions: ["[STATUS] < 400"]
+    alerts: [{type: ntfy}]
   - name: Actual Budget
     group: Apps
     url: "http://actual.${NEXAHOME_DOMAIN}:${EDGE_PORT}/"
     interval: 30s
     conditions: ["[STATUS] < 400"]
+    alerts: [{type: ntfy}]
   - name: Hello
     group: Apps
     url: "http://hello.${NEXAHOME_DOMAIN}:${EDGE_PORT}/"
     interval: 30s
     conditions: ["[STATUS] < 400"]
+    alerts: [{type: ntfy}]
 
-# Notifications: none wired (a sleeping laptop cannot alert; remote channels leave the machine).
-# To add one: a provider under `alerting:` and, on each endpoint,
-#   alerts: [{type: <provider>, failure-threshold: 2, success-threshold: 2, send-on-resolved: true}]
-# (ADR 0013; S1 proved this with a local webhook). Empty on purpose: nothing leaves the machine.
+# Notifications (ADR 0013): ntfy, off while NTFY_TOPIC is empty (stacks/gatus/.env). When on, the alert
+# text (target name, status, time, URL) is sent to NTFY_URL. Another channel: replace this block with
+# another provider from the Gatus docs and keep `alerts: [{type: <provider>}]` on the endpoints.
+alerting:
+  ntfy:
+    url: "${NTFY_URL}"
+    topic: "${NTFY_TOPIC}"
+    default-alert:
+      failure-threshold: 2
+      success-threshold: 2
+      send-on-resolved: true
