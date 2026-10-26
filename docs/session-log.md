@@ -2,6 +2,33 @@
 
 Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
+## 2026-10-26: P4 planning (docs only)
+
+**Done**
+- Entry: `dev` = `origin/dev` = `34f2a04`, tree clean, Colima stopped. `feat/p3-s3-verify` was already merged into `dev` (the Pending line below about that merge is stale). Branch `feat/p4-plan` from `dev`.
+- Read the docs, ADRs 0004, 0008, 0011, 0013, the restore and add-a-stack runbooks, Makefile, scripts and the old P4 draft. Researched current Mac mini models, Dutch list prices, education terms, the 14-day return window, power, macOS, remote access and local model memory needs (sources and "not verified" marks are in the local plan).
+- Four rounds of owner input shaped the plan: desk use, Wi-Fi only, new only, local AI to save subscription money, M6 32 GB with a small external SSD as the lead option, M5 Pro kept as a reference, Jetson Orin Nano owned and unused. The plan was audited twice; the audit found a deploy-checkout clash, missing return-window sequencing and a wrong headless assumption (all fixed).
+- Old draft: dropped `make upgrade` (cut in P2 S3), `docker context` deploy, "wait for the next generation" (the M6 and M5 Pro minis shipped on 2026-09-22) and the old branch name.
+
+**Doc changes and reasons**
+- `docs/roadmap.md`: P4 now has session 0, Track A (A1 to A3) and Track B (B1 to B5), deferred items with triggers, ADRs to write (0014 to 0017); Now, Next and Later rows. Reason: the owner asked for a plan with two labelled tracks.
+- `docs/project.md`: four hardware rows added as Open (mini configuration, SSH and VPN pointer, power policy, deploy flow); open-questions wording. No Confirmed row touched.
+- `docs/architecture.md`: Jetson row (owned, not set up) and a per-hop table. Reason: one place for what changes per hardware hop.
+
+**Verification:** see the commit; not verified: all education prices, lead times, M6 idle power and model speed, macOS version on the mini, `sshd_config.d` handling, Wi-Fi wake, Tailscale terms at the source, local coding quality.
+
+**Next:** P4 session 0 (laptop test of a small model, live education prices, ADR 0014, then the order) or any of A1 to A3. Track B waits for the mini.
+
+**Open questions**
+- Which subscription would be cancelled and its monthly cost (given in session 0, kept local).
+- Education discount amount for the mini and your eligibility; AppleCare+ yes or no; external SSD size and price.
+- Whether "a NexaHome code package" means something other than a Python or CLI wrapper (deferred with a trigger meanwhile).
+
+**Pending (owner actions)**
+- Update the local `CLAUDE.md` hardware section (a Jetson is owned; the mini is planned) and keep real hostnames in the gitignored `inventory.local.md`.
+- Read the live Dutch education configurator and the Apple return form before any purchase.
+- Everything in the earlier Pending lists below still stands, except the merge of `feat/p3-s3-verify`, which is done.
+
 ## 2026-10-26: P3 session 3, notifier, quiet Health tile, verification of S2 gaps
 
 **Done**
