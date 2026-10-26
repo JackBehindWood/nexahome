@@ -62,11 +62,11 @@ Goal: a safe, public, documented starting point. Exit criteria were met by Sessi
 
 ### P3 Health view
 
-- **Status:** confirmed by the owner 2026-10-26. Session 1 done: Gatus and Uptime Kuma measured, [ADR 0013](adr/0013-health-view.md) Proposed (Gatus). Session 2 done: `stacks/gatus` built, portal tile with Gatus widget, owner cards C1 to C6 passed, scenarios in the ADR; the ADR stays Proposed. Admin-only access (OIDC for the UI) is a Proposed follow-up.
+- **Status:** confirmed by the owner 2026-10-26. Session 1 done: Gatus and Uptime Kuma measured, [ADR 0013](adr/0013-health-view.md) Proposed (Gatus). Session 2 done: `stacks/gatus` built, portal tile with Gatus widget, owner cards C1 to C6 passed, scenarios in the ADR; the ADR stays Proposed. ADR 0013 is Confirmed (owner, 2026-10-26). Admin-only access (OIDC for the UI) is a Proposed follow-up. Session 3 below closes what S2 did not verify.
 - **Goal:** one place to see service health, history and notifications. Logs stay with `docker compose logs`: without the Docker socket no tool can show them (Proposed, ADR 0013). The launchpad (central dashboard) moved to P2.5. **Depends on:** P2 (a real service to watch). **Hardware:** none.
 - **Scope:** compare two tools from the [shortlist](observability.md#tool-shortlist), choose by ADR, deploy as a stack; link it from the P2.5 portal.
 - **Exit criteria:** it shows the real stack's state; stopping the tool breaks nothing else (decoupling rule).
-- **Sessions:** (1) spike and ADR (done); (2) stack, browser checks and restore-drill decision. Split with the owner's agreement on 2026-10-26: the spike and ADR come first, nothing is built before the ADR exists.
+- **Sessions:** (1) spike and ADR (done); (2) stack, browser checks (done); (3) not started: a real notifier (owner picks the channel; S1 proved the webhook only), laptop sleep and clock drift after wake, disk growth over days, phone-width layout, a tag upgrade, a fresh-clone rebuild, and the `make portal` question (start Gatus with the portal so the Health widget shows no DNS error when Gatus is down). Split with the owner's agreement on 2026-10-26: the spike and ADR come first, nothing is built before the ADR exists.
 
 ### P4 Mac mini bootstrap
 

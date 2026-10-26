@@ -1,6 +1,6 @@
 # 0013. Health view: Gatus
 
-* **Status:** Proposed
+* **Status:** Confirmed (owner's yes, 2026-10-26)
 * **Date:** 2026-10-26
 
 ## Context
@@ -8,7 +8,7 @@ P3 wants history and notifications on top of the portal's red/green dots ([ADR 0
 
 Requirements and how each is verified: HV1 up/down per stack, red within about two intervals (browser cards, tool API vs `make smoke`); HV2 history survives a restart (restart test); HV3 a notification mechanism proven on a local webhook, no real channel wired; HV4 RAM limit about 4x idle within R6 (`docker stats`); HV5 non-root, read-only root filesystem, `cap_drop: ALL`, no socket, no published port, working Compose health check (`make check`, `make smoke`, `docker inspect`); HV6 no outbound except a configured notifier, first run not claimable by a page in the browser (socket probe, first-run test); HV7 stopping it breaks nothing (`make smoke`, cards); HV8 targets in a Git file, hostnames only from `NEXAHOME_DOMAIN` and `EDGE_PORT`, fresh clone rebuilds without clicks; HV9 arm64, exact tag, open licence. Logs are out of scope.
 
-## Decision (Proposed)
+## Decision
 `stacks/gatus`: Gatus `ghcr.io/twin/gatus:v5.37.0` (Apache-2.0, Go, one binary), targets in `config/config.yaml`, checks through the edge aliases (the same URLs as the portal tiles) plus the edge's `/health`, alert section present but empty. A six-line local `Dockerfile` (no new dependency) builds on the pinned image and adds a static busybox (`busybox:1.37.0-musl`, for the `wget` health check) and a `/data` directory owned by uid 1001, because the upstream image is `scratch`: no shell, no `wget`, and a fresh volume is root-owned. History in SQLite in a named volume labelled `nexahome.backup: "false"` (disposable: config is in Git; owner may choose `"true"`). The owner accepted writing small local code where a gap needs it.
 
 | Item | Gatus v5.37.0 | Uptime Kuma 2.5.6 |
@@ -30,7 +30,7 @@ Easier: one YAML file in Git is the whole configuration, 5 to 7 MiB leaves the R
 Evolution: laptop (now), then Mac mini (may sleep, so not the monitor's home), then an always-on Linux host or NAS: the monitor, a heartbeat for the backup and a real notifier move there; the YAML, the Dockerfile and the alias names stay. Honest limit: on the laptop the monitor shares its failure domain with what it watches, so it proves the tool, not the health of an always-on system. Auth for the tool UI waits for the leaving-loopback gate ([ADR 0011](0011-edge-and-local-hostnames.md)).
 Not verified: Chrome, Firefox, Linux, a real notifier, laptop sleep and clock drift, long-run disk growth, an upgrade between tags, the UI scenarios (owner cards in session 2), alert body capture (the listener saw the request, not the body), Kuma beyond the setup page.
 
-## Session 2 results (2026-10-26, stack built; status stays Proposed)
+## Session 2 results (2026-10-26, stack built; accepted by the owner afterwards)
 Built `stacks/gatus` as decided. `make check` accepts a stack with `build:` (no change to `check_compose.py`); Compose uses `pull_policy: build` so the local image name is never pulled from a registry. Dependabot: a `docker` entry for `/stacks/gatus` (the pinned tags are in the Dockerfile `FROM` lines; the compose ecosystem does not read them); whether GitHub parses it is not verified. Measured: 6.6 MiB idle against `mem_limit` 32m, no OOM, no restarts, image 75 MB; `make smoke` green including hardening, outbound (busybox `cat` fallback) and the contract row, which now also compares portal tiles with Gatus targets.
 Correction to the ADR text: `failure-threshold` and `success-threshold` belong to alerts in Gatus, not to endpoints; with no alert wired, a target is red after one failed check.
 Portal integration added: the Health tile has Homepage's Gatus widget (counts read server-side from `http://gatus:8080`, no secret); each tile keeps its own dot, so the portal still shows red/green when Gatus is down. `make smoke` has a `health widget` row.

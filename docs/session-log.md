@@ -2,6 +2,13 @@
 
 Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
+## 2026-10-26: P3 session 2, Gatus stack built; ADR 0013 accepted
+
+**Done:** `stacks/gatus` built and checked (details in ADR 0013, "Session 2 results"): owner cards C1 to C6 passed, RAM 6.6 MiB, `make check` and `make smoke` green, Health tile with the Gatus widget, `make down` kept all volumes. Committed `c636cad` on `feat/p3-s2-stack`. A DNS error on the widget when Gatus is not running (e.g. after `make portal`) was reported; fix proposed, not applied.
+**Doc changes and reasons:** ADR 0013 and its register row set to Confirmed on the owner's "I accept ADR 0013" (no other Confirmed item touched); roadmap: P3 session 2 done, session 3 defined (real notifier, sleep and clock drift, disk growth, phone width, tag upgrade, fresh-clone rebuild, `make portal` widget question); project.md changelog.
+**Next:** P3 session 3 as above. **Open:** start Gatus with `make portal`? Admin-only OIDC for the UI (Proposed follow-up).
+**Pending (owner):** add `TwiN/gatus` to the security-alert watch on GitHub (Watch, Custom, Security alerts; the API cannot set that); push of `dev` (not requested yet).
+
 ## 2026-10-26: P3 session 1, health view spike and ADR 0013
 
 **Done**
