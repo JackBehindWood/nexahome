@@ -2,6 +2,41 @@
 
 Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
+## 2026-10-26: P3 session 1, health view spike and ADR 0013
+
+**Done**
+- Entry checked: `dev` = `origin/dev` (`1144865`, pushed 2026-10-23), tree clean, Colima stopped; after the start the volumes `nexahome-actual_data`, `nexahome-identity_data` and the network `nexahome-edge` were present. Branch `feat/p3-s1-health`, one commit (`9426da9`), not pushed. Colima started (existing profile) and stopped again. Owner wrote "P3 confirmed".
+- Baseline before the spike: `make smoke` all ok; `docker stats` portal 173, Actual 192, identity 62, edge 51 MiB (includes page cache); VM `free -m` 535 MiB used, 1424 MiB available.
+- Spike on two tools in throwaway projects (pinned: Gatus `v5.37.0`, Uptime Kuma `2.5.6`), joined to `nexahome-edge` without an alias, all removed afterwards (containers, volumes, Kuma image, built image). Gatus: arm64, 72.9 MB on disk, 5 to 6.5 MiB RAM, YAML config with env substitution, no outbound except five private edge connections; upstream image is `scratch` (no shell, so no Compose health check) and a fresh volume is root-owned (uid 1001 cannot write). Kuma: 105 to 107 MiB at the setup page, 2.5 GB on disk, config only in its UI database, `/setup-database` open to the first visitor; stopped early on those gates.
+- Owner decision: write small local code where needed. Fix: a six-line Dockerfile (pinned Gatus, `busybox:1.37.0-musl` copied in for `wget`, `/data` owned by 1001). Tested: healthy, `read_only`, `cap_drop: ALL`, SQLite history kept across a restart.
+- Failure modes shown: tool stopped (`make smoke` still passed); Actual stopped (red at the first check, alert after the second, resolved alert after the start, custom webhook); volume deleted (history gone, config from Git). Owner approved splitting P3 into two sessions.
+
+**Doc changes and reasons**
+- New `docs/adr/0013-health-view.md` (Proposed): requirements HV1 to HV9, comparison with figures, decision (Gatus plus Dockerfile), failure modes, evolution, alternatives, not verified.
+- `docs/project.md`: row "P3 goes ahead" Confirmed (the owner's yes), row for the health tool Proposed. `docs/observability.md`: shortlist result and notifications row (Proposed). `docs/roadmap.md`: P3 confirmed, session 1 done, two sessions, "logs" narrowed to `docker compose logs` (Proposed, ADR 0013), Now/Next. No Confirmed decision was touched; ADR 0008 only referenced.
+- Recommendation recorded: no backup-freshness tile here (would change the Confirmed backup job; trigger: first always-on host with a scheduled backup).
+
+**Verification**
+- Passed: `make check`; `make smoke` (full stack, before and after the spike); `git status` clean; nothing staged; no `.env`, key or `data/` tracked; no home path or name in the tree.
+- **Not verified:** the browser cards and UI scenarios (session 2); Chrome, Firefox, Linux; a real notifier; alert body (the listener saw the request, not the body); laptop sleep and clock drift; long-run disk growth; an upgrade between tags; Kuma beyond its setup page; whether `check_compose.py` and Dependabot accept a stack with `build:`.
+- Deviations: a diagnostic `docker run ... /gatus --help` started the server as the image default user (root) for about 20 minutes (removed); spike files first in the scratchpad (not shared with Colima), then in the gitignored `data/` and removed; the `rm -rf` form was denied once and `rm -r` used.
+
+**Next:** P3 session 2 on `feat/p3-s2-stack`: build `stacks/gatus`, the four-step edits, Dependabot, `smoke.sh`, browser cards C1 to C6, scenarios S-a to S-h into ADR 0013. Prompt given to the owner.
+
+**Open questions**
+- Accept, change or reject ADR 0013 (Proposed), including the local Dockerfile and volume label `"false"` (history disposable).
+- Logs out of scope (Proposed): confirm the narrowing.
+- Branch session 2 from `dev` after merging `feat/p3-s1-health`, or from this branch?
+
+**Pending (owner actions, consolidated)**
+- Approval to push `feat/p3-s1-health` and `dev` (not yet pushed since 2026-10-23: `feat/p2-5-s5-restore` work is in `dev`) and open pull requests as needed; merging `dev` into `main` is by pull request only.
+- Keep `ENCRYPTION_KEY` and the restic password in a password manager (the repository is on this disk: a drill, not protection).
+- Confirm in Pocket ID that the first Actual client secret and the session 2 key `s2-config` are gone.
+- A real second authenticator before real data exists; permanent outsider test account and one Safari profile per test account ([test-sso](runbooks/test-sso.md)).
+- Watch security alerts for `pocket-id/pocket-id`, `caddyserver/caddy`, `gethomepage/homepage`; add `TwiN/gatus` when the stack exists.
+- Accept, change or reject ADRs 0010, 0011, 0012 and 0013 (all Proposed); digest pinning; paid tier vs the open-source rule; keep `hello` on the edge and in the portal?
+- Carried over: Dependabot parsing of the stack entries; delete the local plan `.claude/plans/concerns-and-audiences.md`; GitHub setting "Block command line pushes that expose my email"; Makefile, repository layout and security baseline still Proposed; the volumes `nexahome-actual_data`, `nexahome-identity_data` and the network `nexahome-edge` stay until you remove them.
+
 ## 2026-10-23: P2.5 session 5, backup and restore drill, P2.5 closed
 
 **Done**
