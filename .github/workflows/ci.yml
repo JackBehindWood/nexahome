@@ -61,9 +61,11 @@ jobs:
           for t in shasum sha256sum shellcheck docker; do command -v "$t" || echo "$t: not found"; done
       - name: Shell syntax
         run: for f in scripts/*.sh; do sh -n "$f" || exit 1; done
-      - name: ShellCheck
+      - name: ShellCheck (Linux runners ship it, macOS runners do not)
         run: |
+          if ! command -v shellcheck >/dev/null && [ "$RUNNER_OS" = macOS ]; then brew install shellcheck; fi
           command -v shellcheck >/dev/null || { echo "::error::shellcheck is not installed on this runner"; exit 1; }
+          shellcheck --version | sed -n 2p
           shellcheck -s sh --severity=warning scripts/*.sh
       - name: Docker CLI with Compose (macOS runners ship none; no engine is needed, see scripts/check_compose.py)
         if: runner.os == 'macOS'
