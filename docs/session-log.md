@@ -2,6 +2,30 @@
 
 Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
+## 2026-11-02: Packaging PK1, audit report (read-only)
+
+**Done**
+- Entry: `feat/packaging` clean, two commits ahead of `dev`; `make check` passed. Stale premises found: `dev` is already pushed (the audit said unpushed); the master plan has no section 5.
+- Re-checked audit rows F1 to F21 and added F22 to F33. Read every stack README, runbook, `.github`, SECURITY, CONTRIBUTING and the root README against the repo; ran link, anchor, header, label and `make`-target checks with throwaway scripts (nothing committed). Compared all 20 ADRs and the Proposed register rows with what is built.
+- Result: 33 findings (3 high, 14 medium, 16 low). No broken links; every documented `make` target exists. ADRs 0010 to 0012 are implemented and drilled; ADRs 0014 to 0020 are correctly Proposed. The report is local (`.claude/plans/packaging/audit.md`).
+
+**Doc changes and reasons**
+- `docs/roadmap.md`: PK1 marked done, Next row points at PK2. Reason: progress only. No status label, Confirmed item or ADR changed.
+
+**Verification:** `make check` exit 0; `git status` and `git diff --staged` checked for `.env`, keys, `data/`, `.claude/` (none). Not verified: the mini; CI (no push); GitHub settings (branch protection, secret scanning, private vulnerability reporting; need read-only `gh` calls and the owner's yes); action SHAs and image manifests (network); Docker-dependent runbook steps; Linux and WSL2; `make setup` on Python 3.9.6 (reasoned from the pinned tool's metadata, not run).
+
+**Next:** PK2, docs fixes for the audit rows mapped to it, the `dev` to `main` pull request text (not opened) and `git branch -d feat/p4-Atrack` (approved). Suggest splitting it: wording fixes first, catch-up second.
+
+**Open questions**
+- The decision batch of 11 items (F9); runbook headers: add or relax (F12); label rule and a session-log exemption (F24); `NEXAHOME_DATA_DIR`: delete the claim or build it (F22); the country and education wording in committed files (F33).
+- Review of ADRs 0018 to 0020 and of the audit.
+
+**Pending (owner actions, consolidated; PK2 replaces this with the one list at the top of the log)**
+- Record the order and delivery locally; update the `CLAUDE.md` hardware section; decide AppleCare+ and the subscription to cancel (all local).
+- Decide ADRs 0010 to 0012 and the other Proposed rows (the batch above); review ADRs 0014 to 0020 and the SSH runbook.
+- Push `feat/packaging` and open the `dev` to `main` pull request only when you say so; then check Dependabot's stack entries (Insights, Dependency graph).
+- Open: diagnose the Pocket ID self-restart; optional admin-only sign-in for the health view; delete the leftover scratch clone `data/fresh-s3` if it still exists.
+
 ## 2026-11-02: Packaging PK0, ADRs 0018 to 0020
 
 **Done**
