@@ -13,7 +13,7 @@ Last replaced 2026-11-02 (PK4). Older entries below end with a pointer here inst
 - Open choices: digest pinning; paid tier versus the open-source rule; keep `hello` on the edge and in the portal; the root `.env.example` now holds no setting (delete it?).
 
 **Git**
-- Pull request 21 is merged into `dev` (owner). `feat/packaging` is 11 commits ahead of `dev` and not pushed. Decide: (1) the `tests` job diff in `.github/workflows/ci.yml` is prepared but not committed (workflow changes need your yes; `git diff .github/workflows/ci.yml`); (2) push `feat/packaging` and open a pull request into `dev`, which is the only way to run the new job. The `dev` to `main` pull request opens only when you say so (description prepared locally). Afterwards check under Insights, Dependency graph, Dependabot that every stack entry parses.
+- Pull request 21 is merged into `dev` (owner). `feat/packaging` is ahead of `dev` and not pushed. Decide: (1) the `tests` job diff in `.github/workflows/ci.yml` is prepared but not committed (workflow changes need your yes; `git diff .github/workflows/ci.yml`); (2) push `feat/packaging` and open a pull request into `dev`, which is the only way to run the new job. The `dev` to `main` pull request opens only when you say so (description prepared locally). Afterwards check under Insights, Dependency graph, Dependabot that every stack entry parses.
 - GitHub account setting "Block command line pushes that expose my email"; optional SSH-signed commits.
 - Making the `gate` job a required check on `main` (a GitHub setting): your answer is after PK4, once `gate` has been green on a pull request that includes the `tests` job.
 
