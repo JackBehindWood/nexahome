@@ -2,6 +2,101 @@
 
 Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
+## 2026-11-02: P4 A3, ADR 0017 deploy flow and `make deploy`
+
+**Done**
+- Read-only audit of the draft against the repo. Corrections to the draft: `git pull --ff-only` does not refuse on a non-overlapping dirty tree (proved); `make check` on `main` fails at the no-commit hook (CI sets `SKIP`); a plain `&&` chain prints no next command; a rollback leaves a detached checkout that the next pull refuses; `make up` starts every stack although ADR 0014 puts only `hello` and `actual` on the mini; `make smoke` fails on any host without the edge.
+- Owner decisions: `make deploy` runs on the mini (no laptop wrapper); anonymous HTTPS pull instead of a deploy key (public repository); a gitignored `.config/stacks` per host; the smoke question stays open for B2. Practice was checked in a short web look (homelab threads, tool pages) plus general knowledge: adopted pull on target, adapted to one script behind one target, rejected Docker context, runner, webhook, Watchtower and GitOps tools, deferred a timer.
+- Added `scripts/deploy.sh` (25 lines) and a `deploy` target; `ALL` in the Makefile reads `.config/stacks` (Makefile 99 lines, make 3.81). The laptop's `make -n up` and `make -n down` are identical to before.
+- Rehearsal on the laptop (Colima started and stopped, `hello` only, throwaway project and port, second checkout against a throwaway bare repository, all removed, Docker state equal to the start): clean deploy, local-change guard, failing check, rollback and detached checkout, recovery, `SKIP` need, host list, smoke failure, Colima stopped. Results are in ADR 0017. Findings: the checkout must be under `$HOME` (Colima mounts only the home directory); `COMPOSE_PROJECT_NAME` must not be exported while `make check` runs.
+- Added `scripts/setup.sh` at the owner's request (I had advised against it): `make setup` now runs it; checks git, make, python3, warns about Docker, creates `.venv`, `--deploy <stacks>` writes `.config/stacks` and disables push; never installs system software; safe to repeat. Tested in a scratch copy (uv and pip paths, re-run, deploy mode, errors); found and fixed a half-made `.venv` breaking the second run. Not tested on the mini or Linux.
+
+**Doc changes and reasons**
+- ADR 0017 new (Proposed). `docs/project.md`: deploy flow row Open to Proposed. `docs/roadmap.md`: A3 done, ADR list, Next row. ADR 0015 and `docs/runbooks/mini-ssh.md`: deploy key replaced by anonymous HTTPS for pulling, links to ADR 0017 (one source per fact; still Proposed). ADR 0016: after a reboot `make ps` instead of `make smoke` until the smoke question is decided. `docs/architecture.md`: pointer and hop table.
+
+**Verification:** `make check` and `git diff --staged` before the commit (see the commit). Not verified: everything on the mini (D2, D3, make 3.81 and command line tools there, `make setup` on macOS 26, HTTPS from its network, `docker` on the PATH of a non-login SSH shell), a rollback that changes Compose files, `actual`, Linux.
+
+**Next:** the owner's review of ADRs 0014 to 0017 and the runbook; Track A is drafted and rehearsed but not reviewed. Then Track B when the mini arrives (B1 tests ADRs 0015 and 0016, B2 tests 0014 and 0017). Open for B2: smoke on a partial host (partial-host mode, or the edge on the mini).
+
+**Open questions**
+- Review of ADR 0017; which smoke fix to take in B2.
+
+**Pending (owner actions)**
+- Unchanged from the A1 entry (record order and delivery locally, `CLAUDE.md` hardware section, AppleCare+ and subscription decisions). Nothing is pushed; `feat/p4-Atrack` was merged into `feat/p4-plan` locally on the owner's instruction.
+
+## 2026-11-02: P4 A2, ADR 0016 sleep, power, FileVault and updates
+
+**Done**
+- Read-only audit of the draft against the laptop (macOS 27.0.1, FileVault on): `sleep`, `displaysleep` and `womp` read back with `pmset -g custom`; the laptop has no `autorestart` key, so that setting cannot be checked here. `softwareupdate -l` not run (owner chose to skip; the laptop's version says nothing about the mini).
+- Web look at practice for an always-on mini (forums and blogs only): adopted `sleep 0`, display sleep, `autorestart`, `fdesetup authrestart`; rejected Wake-on-LAN as a dependency, `caffeinate`, `disablesleep`, `disksleep 0`, FileVault off and MDM; left one candidate for a B1 test (SSH unlock before login on macOS 26).
+- Owner decisions: Ethernet plug and play (Wi-Fi only today); manual sleep only (no automatic system sleep, the owner may sleep or shut down by hand); restart after a power cut.
+- ADR 0016 drafted (Proposed), with an operating table and the after-reboot sequence. Changed from the old plan: the "no macOS 27.0" wording is dropped (the laptop already runs 27.0.1); a major upgrade waits for the owner's decision.
+
+**Doc changes and reasons**
+- `docs/project.md`: power policy row Open to Proposed, linked to the ADR. `docs/roadmap.md`: A2 done, ADR list, Next row. `docs/architecture.md`: reboot behaviour pointer. ADR 0015: "planned" became a link. Reason: one pointer per fact, nothing promoted.
+
+**Verification:** see the commit. Not verified: `pmset` keys and `autorestart` on macOS 26 and on the M6 with FileVault, `authrestart`, SSH unlock before login, M6 idle power, the macOS version the mini ships with, `softwareupdate -l` output, Ethernet behaviour (no cable), unclean-shutdown effect on Colima volumes.
+
+**Next:** A3 (ADR 0017, deploy flow), then Track B when the mini arrives; B1 tests ADR 0016.
+
+**Open questions**
+- Review of ADR 0016; whether to test SSH unlock before login in B1 and, if it needs a password, whether that is acceptable beside key-only SSH.
+
+**Pending (owner actions)**
+- Unchanged from the A1 entry (record order and delivery locally, `CLAUDE.md` hardware section, AppleCare+ and subscription decisions).
+
+## 2026-11-02: P4 A1, SSH runbook and ADRs 0014 and 0015
+
+**Done**
+- Branch `feat/p4-Atrack` from `feat/p4-plan` (the plan commit is not merged into `dev`).
+- Runbook `docs/runbooks/mini-ssh.md`: five steps, a block of environment variables so commands paste unchanged, hardened drop-in, effective-value check, host-key check, client config, `from=` on keys, add, revoke and review, recovery. Status banner: not confirmed on a real mini.
+- ADR 0015 (Proposed): keys only, LAN only, deploy key for pull and per-device key for push, no agent forwarding, VPN comparison with a trigger, deferred and rejected options.
+- ADR 0014 (Proposed): M6 32 GB / 512 GB plus a small external SSD, tiers only (no prices, budget or order date), sizing rule, return-window rule. The owner ordered the mini before this session; the repo had no record, so the ADR was written afterwards from the plan and the owner's answers.
+- Rehearsal on the laptop (macOS 27.0.1, OpenSSH 10.3; the mini will run 26.x): throwaway non-root `sshd` on a loopback port with scratch keys and a scratch drop-in, no `sudo`, deleted afterwards. Passed: `sshd -t`, all `sshd -T` values, key login, host-key match, password and wrong-key refusal, tunnel, no agent socket with `ssh -A`, `from=` refusing an excluded client. Findings: start such an `sshd` with an absolute config path; `$?` after a pipe is the filter's.
+- Read-only look at the laptop's own `sshd_config`: it begins with the `Include` line and says the first value wins; Apple's drop-in sets `UsePAM yes`, hence both password lines.
+
+**Doc changes and reasons**
+- `docs/project.md`: SSH method row (Proposed) and a separate VPN row (Open); mini configuration row (Proposed). Reason: the ADRs now exist; the SSH method and the VPN choice have different triggers. No Confirmed row touched.
+- `docs/roadmap.md`: A1 done, ADR list, Next row. `docs/architecture.md`: remote access paragraph. `docs/README.md`: runbook listed. Reason: one pointer per fact.
+
+**Verification:** `make check` and `git diff --staged` before the commit (see the commit). Not verified: everything on the mini itself (`sshd_config.d` and PAM on its macOS version, Remote Login, Bonjour, `from=` range as the mini sees it, VS Code Remote-SSH, deploy key), the owner's cold read of the runbook, M6 power and model speed.
+
+**Next:** A2 (ADR 0016, power, sleep, FileVault, updates) or A3 (ADR 0017, deploy flow), then Track B when the mini arrives.
+
+**Open questions**
+- Review of ADRs 0014 and 0015 and the runbook (cold read); whether to keep `from=` as a recommended step or an option.
+- The small-model laptop test (T1) was dropped by the owner, so ADR 0014 rests on the sizing rule until B2 measures.
+
+**Pending (owner actions)**
+- Record the order date and delivery date locally; update `CLAUDE.md` hardware section; decide AppleCare+ and the subscription to cancel (local).
+
+## 2026-10-26: P4 planning (docs only)
+
+**Done**
+- Entry: `dev` = `origin/dev` = `34f2a04`, tree clean, Colima stopped. `feat/p3-s3-verify` was already merged into `dev` (the Pending line below about that merge is stale). Branch `feat/p4-plan` from `dev`.
+- Read the docs, ADRs 0004, 0008, 0011, 0013, the restore and add-a-stack runbooks, Makefile, scripts and the old P4 draft. Researched current Mac mini models, Dutch list prices, education terms, the 14-day return window, power, macOS, remote access and local model memory needs (sources and "not verified" marks are in the local plan).
+- Four rounds of owner input shaped the plan: desk use, Wi-Fi only, new only, local AI to save subscription money, M6 32 GB with a small external SSD as the lead option, M5 Pro kept as a reference, Jetson Orin Nano owned and unused. The plan was audited twice; the audit found a deploy-checkout clash, missing return-window sequencing and a wrong headless assumption (all fixed).
+- Old draft: dropped `make upgrade` (cut in P2 S3), `docker context` deploy, "wait for the next generation" (the M6 and M5 Pro minis shipped on 2026-09-22) and the old branch name.
+
+**Doc changes and reasons**
+- `docs/roadmap.md`: P4 now has session 0, Track A (A1 to A3) and Track B (B1 to B5), deferred items with triggers, ADRs to write (0014 to 0017); Now, Next and Later rows. Reason: the owner asked for a plan with two labelled tracks.
+- `docs/project.md`: four hardware rows added as Open (mini configuration, SSH and VPN pointer, power policy, deploy flow); open-questions wording. No Confirmed row touched.
+- `docs/architecture.md`: Jetson row (owned, not set up) and a per-hop table. Reason: one place for what changes per hardware hop.
+
+**Verification:** see the commit; not verified: all education prices, lead times, M6 idle power and model speed, macOS version on the mini, `sshd_config.d` handling, Wi-Fi wake, Tailscale terms at the source, local coding quality.
+
+**Next:** P4 session 0 (laptop test of a small model, live education prices, ADR 0014, then the order) or any of A1 to A3. Track B waits for the mini.
+
+**Open questions**
+- Which subscription would be cancelled and its monthly cost (given in session 0, kept local).
+- Education discount amount for the mini and your eligibility; AppleCare+ yes or no; external SSD size and price.
+- Whether "a NexaHome code package" means something other than a Python or CLI wrapper (deferred with a trigger meanwhile).
+
+**Pending (owner actions)**
+- Update the local `CLAUDE.md` hardware section (a Jetson is owned; the mini is planned) and keep real hostnames in the gitignored `inventory.local.md`.
+- Read the live Dutch education configurator and the Apple return form before any purchase.
+- Everything in the earlier Pending lists below still stands, except the merge of `feat/p3-s3-verify`, which is done.
+
 ## 2026-10-26: P3 session 3, notifier, quiet Health tile, verification of S2 gaps
 
 **Done**
