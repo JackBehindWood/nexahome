@@ -98,10 +98,49 @@ jobs:
         if: always()
         run: make down STACK=hello
 
+  # The nexahome package (ADR 0018): unit tests on three platforms, 3.14 on two of them. The Linux runners
+  # have a Docker engine, so `nexahome doctor` runs there for real; hosted macOS has none (ADR 0019).
+  tests:
+    name: tests (${{ matrix.name }}, py${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: ubuntu-amd64, os: ubuntu-24.04, python: "3.13" }
+          - { name: ubuntu-amd64, os: ubuntu-24.04, python: "3.14" }
+          - { name: ubuntu-arm64, os: ubuntu-24.04-arm, python: "3.13" }
+          - { name: macos-arm64, os: macos-15, python: "3.13" }
+          - { name: macos-arm64, os: macos-15, python: "3.14" }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: ${{ matrix.python }}
+      - run: make setup
+      - run: .venv/bin/pytest
+      - name: nexahome doctor (Linux runners have a Docker engine)
+        if: runner.os == 'Linux'
+        run: .venv/bin/nexahome doctor
+      - name: The wheel holds only the package
+        if: matrix.name == 'ubuntu-amd64' && matrix.python == '3.13'
+        run: |
+          python -m pip wheel . --no-deps -w "$RUNNER_TEMP/wheel"
+          python - <<'EOF'
+          import glob, os, zipfile
+          names = zipfile.ZipFile(glob.glob(os.path.join(os.environ["RUNNER_TEMP"], "wheel", "*.whl"))[0]).namelist()
+          print(*names, sep="\n")
+          stray = [n for n in names if not n.startswith(("nexahome/", "nexahome-"))]
+          assert not stray, f"files outside the package: {stray}"
+          EOF
+
   gate:
     name: gate
     if: always()
-    needs: [secrets, checks, portable, hello]
+    needs: [secrets, checks, portable, hello, tests]
     runs-on: ubuntu-24.04
     steps:
       - name: Every job succeeded
