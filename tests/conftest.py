@@ -1,5 +1,6 @@
 """Shared test doubles: injected hosts and contexts, a fake runner, and a fake `docker` on PATH."""
 
+import importlib.util
 import io
 import os
 import shlex
@@ -7,6 +8,7 @@ import stat
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from types import ModuleType
 
 import pytest
 
@@ -103,3 +105,15 @@ def no_docker(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     empty = tmp_path / "empty-bin"
     empty.mkdir()
     monkeypatch.setenv("PATH", str(empty))
+
+
+REPO = Path(__file__).resolve().parents[1]
+
+
+def load_script(name: str) -> ModuleType:
+    """Import an original script from scripts/ for golden tests (until PK5 deletes it)."""
+    spec = importlib.util.spec_from_file_location(f"original_{name}", REPO / "scripts" / f"{name}.py")
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module

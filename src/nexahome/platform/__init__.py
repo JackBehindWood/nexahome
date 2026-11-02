@@ -9,12 +9,13 @@ import os
 import platform as stdlib_platform
 import sys
 from pathlib import Path
+from typing import cast
 
 from nexahome.errors import ExitCode, NexaHomeError
 from nexahome.platform import linux, macos, windows
 from nexahome.platform.host import Host, System
 
-SYSTEMS: dict[str, System] = {"macos": macos, "linux": linux, "windows": windows}
+SYSTEMS: dict[str, System] = cast(dict[str, System], {"macos": macos, "linux": linux, "windows": windows})
 _MACHINES = {"arm64": "arm64", "aarch64": "arm64", "x86_64": "amd64", "amd64": "amd64"}
 
 __all__ = [
