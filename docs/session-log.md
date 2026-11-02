@@ -4,7 +4,7 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
 ## Pending owner actions (the one current list)
 
-Last replaced 2026-11-02 (PK2 close). Older entries below end with a pointer here instead of their own list; their text is in git history.
+Last replaced 2026-11-02 (PK3). Older entries below end with a pointer here instead of their own list; their text is in git history.
 
 **Decide**
 - The other Proposed register rows (documentation conventions, repository layout, task runner, security baseline, roles, three Packaging rows); review ADRs 0014 to 0020, the SSH runbook and the packaging audit.
@@ -13,7 +13,7 @@ Last replaced 2026-11-02 (PK2 close). Older entries below end with a pointer her
 - Open choices: digest pinning; paid tier versus the open-source rule; keep `hello` on the edge and in the portal; the root `.env.example` now holds no setting (delete it?).
 
 **Git**
-- Push `feat/packaging` and open the `dev` to `main` pull request only when you say so (description prepared locally, not opened). Afterwards check under Insights, Dependency graph, Dependabot that every stack entry parses.
+- `feat/packaging` is pushed and pull request 21 into `dev` is open and green; merging it is your call. The `dev` to `main` pull request opens only when you say so (description prepared locally). Afterwards check under Insights, Dependency graph, Dependabot that every stack entry parses.
 - GitHub account setting "Block command line pushes that expose my email"; optional SSH-signed commits.
 - Making the `gate` job a required check on `main` (a GitHub setting) once it exists and has been green on a pull request.
 
@@ -31,6 +31,35 @@ Last replaced 2026-11-02 (PK2 close). Older entries below end with a pointer her
 **Open work**
 - Diagnose the Pocket ID self-restart; optional admin-only sign-in for the health view.
 - Backup `.env.example` ships example paths that `make check` needs (audit F26): fix with PK5 or PK7.
+
+## 2026-11-02: Packaging PK3, CI and platform jobs (green on pull request 21)
+
+**Done**
+- Entry: PK2 was only on `feat/packaging` (the card expected it on `dev`); `feat/packaging` had no remote branch; a push to a feature branch does not trigger `ci.yml` (push is limited to `main` and `dev`), so CI needs a pull request into `dev`. PK2 close was done first as its own checkpoint (entry above).
+- `.github/workflows/ci.yml`: added `portable` (Ubuntu amd64, Ubuntu arm64, macOS arm64; Python 3.13 via `actions/setup-python`, SHA-pinned; tool versions, `sh -n`, ShellCheck at warning severity, `make setup`, `make check`; the macOS job installs the Docker CLI with Compose on the runner when it is missing), `hello up and down` (Linux amd64) and `gate`. The jobs `secrets` and `checks` are untouched: 76 lines added, none removed. `gate` is not a required check.
+- `scripts/setup.sh`: without `uv`, stops early when `python3` is older than 3.13, naming the version found and one next step; with `uv`, asks for `>=3.13`. Rehearsed in scratch copies: a stub reporting 3.12 without `uv` stops with the message; `uv` creates the environment on 3.14.7; a 3.14 `python3` without `uv` passes the check and installs the pinned tools.
+- README and CONTRIBUTING: Python 3.13 is the minimum; README has one sentence that WSL2 counts as Linux, best effort, not tested in CI.
+- ADR 0019 (still Proposed): job names, the macOS Compose approach, WSL2 note, `shasum` finding, evidence section. Local measurements: ShellCheck 0.11.0 (scratch `uvx`, nothing installed) exits 0 at warning and error severity on the four scripts, with 13 info and style notes left alone because the scripts are on the run path; `sh -n` and `dash -n` pass; GNU make 3.81 runs `make check` on the laptop. `sha256sum` appears once in the repository, inside the restic container, so no host use.
+- Pushed `feat/packaging` (owner approved) and opened pull request 21 into `dev` (not merged). The first attempt to open it was denied by the permission classifier; it was retried at the owner's request.
+- CI, run 1 (commit `a0f0beb`): `secrets`, `checks`, `portable (ubuntu-amd64)`, `portable (ubuntu-arm64)` and `hello up and down` passed. `portable (macos-arm64)` failed at the ShellCheck step because the macOS runner ships no ShellCheck, so its later steps were skipped; `gate` failed as designed.
+- Fix (`2fdb38b`): ShellCheck is installed with `brew install shellcheck` on macOS when missing. CI, run 2: the Linux jobs passed again; the owner cancelled the macOS job after about four minutes with no step started (GitHub's annotation names macOS arm64 capacity and longer queue times). Rerun of the cancelled job and `gate`: all jobs succeeded, including `portable (macos-arm64)` (steps took about 30 seconds; the Docker CLI and ShellCheck installs 5 and 9 seconds; the job showed about 1.5 minutes of overhead after its last step) and `gate`.
+- Runner facts printed by CI: macOS arm64 has GNU Make 3.81, `shasum` and `sha256sum`, no ShellCheck and no Docker; Ubuntu amd64 and arm64 have GNU Make 4.3, `shasum`, `sha256sum`, ShellCheck and Docker; all three have Python 3.13.17 from `setup-python`.
+
+**Doc changes and reasons**
+- `README.md`, `CONTRIBUTING.md`: 3.13 minimum, WSL2 sentence (F10, F32; owner instruction).
+- `docs/adr/0019-platform-support-and-ci-matrix.md`: detail and evidence (PK3 card). The Python 3.9.6 premise was dropped as outdated; Python 3.14 moves to PK4.
+- No status label, Confirmed row or ADR status changed in this entry.
+
+**Verification:** `make check` exit 0; `git status` clean, nothing staged; no `.env`, key, `data/` or `.claude/` tracked; no broken relative links in 45 Markdown files; header and changelog dates agree; no label outside the register and ADRs; freeze rule held (no change to `Makefile`, `backup.sh`, `smoke.sh`, `deploy.sh` or any stack file). CI: the runs above; the labels `macos-15` and `ubuntu-24.04-arm` worked. Not verified: that `gate` blocks a merge (it is not required, and a failing `gate` was seen only in run 1 and run 2); that the macOS arm64 queue time is a rare event (one slow job seen); `shasum` on minimal Linux images; make 4 differences beyond the Ubuntu runners; WSL2; the mini. The local `hello` up and down was skipped (Colima not running; starting it was not approved).
+
+**Next:** PK4 (package skeleton and `doctor`): needs the owner's yes on pytest as a pinned dev tool and on hatchling (answers drafted in `.claude/tmp/pk4-prework.md`).
+
+**Open questions**
+- Merge pull request 21 into `dev` before PK4, or build PK4 on the open branch?
+- Make `gate` a required check now that it has been green once? (A GitHub setting, the owner's action.)
+- If macOS arm64 jobs keep queuing for minutes: keep the job inside `gate`, or move it out?
+
+**Pending:** superseded by the single list at the top of this log (2026-11-02, PK3).
 
 ## 2026-11-02: Packaging PK2 close, owner decisions applied
 
