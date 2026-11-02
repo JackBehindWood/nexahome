@@ -1,5 +1,7 @@
 # Test sign-in (SSO)
 
+Version 0.1 · Last reviewed 2026-11-02
+
 **Audience:** the person who runs NexaHome. **Admin rights needed:** yes (a provider admin account and host access). Run it after any change to the identity or Actual image tag, a restore, or before something is exposed beyond loopback. Design: [ADR 0010](../adr/0010-identity-provider.md).
 
 ## Setup (once)
@@ -23,3 +25,5 @@ Read the provider log with `(cd stacks/identity && docker compose logs --since 1
 ## After a restore
 
 Run the first two rows. Actual keeps sessions for a day (`ACTUAL_TOKEN_EXPIRATION`), so sign out of Actual first, otherwise it opens without asking the provider and proves nothing.
+
+Changelog: 0.1 (2026-11-02): version header and changelog added (PK2).

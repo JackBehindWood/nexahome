@@ -23,7 +23,7 @@ Cross-cutting concerns (monitoring, configuration, documentation, security, back
 | 2 | Network and security | Home router; ports bound to localhost only | DNS, VPN, segmentation |
 | 3 | Compute platform | Colima VM with Docker Compose ([ADR 0004](adr/0004-colima-runtime.md)) | Docker Engine on a Linux host; local AI native on the Mac mini |
 | 4 | Data and storage | Labelled named volumes ([ADR 0007](adr/0007-stack-contract.md)); backup built (restic, [ADR 0008](adr/0008-backup-tool.md)), restore drill passed on the laptop's own disk | NAS volumes, tested backups |
-| 5 | Service platform | None | Shared services (auth, messaging) only when a stack needs them |
+| 5 | Service platform | Edge (Caddy), identity (Pocket ID), portal and health view (Gatus), each a stack | Shared services (auth, messaging) only when a stack needs them |
 | 6 | Applications | `hello` demo stack, `actual` expense tracker | AI tools, home automation, media, personal apps |
 
 ```mermaid
@@ -80,14 +80,14 @@ Administrative interfaces are never exposed to the public internet. No firewall 
 
 ## Data, backup and restore
 
-- Persistent data lives outside the code tree. Compose reads the data root from `NEXAHOME_DATA_DIR` (laptop default `./data`, gitignored). Use named volumes for database-style data on macOS and bind mounts for configuration.
+- Persistent data uses named volumes or the gitignored `data/` directory, never a tracked path. A configurable data root is not built (planned with the instance layout, ADR 0020). Use named volumes for database-style data on macOS and bind mounts for configuration.
 - Target: three copies of important data on two kinds of storage with one copy off-site (the "3-2-1" rule). Not reachable without a NAS and an off-site destination.
 - A backup counts only after a tested restore. Until a NAS exists, restore drills use a local volume. The backup tool is restic in a one-shot container, chosen in [ADR 0008](adr/0008-backup-tool.md): `make backup` saves labelled volumes and `.env` files into an encrypted repository on the host (default `data/backup`, gitignored, outside the VM), and `make restore` brings a stack back into new volumes ([runbook](runbooks/restore.md)). A restore drill passed on 2026-10-21, with dummy data. A repository on the laptop's own disk is a drill, not protection; repeat the drill after an app image upgrade.
 
 ## Secrets and identity
 
 - Secrets live in a gitignored `.env` per stack and in a password manager, never in Git, images or documents. Encrypted secrets in Git are considered only once there is more than one host.
-- The owner is the sole administrator. Roles `admin` and `users` are planned, an AI agent is never admin, and one small shared identity provider (OIDC) is planned in P2.5; until it exists each app keeps its own login ([roadmap](roadmap.md#p25-identity-edge-and-portal), [register](project.md#decision-register)).
+- The owner is the sole administrator. Roles `admin` and `users` exist in the identity provider ([ADR 0010](adr/0010-identity-provider.md)), an AI agent is never admin (the `agents` group has no client access), and Actual signs in through it with its password login kept as fallback ([roadmap](roadmap.md#p25-identity-edge-and-portal), [register](project.md#decision-register)).
 
 ## Remote access
 
@@ -138,10 +138,10 @@ Phase names refer to the [roadmap](roadmap.md#phases).
 | Core network: DNS, ad blocking, VPN, remote access | Always-on host and network gear | P6 | Server and network gear |
 | Home automation: Home Assistant, MQTT, ESP32 | Linux host with USB and network access | P7 | Linux host and devices; scope not decided |
 | Personal applications: expenses, portfolio | Any host | P8 | None |
-| Central dashboard | Any always-on host | P3 | None |
+| Central dashboard | Any always-on host | P2.5 | None |
 
 ## Decisions
 
 The decision register is in [project.md](project.md#decision-register); rationale is in [adr/](adr/).
 
-Changelog: 0.1 (2026-11-02): deploy flow pointer (ADR 0017); 0.1 (2026-11-02): remote access paragraph points at ADR 0016 for reboot behaviour; 0.1 (2026-11-02): remote access paragraph points at ADR 0015 and the SSH runbook; 0.1 (2026-10-26): Jetson row, per-hop table for P4; 0.1 (2026-10-21): identity bullet updated for P2.5; backup tool decided; 0.1 (2026-10-21): restore drill recorded; 0.1 (2026-10-21): backup model; 0.1 (2026-10-21): Layer 4 and 6 current state; 0.1 (2026-10-20): full planned-services capability table; rewritten; added failure domains, trust zones, backup and restore, identity, migration paths and a capability table; duplicated rules moved to constraints.
+Changelog: 0.1 (2026-11-02): central dashboard phase P2.5 (PK2 reword A3); 0.1 (2026-11-02): identity wording says built, not planned (PK2 reword A2); 0.1 (2026-11-02): layer 5 lists the built stacks (PK2 reword A1); 0.1 (2026-11-02): `NEXAHOME_DATA_DIR` claim removed (PK2); 0.1 (2026-11-02): deploy flow pointer (ADR 0017); 0.1 (2026-11-02): remote access paragraph points at ADR 0016 for reboot behaviour; 0.1 (2026-11-02): remote access paragraph points at ADR 0015 and the SSH runbook; 0.1 (2026-10-26): Jetson row, per-hop table for P4; 0.1 (2026-10-21): identity bullet updated for P2.5; backup tool decided; 0.1 (2026-10-21): restore drill recorded; 0.1 (2026-10-21): backup model; 0.1 (2026-10-21): Layer 4 and 6 current state; 0.1 (2026-10-20): full planned-services capability table; rewritten; added failure domains, trust zones, backup and restore, identity, migration paths and a capability table; duplicated rules moved to constraints.

@@ -1,12 +1,12 @@
 # 0011. Edge, local hostnames and shared network
 
-* **Status:** Proposed
-* **Date:** 2026-10-22 (amended 2026-10-22 after P2.5 session 2 and 2026-10-23 after session 3; still Proposed)
+* **Status:** Confirmed (owner's yes, 2026-11-02)
+* **Date:** 2026-10-22 (amended 2026-10-22 after P2.5 session 2 and 2026-10-23 after session 3; decided 2026-11-02)
 
 ## Context
 OIDC needs an issuer URL that resolves under the same name from the browser and from app containers, so `127.0.0.1` cannot be used ([ADR 0010](0010-identity-provider.md)). The smallest fix is a reverse proxy with local names on a shared network, without public TLS and without ports below 1024. Spike on 2026-10-21 and 2026-10-22 (macOS, Colima 2 CPU / 2 GB, Safari). The measured figures below come from a throwaway Compose project that is removed.
 
-## Decision (Proposed)
+## Decision
 - **Edge:** Caddy `caddy:2.11.7-alpine` as `stacks/edge`, stateless. Global `admin off` and `auto_https off`, one `http://<name>.${NEXAHOME_DOMAIN}:${EDGE_PORT}` block per app.
 - **Names:** `NEXAHOME_DOMAIN` (default `nexahome.localhost`) is the only source of names. `id.`, `actual.`, `home.` are prefixes.
 - **Network:** external network `nexahome-edge`; the edge container carries one alias per hostname, so containers resolve the same names the browser uses. The edge listens on the same port inside the network as the host port it publishes (`127.0.0.1:${EDGE_PORT}:${EDGE_PORT}`), because the issuer contains the port.

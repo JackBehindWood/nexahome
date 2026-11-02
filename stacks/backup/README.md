@@ -38,7 +38,7 @@ Colima saves this in its own profile (`~/.colima/default/colima.yaml`). To undo 
 
 ## Removing the backups
 
-Restic makes its files read-only, so a plain `rm -r` asks about every file. To delete the repository and the password (all snapshots become unrecoverable), run `rm -rf data/backup .config` yourself.
+Restic makes its files read-only, so a plain `rm -r` asks about every file. To delete the repository and the password (all snapshots become unrecoverable), run `rm -rf data/backup .config/restic-password` yourself. Leave the rest of `.config` alone: it also holds the per-host stack list.
 
 ## Limits
 

@@ -1,6 +1,6 @@
 # actual
 
-[Actual Budget](https://actualbudget.org): a local-first expense and budget tracker (MIT licence, SQLite, one container). It is the first stateful stack, the subject of the backup drill ([ADR 0009](../../docs/adr/0009-first-app-actual-budget.md)) and the first client of the identity provider ([ADR 0010](../../docs/adr/0010-identity-provider.md), Proposed). Use dummy data: the restore drill passed on 2026-10-21 with it, but the repository is on the same disk. It is the drill subject only; the owner plans an own expense app later, so this stack can be removed once another stateful stack exists.
+[Actual Budget](https://actualbudget.org): a local-first expense and budget tracker (MIT licence, SQLite, one container). It is the first stateful stack, the subject of the backup drill ([ADR 0009](../../docs/adr/0009-first-app-actual-budget.md)) and the first client of the identity provider ([ADR 0010](../../docs/adr/0010-identity-provider.md), decided). Use dummy data: the restore drill passed on 2026-10-21 with it, but the repository is on the same disk. It is the drill subject only; the owner plans an own expense app later, so this stack can be removed once another stateful stack exists.
 
 ```sh
 make up STACK=actual      # start and wait until healthy

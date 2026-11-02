@@ -19,6 +19,9 @@ for s in "$@"; do [ -f "stacks/$s/compose.yaml" ] || die "no such stack: $s" "ls
 for t in git make python3; do
 	command -v "$t" >/dev/null 2>&1 || die "$t is not installed" "install $t (on macOS: xcode-select --install), then run setup again"
 done
+# Python 3.13 or newer is the project minimum; uv fetches it when python3 is older.
+command -v uv >/dev/null 2>&1 || python3 -c 'import sys; sys.exit(sys.version_info < (3, 13))' >/dev/null 2>&1 ||
+	die "python3 is $(python3 --version 2>&1); Python 3.13 or newer is needed" "install uv (see CONTRIBUTING.md; it fetches Python 3.13) or put a 3.13 python3 first on PATH, then run: make setup"
 if ! command -v docker >/dev/null 2>&1 || ! docker compose version >/dev/null 2>&1; then
 	warn "docker with compose not found" "needed for make up, not for make check; see Needs in README.md"
 elif ! docker info >/dev/null 2>&1; then
@@ -27,7 +30,7 @@ fi
 
 # Safe to run again: an existing .venv is kept and the pinned tools are installed into it.
 if command -v uv >/dev/null 2>&1; then
-	{ [ -x .venv/bin/python ] || uv venv -q .venv; } && uv pip install -q --python .venv/bin/python -r requirements-dev.txt
+	{ [ -x .venv/bin/python ] || uv venv -q --python '>=3.13' .venv; } && uv pip install -q --python .venv/bin/python -r requirements-dev.txt
 else
 	{ [ -x .venv/bin/python ] || python3 -m venv .venv; } && .venv/bin/python -m pip install -q -r requirements-dev.txt
 fi || die "could not set up .venv ($(.venv/bin/python --version 2>&1 || python3 --version 2>&1))" "read the error above: no network, or a python3 too old for the pinned tools (requirements-dev.txt); fix it, then run setup again"
