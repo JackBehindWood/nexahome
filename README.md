@@ -6,7 +6,7 @@ A modular, self-hosted homelab platform: local AI, development tools, storage, n
 
 ## Quick start
 
-Needs `git`, `make`, and a Docker CLI with Compose and a running engine. On Linux, Docker Engine runs directly. On macOS the project uses [Colima](docs/adr/0004-colima-runtime.md); start it once per boot. Running stacks needs no Python; Python 3.11 or newer (or `uv`) is only for [contributing](CONTRIBUTING.md):
+Needs `git`, `make`, and a Docker CLI with Compose and a running engine. On Linux, Docker Engine runs directly. On macOS the project uses [Colima](docs/adr/0004-colima-runtime.md); start it once per boot. On Windows, use WSL2: it counts as Linux, best effort and not tested in CI ([ADR 0019](docs/adr/0019-platform-support-and-ci-matrix.md)). Running stacks needs no Python; Python 3.13 or newer (or `uv`, which fetches it) is only for [contributing](CONTRIBUTING.md):
 
 ```sh
 colima start --cpu 2 --memory 2 --disk 20
