@@ -32,3 +32,79 @@ jobs:
       - run: make check
         env:
           SKIP: no-commit-to-branch
+
+  # Platform proof (ADR 0019). `secrets` and `checks` above are the required checks and stay as
+  # they are; `gate` below is the one job that says whether everything passed.
+  portable:
+    name: portable (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: ubuntu-amd64, os: ubuntu-24.04 }
+          - { name: ubuntu-arm64, os: ubuntu-24.04-arm }
+          - { name: macos-arm64, os: macos-15 }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+      - name: Tool versions
+        run: |
+          uname -sm
+          make --version | head -n 1
+          python3 --version
+          for t in shasum sha256sum shellcheck docker; do command -v "$t" || echo "$t: not found"; done
+      - name: Shell syntax
+        run: for f in scripts/*.sh; do sh -n "$f" || exit 1; done
+      - name: ShellCheck
+        run: |
+          command -v shellcheck >/dev/null || { echo "::error::shellcheck is not installed on this runner"; exit 1; }
+          shellcheck -s sh --severity=warning scripts/*.sh
+      - name: Docker CLI with Compose (macOS runners ship none; no engine is needed, see scripts/check_compose.py)
+        if: runner.os == 'macOS'
+        run: |
+          docker compose version >/dev/null 2>&1 || {
+            brew install docker docker-compose
+            mkdir -p ~/.docker/cli-plugins
+            ln -sfn "$(brew --prefix)/opt/docker-compose/bin/docker-compose" ~/.docker/cli-plugins/docker-compose
+          }
+          docker compose version
+      - run: make setup
+      - run: make check
+        env:
+          SKIP: no-commit-to-branch
+
+  hello:
+    name: hello up and down (ubuntu-amd64)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: make up STACK=hello
+      - name: Answers on loopback
+        run: |
+          curl -fsS http://127.0.0.1:8080/ >/dev/null
+          docker ps --filter name=hello --format '{{.Names}} {{.Status}}'
+      - name: Down
+        if: always()
+        run: make down STACK=hello
+
+  gate:
+    name: gate
+    if: always()
+    needs: [secrets, checks, portable, hello]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Every job succeeded
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "results: $RESULTS"
+          for r in $RESULTS; do [ "$r" = success ] || { echo "a job did not succeed"; exit 1; }; done
