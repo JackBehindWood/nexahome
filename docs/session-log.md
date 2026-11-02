@@ -2,6 +2,28 @@
 
 Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
+## 2026-11-02: Packaging PK0, ADRs 0018 to 0020
+
+**Done**
+- Entry: `dev` clean and equal to `origin/dev`; `make check` fails on `dev` only at the no-commit hook (known). New branch `feat/packaging` off `dev`; the owner chose one branch for the whole initiative instead of one per session.
+- Owner answers: first tag `v0.1.0` with the docs set staying 0.x; runbooks get version headers (done in PK2); pytest and build-time hatchling may be proposed, ruff not now; optional `gate` job; Python 3.13 or newer is the floor.
+- Short web look: Linux arm64 runners are generally available and free for public repositories since August 2025 (the plan had said preview); Copier updates by diff merge, Cookiecutter only generates. Not found: whether `uv tool install` fetches Python 3.13 for a wheel URL.
+- Wrote ADRs 0018 (code package and language strategy, staged), 0019 (platform support and CI matrix), 0020 (instance, install and release model).
+
+**Doc changes and reasons**
+- ADRs 0018 to 0020 new (Proposed). `docs/project.md`: three Packaging rows (Proposed). `docs/roadmap.md`: Packaging track block, Next row. Reason: record the design before building. No Confirmed row or ADR edited; the items they would change are named in the ADRs and wait for the owner's yes.
+- `docs/README.md` has no ADR list, so it was not changed.
+
+**Verification:** `make check` and `git diff --staged` before each commit. Not verified: every design claim (no code exists); uv fetching Python 3.13; `make setup` on Python 3.9.6; hatchling `force-include`; macOS runner details; `shasum` on minimal Linux; WSL2; PyPI name; make 4 differences. CI not run (no push).
+
+**Next:** PK1, the read-only audit report. Nothing pushed or merged.
+
+**Open questions**
+- Review of ADRs 0018 to 0020. The F9 batch (ADRs 0010 to 0012, stale Proposed rows) waits for PK2.
+
+**Pending (owner actions)**
+- Unchanged from the A1 entry. `feat/p4-Atrack` deletion is approved for PK2.
+
 ## 2026-11-02: P4 A3, ADR 0017 deploy flow and `make deploy`
 
 **Done**
