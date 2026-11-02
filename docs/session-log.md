@@ -4,7 +4,7 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
 ## Pending owner actions (the one current list)
 
-Last replaced 2026-11-02 (PK4 close). Older entries below end with a pointer here instead of their own list; their text is in git history.
+Last replaced 2026-11-02 (CI reshape). Older entries below end with a pointer here instead of their own list; their text is in git history.
 
 **Decide**
 - ADR 0021 is decided (owner, 2026-11-02). Still to decide: the other Proposed register rows (documentation conventions, repository layout, task runner, security baseline, roles, three Packaging rows); review ADRs 0014 to 0020, the SSH runbook and the packaging audit.
@@ -13,8 +13,8 @@ Last replaced 2026-11-02 (PK4 close). Older entries below end with a pointer her
 - Open choices: digest pinning; paid tier versus the open-source rule; keep `hello` on the edge and in the portal; the root `.env.example` now holds no setting (delete it?).
 
 **Git**
-- Push the local docs commit `9d7c3ed` (it records the deferred CI work); `feat/packaging` is otherwise level with `origin/feat/packaging`.
-- **Next session, first item: CI cost and the macOS queue (owner, 2026-11-02).** Every pull request into `dev` runs all five `tests` jobs, three `portable` jobs, `hello` and `gate`, and the two macOS arm64 jobs can wait 15 minutes or more for a runner and are then cancelled without running a step (seen in PK3 and again on pull request 22), which turns `gate` red for a reason that is not the code. Goal: merges into `dev` stay fast and never depend on macOS capacity, while platform proof is not lost. To work out and decide then: which jobs run on every pull request into `dev` (Linux `secrets`, `checks`, `tests`) and which only on a pull request into `main`, on a schedule or by hand (`portable` and `tests` on macOS arm64 and Linux arm64); path filters so a docs-only change skips the code jobs; whether `gate` waits for the macOS jobs at all (a required `gate` must never be held by a runner queue); a queue-time guard (`timeout-minutes` does not cover waiting for a runner; a short `concurrency` group, or a scheduled workflow instead); cancelling superseded runs. Constraints: `secrets` and `checks` keep their names and stay required; the workflow change needs the owner's yes; making `gate` a required check waits for this redesign.
+- Push `feat/packaging` (five local commits: the deferral note, the PK4 close, the CI reshape, the `env` rename with package docs, and this log) with your yes. The new workflow then runs on pull request 22 (it is already open); read the run, then decide the merge of pull request 22 into `dev`. Until a `dev` to `main` pull request carries the new workflow, the weekly schedule cannot fire (GitHub runs schedules from the default branch).
+- CI reshape (owner's answers, 2026-11-02): done in `.github/workflows/ci.yml`, committed, not yet run. Making `gate` a required check is your GitHub action, once the new workflow has been green on a pull request; `platforms` is never to be required.
 - Pull request 21 is merged into `dev` (owner). `feat/packaging` is ahead of `dev` and not pushed. Decide: (1) the `tests` job is committed in `.github/workflows/ci.yml` (last commit but one); (2) push `feat/packaging` and open a pull request into `dev`, which is the only way to run the new job. The `dev` to `main` pull request opens only when you say so (description prepared locally). Afterwards check under Insights, Dependency graph, Dependabot that every stack entry parses.
 - GitHub account setting "Block command line pushes that expose my email"; optional SSH-signed commits.
 - Making the `gate` job a required check on `main` (a GitHub setting): deferred until the CI redesign above, because `gate` must not depend on macOS runner capacity.
@@ -34,6 +34,29 @@ Last replaced 2026-11-02 (PK4 close). Older entries below end with a pointer her
 - Diagnose the Pocket ID self-restart; optional admin-only sign-in for the health view.
 - `docs/constraints.md` (the run-path line) still says "Python is for checks"; with `src/nexahome` that is incomplete, but the line restates a decided rule, so it is left for the owner's rewords (B2, C1) with ADR 0018.
 - Backup `.env.example` ships example paths that `make check` needs (audit F26): fix with PK5 or PK7.
+
+## 2026-11-02: CI reshape (fast Linux set, platform set off the merge path)
+
+**Done**
+- Entry checks (read-only): pull request 22 open, mergeable, its latest run green (all 12 jobs, `gate` green; the macOS re-run finished); `main` requires only `checks` and `secrets`; `dev` is unprotected; `make check` exit 0; `pytest` 262 passed on Python 3.14.7 and on 3.13.3 (scratch venv with the package installed; a first try without the package failed 8 tests for that reason only).
+- Evidence for the redesign (REST `created_at` to `started_at`, seven runs): Linux jobs waited 2 to 13 s and ran 7 to 32 s each (`portable` 14 to 24 s). `portable (macos-arm64)` waited 302 s and 317 s in two runs, 2 to 4 s in three others, and ran 43 to 131 s. Earlier macOS jobs were cancelled after about 4 and 15 minutes with no step started (figures from the PK3 and PK4 entries, not from the API). Waits of re-run jobs are unreliable (negative or inflated), so macOS `tests` waits could not be measured. The queue is the whole problem: no job runs longer than about two minutes.
+- Owner's answers: Linux amd64 only on every pull request into `dev`; a fast `gate` plus a non-required `platforms` summary; a weekly schedule plus manual runs; docs-only changes skip the code jobs.
+- `ci.yml`: new `plan` job (job-level `if`, no workflow-level `paths` filter); `portable`, `hello` and `tests` (ubuntu-amd64, py3.13 and py3.14) run when code changed; `portable-platforms` and `tests-platforms` (ubuntu-arm64, macos-arm64; steps shared by YAML anchors) run on a pull request into `main` with code changes, weekly and by hand; `gate` waits only for the fast set and fails if `plan` did not succeed; `platforms` reports the platform jobs; concurrency cancels superseded pull request runs only; `timeout-minutes: 5` on the small jobs. `secrets` and `checks` are unchanged.
+- Package: `nexahome setup` renamed `nexahome env` (owner's choice, because `make setup` prepares the tool and `init` is reserved for PK6's `nexahome init`); no release existed, so nothing broke. 262 tests pass.
+- Package docs: README gets the exit-code table, the `--json` and `NEXAHOME_HOME` notes and the `make setup` versus `nexahome env` line; CONTRIBUTING links the table and describes the new CI; one-line docstrings added where behaviour is not obvious (diagnosis probes, report, updater, runner, policy, platform detection, backup summary). A first docstring claimed a default update source that does not exist; corrected against the code.
+
+**Doc changes and reasons**
+- `docs/adr/0019-...md`: two-tier matrix, `gate` semantics, schedule limits, PK-P1 reworded (platform jobs are proven on a pull request into `main` and in the weekly run), two rejected alternatives. Reason: the old text said every pull request runs every platform job. A wording change in the first sentence of the matrix bullet was needed to avoid a secret-scanner false positive on the word `secrets`.
+- `docs/roadmap.md`, `docs/constraints.md`, `docs/project.md` (Current status only): command list and CI state; changelog lines added. `CONTRIBUTING.md`, `README.md`: as above.
+
+**Verification:** `make check` exit 0; `pytest` 262 passed; the `plan` script, extracted from the YAML, run on scratch merge commits: docs-only gives `code=false`, any other path gives `code=true`, push, schedule and manual runs give `code=true`, `platforms=true` only for schedule, manual and a pull request into `main` with code. The file parses with PyYAML including the anchors. **Not verified:** that GitHub accepts the anchors and the new graph (the first push answers this); that a docs-only pull request skips the code jobs and `gate` stays green; that a newer push cancels the older run; `gate` going red on a failing job; the platform jobs and `platforms` on a pull request into `main`; the weekly schedule (cannot fire before this workflow is on `main`); manual runs of a branch; Dependabot reading the anchors; the Mac mini, a Linux host, the Jetson, WSL2.
+
+**Next:** (1) push with the owner's yes and read the run on pull request 22; (2) merge decision for pull request 22; (3) PK5, noting `nexahome check` exits 3 where the old script exits 0 or 1 (now in the README); (4) the owner makes `gate` required after a green run.
+
+**Open questions**
+- Merge pull request 22 into `dev` once the new workflow has run?
+
+**Pending:** superseded by the single list at the top of this log (2026-11-02, CI reshape).
 
 ## 2026-11-02: Packaging PK4 close (session end)
 
