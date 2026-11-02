@@ -30,6 +30,7 @@ def human_size(size: float) -> str:
 
 
 def summary(directory: Path, now: float) -> list[str]:
+    """Lines for `nexahome status`: whether the newest snapshot is under 7 days old, and the repository size, from one walk of the folder."""
     if not (directory / "config").is_file():
         return [f"backup: no repository at {directory} (make backup-init)"]
     size = 0

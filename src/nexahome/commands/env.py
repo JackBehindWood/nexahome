@@ -1,4 +1,4 @@
-"""nexahome setup: prepare this checkout for `make up`: create each stack's .env, generate its secrets, run doctor.
+"""nexahome env: prepare this checkout for `make up`: create each stack's .env, generate its secrets, run doctor.
 
 Writes only inside the checkout, never overwrites a .env, never prints a secret, and starts nothing.
 """
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from nexahome.commands._base import Subparsers
     from nexahome.context import Context
 
-NAME = "setup"
+NAME = "env"
 
 
 def register(subparsers: Subparsers) -> None:
@@ -63,7 +63,7 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
                 print(f"generated secrets in {shown} (not shown); copy them to your password manager", file=ctx.out)
         if result.pending:
             pending = True
-            print(f"{shown}: set a real value for each of these, then run nexahome setup again:", file=ctx.out)
+            print(f"{shown}: set a real value for each of these, then run nexahome env again:", file=ctx.out)
             for key in result.pending:
                 print(f"  {key}", file=ctx.out)
         elif not (result.created or result.generated):

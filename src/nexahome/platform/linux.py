@@ -21,6 +21,7 @@ def parse_os_release(text: str) -> bool:
 
 
 def detect_debian_like() -> bool:
+    """True on Debian or Ubuntu (by `/etc/os-release`), where the fix commands use apt."""
     try:
         return parse_os_release(Path("/etc/os-release").read_text())
     except OSError:

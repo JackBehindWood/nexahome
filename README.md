@@ -33,14 +33,27 @@ A small command-line tool that checks your machine and prepares a checkout. `mak
 make setup                  # once: creates .venv and installs the tool into it
 . .venv/bin/activate        # once per terminal; then plain `nexahome` works
 nexahome doctor             # diagnose this machine; every problem ends in one command to run
-nexahome setup              # create each stack's .env and generate its secrets (add --dry-run to look first)
+nexahome env                # create each stack's .env and generate its secrets (add --dry-run to look first)
 nexahome stacks             # which stacks exist, which this host runs, whether they are running
 nexahome status             # health of the stacks and how recent the backup is
 nexahome check              # the Compose policy over the stacks
 nexahome update --available # is a newer release out? (there is none yet)
 ```
 
-`nexahome --help` lists every command and `nexahome <command> --help` its options. Without activating the environment, call `.venv/bin/nexahome`. It is not on PyPI and has no release yet; `make test` runs its tests ([CONTRIBUTING](CONTRIBUTING.md#the-nexahome-package)).
+`make setup` prepares the tool itself (the virtual environment); `nexahome env` prepares the stacks (their `.env` files). `nexahome --help` lists every command and `nexahome <command> --help` its options. Without activating the environment, call `.venv/bin/nexahome`. Run it from inside the checkout, or point `NEXAHOME_HOME` at the checkout. `doctor`, `stacks` and `update --available` also take `--json` for scripts (schema 1, described in `src/nexahome/report.py`). It is not on PyPI and has no release yet; `make test` runs its tests ([CONTRIBUTING](CONTRIBUTING.md#the-nexahome-package)).
+
+Exit codes, the same for every command:
+
+| Code | Meaning |
+| :-- | :-- |
+| 0 | done, nothing to fix |
+| 1 | `check` found a policy problem |
+| 2 | wrong usage (unknown command or option) |
+| 3 | this host is not ready (for example Docker is missing or stopped, no stacks to check, a `.env` still needs a value); the message ends in the command that fixes it |
+| 130 | interrupted (Ctrl-C) |
+| 141 | the reader went away, for example `nexahome stacks \| head` |
+
+`make check` still runs the original scripts, which exit 0 or 1; `nexahome check` exits 3 where they would exit 0 or 1 for "no stacks" or "Docker CLI missing" (the hooks switch to it in PK5).
 
 ## Your data stays yours
 

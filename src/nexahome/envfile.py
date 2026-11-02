@@ -22,6 +22,7 @@ def placeholders(text: str) -> list[str]:
 
 
 def new_secret() -> str:
+    """One random value from the `secrets` module; never logged or printed."""
     import secrets  # imports random, hashlib and more: only a run that generates a secret pays for it
 
     return "".join(secrets.choice(ALPHABET) for _ in range(SECRET_LENGTH))

@@ -15,6 +15,8 @@ SCHEMA = 1
 
 
 class Status(StrEnum):
+    """The result of one check; `SKIP` means a prerequisite failed."""
+
     OK = "ok"
     WARN = "warn"
     FAIL = "fail"
@@ -43,10 +45,12 @@ class Check(_CheckFields):
 
 
 def passed(checks: Sequence[Check]) -> bool:
+    """True unless some check failed; warnings do not fail a run."""
     return all(check.status != Status.FAIL for check in checks)
 
 
 def render_text(checks: Sequence[Check]) -> str:
+    """One line per check, `fix:` lines under problems, and a last line that ends in the next command to run."""
     lines = []
     for check in checks:
         lines.append(f"{check.status:<6}{check.id:<12}{check.summary}")
@@ -66,6 +70,7 @@ def render_text(checks: Sequence[Check]) -> str:
 
 
 def render_json(checks: Sequence[Check]) -> str:
+    """The checks as JSON, schema 1: `{schema, ok, checks: [{id, status, summary, fix}]}`."""
     import json  # only a --json run needs it
 
     rows = [{"id": c.id, "status": c.status, "summary": c.summary, "fix": c.fix} for c in checks]

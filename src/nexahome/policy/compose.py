@@ -24,6 +24,7 @@ type Config = Mapping[str, Any]
 
 
 def check_service(name: str, svc: Config) -> list[str]:
+    """The policy problems of one Compose service, as sentences."""
     problems = []
     oneshot = (svc.get("labels") or {}).get("nexahome.oneshot") == "true"
     image = svc.get("image", "")
@@ -51,6 +52,7 @@ def check_service(name: str, svc: Config) -> list[str]:
 
 
 def check_project(directory: str, config: Config) -> list[str]:
+    """The policy problems of one stack's project: its name and networks."""
     problems = []
     expected = f"nexahome-{directory}"
     if config.get("name") != expected:

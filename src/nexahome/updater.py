@@ -24,11 +24,14 @@ RETRY = "nexahome update --available"
 
 
 class Release(NamedTuple):
+    """A published version and its downloadable files by name."""
+
     version: str
     assets: dict[str, str]  # asset name -> https address
 
 
 def update_source(ctx: Context) -> str | None:
+    """The release feed address: `NEXAHOME_UPDATE_URL`, else the package's `Latest release` project URL; `None` when neither exists."""
     import importlib.metadata
 
     if ctx.env.get("NEXAHOME_UPDATE_URL"):
@@ -56,6 +59,7 @@ def installed_as_editable() -> bool:
 
 
 def latest_release(ctx: Context) -> Release:
+    """Fetch and parse the release feed (https only, size capped)."""
     source = update_source(ctx)
     if source is None:
         raise NexaHomeError("no update source is configured", 'export NEXAHOME_UPDATE_URL="<the release feed address>"')
@@ -108,6 +112,7 @@ def _install(ctx: Context, wheel: Path, address: str) -> None:
 
 
 def update(ctx: Context, *, available_only: bool, as_json: bool, assume_yes: bool) -> int:
+    """Check for a newer release; unless `available_only`, ask, download, verify against `SHA256SUMS` and install."""
     release = latest_release(ctx)
     newer = versions.is_newer(release.version, __version__)
     if available_only:

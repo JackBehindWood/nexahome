@@ -1,4 +1,4 @@
-"""The probes behind `nexahome doctor` and `nexahome setup`: read-only diagnosis of this host.
+"""The probes behind `nexahome doctor` and `nexahome env`: read-only diagnosis of this host.
 Every warning and failure ends in one exact command.
 
 To add a probe: write a function (ctx, prior) -> Check | None, add (id, function) to PROBES, add a row to
@@ -31,6 +31,7 @@ def _skip(check_id: str, needs: str) -> Check:
 
 
 def probe_platform(ctx: Context, prior: Mapping[str, Check]) -> Check:
+    """Fail on an unsupported system (native Windows); note an untested architecture."""
     try:
         host_platform.require_supported(ctx.host)
     except NexaHomeError as error:
@@ -40,10 +41,12 @@ def probe_platform(ctx: Context, prior: Mapping[str, Check]) -> Check:
 
 
 def probe_python(ctx: Context, prior: Mapping[str, Check]) -> Check:
+    """Report the interpreter version; the 3.13 minimum is enforced by the package metadata, not here."""
     return Check("python", Status.OK, ".".join(str(part) for part in ctx.host.python) + " (information)")
 
 
 def probe_docker_cli(ctx: Context, prior: Mapping[str, Check]) -> Check:
+    """Fail when `docker` is not on the PATH."""
     result = ctx.runner.run(["docker", "--version"], timeout=ENGINE_TIMEOUT)
     if not result.ok:
         return Check("docker-cli", Status.FAIL, "Docker CLI not found", host_platform.docker_install_fix(ctx.host))
@@ -51,6 +54,7 @@ def probe_docker_cli(ctx: Context, prior: Mapping[str, Check]) -> Check:
 
 
 def probe_compose(ctx: Context, prior: Mapping[str, Check]) -> Check:
+    """Fail when the Compose plugin is missing; skipped without the Docker CLI."""
     if prior["docker-cli"].status != Status.OK:
         return _skip("compose", "docker-cli")
     result = ctx.runner.run(["docker", "compose", "version"], timeout=ENGINE_TIMEOUT)
@@ -60,6 +64,7 @@ def probe_compose(ctx: Context, prior: Mapping[str, Check]) -> Check:
 
 
 def probe_engine(ctx: Context, prior: Mapping[str, Check]) -> Check:
+    """Fail when no container runtime answers `docker info` in time; skipped without the Docker CLI."""
     if prior["docker-cli"].status != Status.OK:
         return _skip("engine", "docker-cli")
     result = ctx.runner.run(["docker", "info", "--format", "{{.ServerVersion}}"], timeout=ENGINE_TIMEOUT)
@@ -76,6 +81,7 @@ def probe_engine(ctx: Context, prior: Mapping[str, Check]) -> Check:
 
 
 def probe_disk(ctx: Context, prior: Mapping[str, Check]) -> Check:
+    """Warn under 5 GiB free in the working directory."""
     free = ctx.disk_free(ctx.cwd)
     summary = f"{free / 1024**3:.1f} GiB free where you are working"
     if free < LOW_DISK_BYTES:
@@ -84,6 +90,7 @@ def probe_disk(ctx: Context, prior: Mapping[str, Check]) -> Check:
 
 
 def probe_mount(ctx: Context, prior: Mapping[str, Check]) -> Check | None:
+    """Warn when a Colima host keeps the checkout outside the home directory it mounts; no result elsewhere."""
     checkout = ctx.checkout()
     if checkout is None or not host_platform.colima_mount_applies(ctx.host):
         return None
@@ -101,6 +108,7 @@ def probe_mount(ctx: Context, prior: Mapping[str, Check]) -> Check | None:
 
 
 def probe_env(ctx: Context, prior: Mapping[str, Check]) -> Check | None:
+    """Warn about `.env` values still `CHANGE_ME`, by stack and key name, never by value."""
     checkout = ctx.checkout()
     if checkout is None:
         return None
@@ -159,6 +167,7 @@ def _run_probe(probe_id: str, probe: Probe, ctx: Context, prior: Mapping[str, Ch
 
 
 def run_probes(ctx: Context) -> list[Check]:
+    """Run every probe side by side and return the results in `PROBES` order, leaving out probes that have nothing to say."""
     from concurrent.futures import ThreadPoolExecutor
 
     futures: "dict[str, Future[Check | None]]" = {}

@@ -6,6 +6,8 @@ from typing import NamedTuple, Protocol
 
 
 class RunResult(NamedTuple):
+    """What a command did; a missing program or a timeout is a result, not an exception."""
+
     returncode: int
     stdout: str = ""
     stderr: str = ""
@@ -18,6 +20,8 @@ class RunResult(NamedTuple):
 
 
 class Runner(Protocol):
+    """Runs a command line without a shell; tests replace it."""
+
     def run(self, argv: Sequence[str], *, timeout: float) -> RunResult: ...
 
 

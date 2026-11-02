@@ -4,7 +4,7 @@ from enum import IntEnum
 
 
 class ExitCode(IntEnum):
-    """Exit codes of the nexahome command (ADR 0018, PK-C2)."""
+    """Exit codes of the nexahome command (ADR 0018, PK-C2). The table users read is in README.md; keep them equal."""
 
     OK = 0
     FAILED = 1  # a check found a problem (reserved for `check`)

@@ -19,8 +19,8 @@ ARGPARSE_COST = {"dataclasses", "inspect", "shutil"} if sys.version_info >= (3, 
 BUDGET: dict[str, tuple[list[str], set[str]]] = {
     "--version": (["--version"], HEAVY | {"argparse", "nexahome.context", "nexahome.runner", "nexahome.commands.doctor", "nexahome.diagnosis"}),
     "--help": (["--help"], HEAVY - ARGPARSE_COST | {"nexahome.context", "nexahome.runner", "nexahome.diagnosis", "nexahome.updater", "nexahome.envfile", "nexahome.policy"}),
-    "doctor --help": (["doctor", "--help"], HEAVY - ARGPARSE_COST | {"nexahome.diagnosis", "nexahome.commands.update", "nexahome.commands.setup", "nexahome.updater"}),
-    "doctor": (["doctor"], HEAVY - ARGPARSE_COST - {"subprocess", "concurrent.futures"} | {"nexahome.updater", "nexahome.commands.update", "nexahome.commands.setup"}),
+    "doctor --help": (["doctor", "--help"], HEAVY - ARGPARSE_COST | {"nexahome.diagnosis", "nexahome.commands.update", "nexahome.commands.env", "nexahome.updater"}),
+    "doctor": (["doctor"], HEAVY - ARGPARSE_COST - {"subprocess", "concurrent.futures"} | {"nexahome.updater", "nexahome.commands.update", "nexahome.commands.env"}),
     "update --help": (["update", "--help"], HEAVY - ARGPARSE_COST | {"nexahome.updater", "nexahome.net", "nexahome.commands.doctor"}),
 }
 

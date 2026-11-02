@@ -25,11 +25,11 @@ make hooks     # optional: install the git pre-commit hook in this repo only
 ```sh
 make test                     # the package tests (pytest)
 . .venv/bin/activate          # once per terminal: puts nexahome on your PATH (or call .venv/bin/nexahome)
-nexahome --help               # the commands: check, doctor, setup, stacks, status, update
+nexahome --help               # the commands: check, doctor, env, stacks, status, update
 nexahome doctor               # diagnose this machine (read-only)
 ```
 
-Run `nexahome` from the checkout (or set `NEXAHOME_HOME` to it). The commands sit beside the Makefile, which stays the way to start and stop stacks; none of them starts a container. `update` is the only command that uses the network (`net.py`, https only); it asks before it installs and checks the wheel against `SHA256SUMS`.
+Run `nexahome` from the checkout (or set `NEXAHOME_HOME` to it). The commands sit beside the Makefile, which stays the way to start and stop stacks; none of them starts a container. Exit codes are listed in the [README](README.md#the-nexahome-command). `update` is the only command that uses the network (`net.py`, https only); it asks before it installs and checks the wheel against `SHA256SUMS`.
 
 To add a stack, follow [Add a stack](docs/runbooks/add-a-stack.md).
 
@@ -65,7 +65,7 @@ The principle is **pay for what you use**: a call costs only what it needs, in s
 1. Fork the repository and branch from `dev` (`feat/<topic>`).
 2. Run `make check` before every push. It must pass.
 3. Keep commits small and prefix them `docs:`, `feat:`, `fix:` or `chore:`.
-4. Open a pull request into `dev`. CI (`secrets` and `checks`) must pass; the other jobs (`portable`, `tests`, `gate`) should too. Only the maintainer merges, and `main` takes pull requests only ([branching](docs/adr/0002-branching.md)).
+4. Open a pull request into `dev`. CI (`secrets` and `checks`) must pass, and so should `gate`, which covers the Linux jobs; a change that only touches documentation skips the code jobs. A pull request into `main` also runs the macOS and arm64 jobs: read the `platforms` result before merging, because GitHub does not enforce it ([ADR 0019](docs/adr/0019-platform-support-and-ci-matrix.md)). Only the maintainer merges, and `main` takes pull requests only ([branching](docs/adr/0002-branching.md)).
 5. Update the documentation with the change. Record a significant decision as an ADR in `docs/adr/`.
 
 ## Reporting security issues
