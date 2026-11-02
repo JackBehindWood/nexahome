@@ -17,8 +17,8 @@ def test_no_runtime_dependencies() -> None:
     assert importlib.metadata.requires("nexahome") is None  # PK-C1
 
 
-def test_only_platform_py_knows_the_operating_system() -> None:
-    offenders = [p.name for p in SOURCES if p.name != "platform.py" and OS_SPECIFIC.search(p.read_text())]
+def test_only_the_platform_package_knows_the_operating_system() -> None:
+    offenders = [str(p.relative_to(PACKAGE)) for p in SOURCES if "platform" not in p.relative_to(PACKAGE).parts[:1] and p.name != "platform.py" and OS_SPECIFIC.search(p.read_text())]
     assert offenders == []  # PK-P3
 
 

@@ -4,6 +4,7 @@ import types
 import pytest
 
 from nexahome import platform
+from nexahome.platform import linux
 from nexahome.errors import ExitCode, NexaHomeError
 
 from conftest import MakeHost
@@ -46,7 +47,7 @@ def test_current_normalises_system_and_machine(
     ],
 )
 def test_parse_os_release(text: str, debian_like: bool) -> None:
-    assert platform.parse_os_release(text) is debian_like
+    assert linux.parse_os_release(text) is debian_like
 
 
 def test_native_windows_is_refused_with_wsl2(make_host: MakeHost) -> None:
@@ -78,3 +79,11 @@ def test_fix_strings_per_system(make_host: MakeHost) -> None:
     assert platform.colima_mount_applies(mac) and not platform.colima_mount_applies(other)
     assert platform.is_supported_machine(mac.__class__("linux", "arm64", (3, 13, 0), mac.home))
     assert not platform.is_supported_machine(make_host(machine="riscv64"))
+
+
+def test_every_system_module_satisfies_the_interface() -> None:
+    for name, module in platform.SYSTEMS.items():
+        assert module.NAME == name
+        for fix in (module.docker_install_fix, module.compose_install_fix, module.engine_start_fix, module.engine_restart_fix):
+            assert callable(fix) and isinstance(module.MOUNTS_HOME_ONLY, bool)
+    assert [n for n, m in platform.SYSTEMS.items() if m.REFUSAL] == ["windows"]
