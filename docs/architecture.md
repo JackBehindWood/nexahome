@@ -1,6 +1,6 @@
 # Architecture
 
-Version 0.1 · Last reviewed 2026-10-26
+Version 0.1 · Last reviewed 2026-11-02
 
 What the system is and why it is shaped this way. Rules are in [constraints](constraints.md), sequencing in the [roadmap](roadmap.md), decisions in the [register](project.md#decision-register).
 
@@ -91,7 +91,7 @@ Administrative interfaces are never exposed to the public internet. No firewall 
 
 ## Remote access
 
-SSH from the MacBook Air to the Mac mini is required, for administration and deployment, VS Code Remote-SSH, Claude Code on the mini, and file transfer and backups. The goal is decided; the method and VPN choice are not, and depend on hardware. Detail goes into a runbook written when the hardware exists ([roadmap](roadmap.md)).
+SSH from the MacBook Air to the Mac mini is required, for administration and deployment, VS Code Remote-SSH, Claude Code on the mini, and file transfer and backups. The goal is decided; the method is proposed in [ADR 0015](adr/0015-remote-access.md) (keys only, LAN only, no VPN until a need exists) with a draft [runbook](runbooks/mini-ssh.md), both unconfirmed until the mini exists ([roadmap](roadmap.md)). The VPN choice is not decided.
 
 ## Agent guardrails
 
@@ -144,4 +144,4 @@ Phase names refer to the [roadmap](roadmap.md#phases).
 
 The decision register is in [project.md](project.md#decision-register); rationale is in [adr/](adr/).
 
-Changelog: 0.1 (2026-10-26): Jetson row, per-hop table for P4; 0.1 (2026-10-21): identity bullet updated for P2.5; backup tool decided; 0.1 (2026-10-21): restore drill recorded; 0.1 (2026-10-21): backup model; 0.1 (2026-10-21): Layer 4 and 6 current state; 0.1 (2026-10-20): full planned-services capability table; rewritten; added failure domains, trust zones, backup and restore, identity, migration paths and a capability table; duplicated rules moved to constraints.
+Changelog: 0.1 (2026-11-02): remote access paragraph points at ADR 0015 and the SSH runbook; 0.1 (2026-10-26): Jetson row, per-hop table for P4; 0.1 (2026-10-21): identity bullet updated for P2.5; backup tool decided; 0.1 (2026-10-21): restore drill recorded; 0.1 (2026-10-21): backup model; 0.1 (2026-10-21): Layer 4 and 6 current state; 0.1 (2026-10-20): full planned-services capability table; rewritten; added failure domains, trust zones, backup and restore, identity, migration paths and a capability table; duplicated rules moved to constraints.

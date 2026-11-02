@@ -1,6 +1,6 @@
 # NexaHome
 
-Version 0.1 · Last reviewed 2026-10-26
+Version 0.1 · Last reviewed 2026-11-02
 
 A modular, self-hosted homelab platform: local AI, development tools, storage, networking, home automation and personal applications.
 
@@ -86,8 +86,9 @@ Status values: **Confirmed** (explicitly agreed), **Proposed** (suggested, not y
 | Hardware order: Mac mini, then NAS and UPS, then network upgrades | Confirmed | Owner's plan | n/a |
 | Timing of each hardware step | Open | No dates yet | n/a |
 | SSH from the MacBook Air to the Mac mini (goal) | Confirmed | Remote administration, deployment, backups | n/a |
-| SSH method and VPN choice (Tailscale or WireGuard) | Open | Hardware-gated; planned in P4 Track A (ADR 0015 to be written), LAN only until a need appears | n/a |
-| Mac mini configuration and purchase | Open | Chosen in P4 session 0 from at most three options; ADR 0014 to be written | n/a |
+| SSH method: keys only, LAN only, no VPN until a need exists ([ADR 0015](adr/0015-remote-access.md), [runbook](runbooks/mini-ssh.md)) | Proposed | Drafted and rehearsed on the laptop in P4 A1; unconfirmed until the mini exists (B1) | n/a |
+| VPN choice (Tailscale or WireGuard) | Open | Leans WireGuard; trigger is the first need from outside the home; built in P6 | n/a |
+| Mac mini configuration: M6, 32 GB, 512 GB, plus a small external SSD ([ADR 0014](adr/0014-mac-mini-hardware.md)) | Proposed | Ordered by the owner; confirmed or corrected in B2 inside the return window | n/a |
 | Sleep, power, FileVault and update policy for the mini | Open | Desk use; ADR 0016 to be written in P4 A2 | n/a |
 | Deploy flow to the mini (SSH, `git pull --ff-only`, `make check`, `make up`) | Open | ADR 0017 to be written in P4 A3 | n/a |
 
@@ -95,4 +96,4 @@ Status values: **Confirmed** (explicitly agreed), **Proposed** (suggested, not y
 
 Not decided and not blocking: capability priority order; local AI model size (the laptop has 8 GB, so only a small model runs there; P4 session 0 tests one and sizes the mini from the result); home automation scope (no devices yet); storage volume, budget and power limits; macOS version; optional SSH-signed commits; a trademark check on the name (a basic web search found no clash, not a trademark search).
 
-Changelog: 0.1 (2026-10-26): P4 planned, four hardware rows added (Open), open-questions wording; 0.1 (2026-10-26): P3 session 3 done (ntfy notifier opt-in, Health widget removed, results in ADR 0013); 0.1 (2026-10-26): ADR 0013 and the health tool row Confirmed (owner's yes); 0.1 (2026-10-26): P3 confirmed row, health tool row (Proposed); 0.1 (2026-10-22): identity provider and edge rows (Proposed); 0.1 (2026-10-21): ADRs 0006 and 0009 Confirmed (owner delegated); 0.1 (2026-10-21): ADRs 0007 and 0008 Confirmed (owner delegated), identity row reworded (Proposed); version renamed from 1.0; 0.1 (2026-10-21): first-app row reworded (drill subject only); 0.1 (2026-10-21): stack contract and first-app rows (Proposed), status line; 0.1 (2026-10-21): entry-points row added (Proposed); 0.1 (2026-10-20): Dependabot confirmed; planned services list and open-source rule added; restructured; metadata and working-method sections removed; decisions regrouped; frugality, users, audience and hardware-order rows added.
+Changelog: 0.1 (2026-11-02): ADRs 0014 and 0015 written (Proposed), SSH method and VPN split into two rows; 0.1 (2026-10-26): P4 planned, four hardware rows added (Open), open-questions wording; 0.1 (2026-10-26): P3 session 3 done (ntfy notifier opt-in, Health widget removed, results in ADR 0013); 0.1 (2026-10-26): ADR 0013 and the health tool row Confirmed (owner's yes); 0.1 (2026-10-26): P3 confirmed row, health tool row (Proposed); 0.1 (2026-10-22): identity provider and edge rows (Proposed); 0.1 (2026-10-21): ADRs 0006 and 0009 Confirmed (owner delegated); 0.1 (2026-10-21): ADRs 0007 and 0008 Confirmed (owner delegated), identity row reworded (Proposed); version renamed from 1.0; 0.1 (2026-10-21): first-app row reworded (drill subject only); 0.1 (2026-10-21): stack contract and first-app rows (Proposed), status line; 0.1 (2026-10-21): entry-points row added (Proposed); 0.1 (2026-10-20): Dependabot confirmed; planned services list and open-source rule added; restructured; metadata and working-method sections removed; decisions regrouped; frugality, users, audience and hardware-order rows added.

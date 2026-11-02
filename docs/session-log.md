@@ -2,6 +2,31 @@
 
 Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
+## 2026-11-02: P4 A1, SSH runbook and ADRs 0014 and 0015
+
+**Done**
+- Branch `feat/p4-Atrack` from `feat/p4-plan` (the plan commit is not merged into `dev`).
+- Runbook `docs/runbooks/mini-ssh.md`: five steps, a block of environment variables so commands paste unchanged, hardened drop-in, effective-value check, host-key check, client config, `from=` on keys, add, revoke and review, recovery. Status banner: not confirmed on a real mini.
+- ADR 0015 (Proposed): keys only, LAN only, deploy key for pull and per-device key for push, no agent forwarding, VPN comparison with a trigger, deferred and rejected options.
+- ADR 0014 (Proposed): M6 32 GB / 512 GB plus a small external SSD, tiers only (no prices, budget or order date), sizing rule, return-window rule. The owner ordered the mini before this session; the repo had no record, so the ADR was written afterwards from the plan and the owner's answers.
+- Rehearsal on the laptop (macOS 27.0.1, OpenSSH 10.3; the mini will run 26.x): throwaway non-root `sshd` on a loopback port with scratch keys and a scratch drop-in, no `sudo`, deleted afterwards. Passed: `sshd -t`, all `sshd -T` values, key login, host-key match, password and wrong-key refusal, tunnel, no agent socket with `ssh -A`, `from=` refusing an excluded client. Findings: start such an `sshd` with an absolute config path; `$?` after a pipe is the filter's.
+- Read-only look at the laptop's own `sshd_config`: it begins with the `Include` line and says the first value wins; Apple's drop-in sets `UsePAM yes`, hence both password lines.
+
+**Doc changes and reasons**
+- `docs/project.md`: SSH method row (Proposed) and a separate VPN row (Open); mini configuration row (Proposed). Reason: the ADRs now exist; the SSH method and the VPN choice have different triggers. No Confirmed row touched.
+- `docs/roadmap.md`: A1 done, ADR list, Next row. `docs/architecture.md`: remote access paragraph. `docs/README.md`: runbook listed. Reason: one pointer per fact.
+
+**Verification:** `make check` and `git diff --staged` before the commit (see the commit). Not verified: everything on the mini itself (`sshd_config.d` and PAM on its macOS version, Remote Login, Bonjour, `from=` range as the mini sees it, VS Code Remote-SSH, deploy key), the owner's cold read of the runbook, M6 power and model speed.
+
+**Next:** A2 (ADR 0016, power, sleep, FileVault, updates) or A3 (ADR 0017, deploy flow), then Track B when the mini arrives.
+
+**Open questions**
+- Review of ADRs 0014 and 0015 and the runbook (cold read); whether to keep `from=` as a recommended step or an option.
+- Small-model laptop test results (T1) are not in the repo: keep local or summarise without personal figures.
+
+**Pending (owner actions)**
+- Record the order date locally; update `CLAUDE.md` hardware section; decide AppleCare+ and the subscription to cancel (local).
+
 ## 2026-10-26: P4 planning (docs only)
 
 **Done**
