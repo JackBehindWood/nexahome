@@ -138,10 +138,10 @@ Phase names refer to the [roadmap](roadmap.md#phases).
 | Core network: DNS, ad blocking, VPN, remote access | Always-on host and network gear | P6 | Server and network gear |
 | Home automation: Home Assistant, MQTT, ESP32 | Linux host with USB and network access | P7 | Linux host and devices; scope not decided |
 | Personal applications: expenses, portfolio | Any host | P8 | None |
-| Central dashboard | Any always-on host | P3 | None |
+| Central dashboard | Any always-on host | P2.5 | None |
 
 ## Decisions
 
 The decision register is in [project.md](project.md#decision-register); rationale is in [adr/](adr/).
 
-Changelog: 0.1 (2026-11-02): identity wording says built, not planned (PK2 reword A2); 0.1 (2026-11-02): layer 5 lists the built stacks (PK2 reword A1); 0.1 (2026-11-02): `NEXAHOME_DATA_DIR` claim removed (PK2); 0.1 (2026-11-02): deploy flow pointer (ADR 0017); 0.1 (2026-11-02): remote access paragraph points at ADR 0016 for reboot behaviour; 0.1 (2026-11-02): remote access paragraph points at ADR 0015 and the SSH runbook; 0.1 (2026-10-26): Jetson row, per-hop table for P4; 0.1 (2026-10-21): identity bullet updated for P2.5; backup tool decided; 0.1 (2026-10-21): restore drill recorded; 0.1 (2026-10-21): backup model; 0.1 (2026-10-21): Layer 4 and 6 current state; 0.1 (2026-10-20): full planned-services capability table; rewritten; added failure domains, trust zones, backup and restore, identity, migration paths and a capability table; duplicated rules moved to constraints.
+Changelog: 0.1 (2026-11-02): central dashboard phase P2.5 (PK2 reword A3); 0.1 (2026-11-02): identity wording says built, not planned (PK2 reword A2); 0.1 (2026-11-02): layer 5 lists the built stacks (PK2 reword A1); 0.1 (2026-11-02): `NEXAHOME_DATA_DIR` claim removed (PK2); 0.1 (2026-11-02): deploy flow pointer (ADR 0017); 0.1 (2026-11-02): remote access paragraph points at ADR 0016 for reboot behaviour; 0.1 (2026-11-02): remote access paragraph points at ADR 0015 and the SSH runbook; 0.1 (2026-10-26): Jetson row, per-hop table for P4; 0.1 (2026-10-21): identity bullet updated for P2.5; backup tool decided; 0.1 (2026-10-21): restore drill recorded; 0.1 (2026-10-21): backup model; 0.1 (2026-10-21): Layer 4 and 6 current state; 0.1 (2026-10-20): full planned-services capability table; rewritten; added failure domains, trust zones, backup and restore, identity, migration paths and a capability table; duplicated rules moved to constraints.
