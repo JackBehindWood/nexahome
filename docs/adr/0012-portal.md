@@ -1,7 +1,7 @@
 # 0012. Portal: Homepage as an open status board
 
-* **Status:** Proposed
-* **Date:** 2026-10-23
+* **Status:** Confirmed (owner's yes, 2026-11-02)
+* **Date:** 2026-10-23 (decided 2026-11-02)
 
 ## Context
 P2.5 needs one place to see which stacks run and to open them, without a Docker socket, accounts or code of our own. Measured in session 4 (macOS, Colima 2 CPU / 2 GB, Safari). Requirements: PR1 open, read-only, no secrets (`make smoke`); PR2 one tile and dot per UI stack (T1, T2); PR3 portal down breaks nothing (T3); PR4 non-root, read-only, no socket, no published port (`make check`, smoke); PR5 no outbound connections (smoke); PR6 within R6 of ADR 0010 (`docker stats`); PR7 hostnames only from `NEXAHOME_DOMAIN` and `EDGE_PORT`; PR8 a new app joins in four steps (R10 dry run); PR9 foreign Host gets the edge's 404.

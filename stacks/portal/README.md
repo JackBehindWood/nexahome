@@ -1,6 +1,6 @@
 # portal
 
-[Homepage](https://gethomepage.dev) as an open, read-only status board: one tile per stack with a web UI and a health dot ([ADR 0012](../../docs/adr/0012-portal.md), not decided yet). Reached by name through the edge at `home.<domain>:<port>`; it publishes no port, has no login, no widgets and no Docker socket. Run unmodified (GPL-3.0); the tiles are plain YAML in `config/`.
+[Homepage](https://gethomepage.dev) as an open, read-only status board: one tile per stack with a web UI and a health dot ([ADR 0012](../../docs/adr/0012-portal.md), decided). Reached by name through the edge at `home.<domain>:<port>`; it publishes no port, has no login, no widgets and no Docker socket. Run unmodified (GPL-3.0); the tiles are plain YAML in `config/`.
 
 ```sh
 make up STACK=portal      # start and wait until healthy
