@@ -4,15 +4,16 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
 ## Pending owner actions (the one current list)
 
-Last replaced 2026-11-02 (PK4). Older entries below end with a pointer here instead of their own list; their text is in git history.
+Last replaced 2026-11-02 (PK4 close). Older entries below end with a pointer here instead of their own list; their text is in git history.
 
 **Decide**
-- The other Proposed register rows (documentation conventions, repository layout, task runner, security baseline, roles, three Packaging rows); review ADRs 0014 to 0020, the SSH runbook and the packaging audit.
+- ADR 0021 is decided (owner, 2026-11-02). Still to decide: the other Proposed register rows (documentation conventions, repository layout, task runner, security baseline, roles, three Packaging rows); review ADRs 0014 to 0020, the SSH runbook and the packaging audit.
 - Rewords still waiting (they touch decided items): B1, B2 (language rule in the register and ADR 0007), C1, C2 (ADR 0007), D1 (one register row); the run-path line in `docs/constraints.md` was reworded on 2026-11-02 (PK4), the register and ADR 0007 still say "Python for checks": `.claude/tmp/pk2-confirmed-rewords.md`. The pull request text: `.claude/tmp/pr-dev-to-main.md`.
 - GitHub setting (read-only check, 2026-11-02): Dependabot alerts and Dependabot security updates are disabled for the repository. Enabling them is your action (Settings, Code security).
 - Open choices: digest pinning; paid tier versus the open-source rule; keep `hello` on the edge and in the portal; the root `.env.example` now holds no setting (delete it?).
 
 **Git**
+- Push the local docs commit `9d7c3ed` (it records the deferred CI work); `feat/packaging` is otherwise level with `origin/feat/packaging`.
 - **Next session, first item: CI cost and the macOS queue (owner, 2026-11-02).** Every pull request into `dev` runs all five `tests` jobs, three `portable` jobs, `hello` and `gate`, and the two macOS arm64 jobs can wait 15 minutes or more for a runner and are then cancelled without running a step (seen in PK3 and again on pull request 22), which turns `gate` red for a reason that is not the code. Goal: merges into `dev` stay fast and never depend on macOS capacity, while platform proof is not lost. To work out and decide then: which jobs run on every pull request into `dev` (Linux `secrets`, `checks`, `tests`) and which only on a pull request into `main`, on a schedule or by hand (`portable` and `tests` on macOS arm64 and Linux arm64); path filters so a docs-only change skips the code jobs; whether `gate` waits for the macOS jobs at all (a required `gate` must never be held by a runner queue); a queue-time guard (`timeout-minutes` does not cover waiting for a runner; a short `concurrency` group, or a scheduled workflow instead); cancelling superseded runs. Constraints: `secrets` and `checks` keep their names and stay required; the workflow change needs the owner's yes; making `gate` a required check waits for this redesign.
 - Pull request 21 is merged into `dev` (owner). `feat/packaging` is ahead of `dev` and not pushed. Decide: (1) the `tests` job is committed in `.github/workflows/ci.yml` (last commit but one); (2) push `feat/packaging` and open a pull request into `dev`, which is the only way to run the new job. The `dev` to `main` pull request opens only when you say so (description prepared locally). Afterwards check under Insights, Dependency graph, Dependabot that every stack entry parses.
 - GitHub account setting "Block command line pushes that expose my email"; optional SSH-signed commits.
@@ -33,6 +34,26 @@ Last replaced 2026-11-02 (PK4). Older entries below end with a pointer here inst
 - Diagnose the Pocket ID self-restart; optional admin-only sign-in for the health view.
 - `docs/constraints.md` (the run-path line) still says "Python is for checks"; with `src/nexahome` that is incomplete, but the line restates a decided rule, so it is left for the owner's rewords (B2, C1) with ADR 0018.
 - Backup `.env.example` ships example paths that `make check` needs (audit F26): fix with PK5 or PK7.
+
+## 2026-11-02: Packaging PK4 close (session end)
+
+**Done**
+- PK4 is complete on `feat/packaging`: the `nexahome` package (`doctor`, `check`, `setup`, `stacks`, `status`, `update`), the ported checks, `make test`, the `tests` CI job, the performance pass and its audit, ADR 0021 decided and the run-path line in `docs/constraints.md` reworded (both on the owner's explicit yes). Details are in the PK4 entry below.
+- Pushed on the owner's yes (twice); pull request 22 into `dev` is open and not merged. After the second push: `secrets`, `checks`, `hello`, `portable` on both Linux runners and all five `tests` jobs passed; `portable (macos-arm64)` was cancelled without starting a step (macOS arm64 capacity, as in PK3) and its re-run was still pending when the session closed, so `gate` was not green.
+- The owner deferred the CI redesign (fewer jobs on every merge into `dev`, no dependence on macOS capacity) to the next session; recorded under Pending, Git.
+
+**Doc changes and reasons**
+- `docs/roadmap.md`: Next row and Packaging block (PK4 done, CI follow-up first next session). `docs/adr/0019-...md`: removed the sentence saying the `tests` job had not run in CI, because CI results are stated only in the session log and the roadmap. No other status label changed in this entry; ADR 0021 and the constraints.md reword are recorded in the PK4 entry.
+
+**Verification:** `make check` exit 0; `pytest` 262 passed on Python 3.14.7 and 3.13.3; relative links in 36 Markdown files resolve; header and changelog dates agree; no status label outside the register, ADRs and this log; nothing staged; no `.env`, key, `data/`, `.claude/` or personal data tracked. **Not verified:** the macOS arm64 platform job and `gate` on the latest push; `update` against a real release (none exists); the Mac mini and B1/B2 claims; WSL2 and native Windows beyond the injected-host test; the pip path of `make setup`; Dependabot reading `pyproject.toml`.
+
+**Next:** (1) CI redesign, see Pending, Git; (2) decisions on pull request 22 (merge into `dev`; `gate` stays not required until the redesign); (3) PK5: switch the hooks and CI to the package, delete the old checks in a separate commit, bundle the stacks in the wheel; note `nexahome check` exits 3 (not 0 or 1) for "nothing to check" and "Docker CLI missing".
+
+**Open questions**
+- Which jobs belong on every pull request into `dev`, and which only on a pull request into `main` or on a schedule (Pending, Git)?
+- Let `uv` fetch Python 3.13 to test ADR 0018's unverified claim (it needs a machine without a 3.13)?
+
+**Pending:** superseded by the single list at the top of this log (2026-11-02, PK4 close).
 
 ## 2026-11-02: Packaging PK4, package skeleton, `doctor` and the first ports (built locally; CI proof pending)
 
