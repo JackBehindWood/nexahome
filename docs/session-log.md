@@ -30,6 +30,7 @@ Last replaced 2026-11-02 (PK4). Older entries below end with a pointer here inst
 
 **Open work**
 - Diagnose the Pocket ID self-restart; optional admin-only sign-in for the health view.
+- `docs/constraints.md` (the run-path line) still says "Python is for checks"; with `src/nexahome` that is incomplete, but the line restates a decided rule, so it is left for the owner's rewords (B2, C1) with ADR 0018.
 - Backup `.env.example` ships example paths that `make check` needs (audit F26): fix with PK5 or PK7.
 
 ## 2026-11-02: Packaging PK4, package skeleton, `doctor` and the first ports (built locally; CI proof pending)
@@ -47,7 +48,7 @@ Last replaced 2026-11-02 (PK4). Older entries below end with a pointer here inst
 
 **Doc changes and reasons**
 - `docs/roadmap.md`, `docs/adr/0018-...md`: the freeze rule is now a risk test (new code beside an untouched old script is allowed; switching a caller or porting commands that change data or hosts waits for B2). Reason: the owner asked for it; the risk it guards is that B2 tests the run path on the mini. ADR 0018 also drops the claim that `doctor` names the fix for a wrong Python (pip refuses the wheel first) and says the platform code is a package.
-- `README.md` is unchanged. `docs/adr/0019-...md`: platform package, the `tests` job (written, not run), WSL2 note.
+- `README.md`: a section on the `nexahome` command (activate `.venv` once, then plain `nexahome`; no short alias, owner's choice after a PyPI check: `nexahome` is unclaimed, `nexa` is a PyPI project and `nexaai`'s likely command), the layout list, and one sentence on `nexahome update`. `docs/README.md` and `docs/project.md` (Current status only) mention the package. `docs/adr/0019-...md`: platform package, the `tests` job (written, not run), WSL2 note.
 - `CONTRIBUTING.md`: tests, `doctor`, and a short checklist for adding a command, a check or a system.
 - Pull request 21 is recorded as merged in the Next row and Packaging status. No status label, Confirmed row or ADR status changed. The Confirmed ADR 0007 rule ("Python for checks only") and the register row about `pyproject.toml` are not edited; the code sits beside them as ADR 0018 says.
 

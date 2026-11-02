@@ -24,8 +24,9 @@ make hooks     # optional: install the git pre-commit hook in this repo only
 
 ```sh
 make test                     # the package tests (pytest)
-.venv/bin/nexahome --help     # the commands: check, doctor, setup, stacks, status, update
-.venv/bin/nexahome doctor     # diagnose this machine (read-only)
+. .venv/bin/activate          # once per terminal: puts nexahome on your PATH (or call .venv/bin/nexahome)
+nexahome --help               # the commands: check, doctor, setup, stacks, status, update
+nexahome doctor               # diagnose this machine (read-only)
 ```
 
 Run `nexahome` from the checkout (or set `NEXAHOME_HOME` to it). The commands sit beside the Makefile, which stays the way to start and stop stacks; none of them starts a container. `update` is the only command that uses the network (`net.py`, https only); it asks before it installs and checks the wheel against `SHA256SUMS`.

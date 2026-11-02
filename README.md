@@ -25,6 +25,23 @@ make down                 # stop; your data volumes are kept
 
 Add `STACK=hello` or `STACK=actual` to act on one stack. The first `make up` creates each stack's `.env` from `.env.example`. `make` lists all targets.
 
+## The `nexahome` command
+
+A small command-line tool that checks your machine and prepares a checkout. `make` still starts, stops and backs up everything; `nexahome` starts no container. It needs Python 3.13 or newer (or `uv`, which fetches it). From a clone:
+
+```sh
+make setup                  # once: creates .venv and installs the tool into it
+. .venv/bin/activate        # once per terminal; then plain `nexahome` works
+nexahome doctor             # diagnose this machine; every problem ends in one command to run
+nexahome setup              # create each stack's .env and generate its secrets (add --dry-run to look first)
+nexahome stacks             # which stacks exist, which this host runs, whether they are running
+nexahome status             # health of the stacks and how recent the backup is
+nexahome check              # the Compose policy over the stacks
+nexahome update --available # is a newer release out? (there is none yet)
+```
+
+`nexahome --help` lists every command and `nexahome <command> --help` its options. Without activating the environment, call `.venv/bin/nexahome`. It is not on PyPI and has no release yet; `make test` runs its tests ([CONTRIBUTING](CONTRIBUTING.md#the-nexahome-package)).
+
 ## Your data stays yours
 
 Each stack's `.env` and the `data/` directory are local only and gitignored. Nothing you configure is sent upstream.
@@ -38,13 +55,16 @@ make restore STACK=actual # restores into new volumes; never overwrites
 make backup && git pull && make up    # update (no releases yet: use main)
 ```
 
+Once releases exist, `nexahome update` will update the tool itself (it checks for a newer release, asks, and verifies the download); the stacks still update with git.
+
 Save a copy of the password file (`.config/restic-password`) somewhere other than this laptop; without it the backups are unreadable. The backup sits on the same disk by default, so it is a drill, not protection. Test a restore before you trust it: [restore runbook](docs/runbooks/restore.md), which also covers going back after a failed update.
 
 ## Layout
 
 - `docs/` documentation: start at the [documentation index](docs/README.md)
 - `stacks/<name>/` one deployable unit each: `compose.yaml`, `.env.example`, README; `stacks/_template/` is the starting point for a new one
-- `scripts/` the checks behind `make check`
+- `src/nexahome/` and `tests/` the `nexahome` command and its tests
+- `scripts/` the checks behind `make check`, and the backup, smoke, deploy and setup scripts
 
 ## Contributing
 
