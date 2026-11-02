@@ -107,3 +107,9 @@ def engine_start_fix(host: Host) -> str:
     if host.system == "macos":
         return "colima start --cpu 2 --memory 2 --disk 20"
     return "sudo systemctl start docker"
+
+
+def engine_restart_fix(host: Host) -> str:
+    if host.system == "macos":
+        return "colima restart"
+    return "sudo systemctl restart docker"
