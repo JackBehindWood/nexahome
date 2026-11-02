@@ -1,0 +1,42 @@
+[build-system]
+requires = ["hatchling==1.32.4"]
+build-backend = "hatchling.build"
+
+[project]
+name = "nexahome"
+dynamic = ["version"]  # from src/nexahome/__init__.py: one source, no stale metadata
+description = "Install, check and run NexaHome, a modular self-hosted homelab platform."
+requires-python = ">=3.13"
+license = "MIT"
+license-files = ["LICENSE"]
+keywords = ["homelab", "self-hosted", "docker-compose"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: System :: Systems Administration",
+    "Typing :: Typed",
+]
+dependencies = []  # PK-C1: standard library only
+
+[project.scripts]
+nexahome = "nexahome.cli:main"
+
+[tool.hatch.version]
+path = "src/nexahome/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/nexahome"]
+
+[tool.hatch.build.targets.sdist]
+include = ["/src", "/tests", "/LICENSE", "/pyproject.toml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-markers", "--strict-config"]
+xfail_strict = true
+filterwarnings = ["error"]
