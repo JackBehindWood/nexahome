@@ -1,6 +1,6 @@
 # identity
 
-[Pocket ID](https://pocket-id.org): passkey-only OIDC provider and the one sign-in page (My Apps) for NexaHome apps ([ADR 0010](../../docs/adr/0010-identity-provider.md), not decided yet). No published port; open it through the edge at `http://id.<NEXAHOME_DOMAIN>:<EDGE_PORT>` (default `http://id.nexahome.localhost:8088`). Needs the `edge` stack.
+[Pocket ID](https://pocket-id.org): passkey-only OIDC provider and the one sign-in page (My Apps) for NexaHome apps ([ADR 0010](../../docs/adr/0010-identity-provider.md), decided). No published port; open it through the edge at `http://id.<NEXAHOME_DOMAIN>:<EDGE_PORT>` (default `http://id.nexahome.localhost:8088`). Needs the `edge` stack.
 
 ```sh
 make up STACK=edge
