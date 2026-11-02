@@ -8,7 +8,7 @@ ALL = $(or $(strip $(shell cat .config/stacks 2>/dev/null)),$(filter-out _templa
 STACKS = $(if $(STACK),$(STACK),$(filter $(CORE),$(ALL)) $(filter-out $(CORE),$(ALL)))
 
 .DEFAULT_GOAL := help
-.PHONY: help up down ps status smoke open portal backup-init backup restore snapshots verify backup-check deploy setup hooks unhooks check
+.PHONY: help up down ps status smoke open portal backup-init backup restore snapshots verify backup-check deploy setup hooks unhooks check test
 
 ##@ Use
 
@@ -93,3 +93,6 @@ unhooks: ## Remove that hook
 check: ## Run all checks: hooks on every file plus the Compose policy
 	$(BIN)/pre-commit run --all-files
 	$(BIN)/python scripts/check_compose.py
+
+test: ## Run the nexahome package tests (pytest)
+	$(BIN)/pytest

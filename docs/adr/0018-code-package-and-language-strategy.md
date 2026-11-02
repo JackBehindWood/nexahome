@@ -14,7 +14,7 @@ Requirements and how each is verified:
 | PK-C2 | One command, `nexahome`, stable exit codes (0 ok, 1 check failed, 2 usage, 3 environment not ready) and `--help` | Unit tests |
 | PK-C3 | A ported command matches the shell original before the original is deleted | Golden tests against both, driven by a fake `docker` on `PATH` |
 | PK-C4 | Type hints complete; every command has a failure-path test | Review, pytest |
-| PK-P3 | Platform-specific code lives in one module, `platform.py` | Test: no other `sys.platform` or `uname` use |
+| PK-P3 | Platform-specific code lives in one package, `nexahome.platform` (one module per system) | Test: no other `sys.platform` or `uname` use |
 
 ## Decision
 **Languages.** POSIX `sh` for glue only, small (about 30 lines), ShellCheck-clean in CI, no logic duplicated across scripts. Python **3.13 or newer** (owner's choice) for anything with logic: standard library only at runtime, `argparse` for the CLI. Build backend hatchling, build-time only. Dev tools: pytest, pinned in `requirements-dev.txt` per [ADR 0003](0003-project-local-tooling.md); each is still asked about before it is installed. Version policy: `requires-python >=3.13`; CI tests 3.13 and 3.14; a version is dropped at end of life with a changelog note.
@@ -23,14 +23,14 @@ Requirements and how each is verified:
 1. `nexahome doctor` and the test harness (fake `docker`). Additive; also useful alone.
 2. Bundled stacks and `nexahome init`; the two Python checks move into the package ([ADR 0020](0020-instance-install-and-release-model.md)).
 3. `upgrade` and the release pipeline.
-4. Run-path ports (`up`, `backup`, `smoke`, `deploy`), **only after Track B step B2 has closed**. Until then no commit changes the run path that ADRs 0014 to 0017 are being tested on. Each old script stays until golden tests pass and is deleted in its own commit.
+4. Run-path ports (`up`, `backup`, `smoke`, `deploy`). A test, not a ban: while the mini is in its return window, new code may be added beside an old script that stays untouched, with golden tests (read-only logic such as `smoke` parsing is the example). Switching a caller (Makefile, hook, CI) to the package, and porting commands that change data or hosts (`up`, `backup`, `restore`, `deploy`), wait until Track B step B2 has closed, because B2 tests ADRs 0014 to 0017 on that run path. Each old script stays until golden tests pass and is deleted in its own commit.
 
 The Makefile stays as one-line shims, so documented `make` commands keep working. This amends by reference the Confirmed run-path rule in ADR 0007 ("Make and POSIX shell; Python for checks only") and the register row "no `pyproject.toml` until Python code needs it" (Python code now needs it, from stage 1). Neither is edited until the owner says yes.
 
 ## Consequences
 Easier: tested logic, one install path, the same code on a laptop, the mini and CI, errors that end in a command. Harder: the first Python package and build step in the repository; a solo maintainer carries the package; Python 3.13 is newer than Ubuntu 24.04's 3.12, so non-uv users must supply it and the docs lead with uv. **Unverified:** that `uv tool install <wheel URL>` fetches Python 3.13 by itself (tested in stage 1); `make setup` on the macOS system Python 3.9.6; hatchling `force-include` for a directory tree.
 
-Failure modes: wrong Python → pip refuses the wheel and `doctor` names the fix; Docker missing → stack commands stop with the start hint, `check` and `--version` still work; a port changes behaviour → old script kept until golden parity. Evolution: the CLI contract is the same on laptop, mini, Linux host and NAS; only environment variables change.
+Failure modes: wrong Python → pip refuses the wheel before `doctor` can run (`make setup` names the fix; `doctor` only prints the interpreter version); Docker missing → stack commands stop with the start hint, `check` and `--version` still work; a port changes behaviour → old script kept until golden parity. Evolution: the CLI contract is the same on laptop, mini, Linux host and NAS; only environment variables change.
 
 ## Alternatives
 | Option | Verdict |

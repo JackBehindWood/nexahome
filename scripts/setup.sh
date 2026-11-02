@@ -36,6 +36,15 @@ else
 fi || die "could not set up .venv ($(.venv/bin/python --version 2>&1 || python3 --version 2>&1))" "read the error above: no network, or a python3 too old for the pinned tools (requirements-dev.txt); fix it, then run setup again"
 echo "ok    .venv with the pinned dev tools"
 
+# The nexahome package, editable, for the tests and .venv/bin/nexahome. Not in a deploy checkout:
+# it only needs the check tools, and its setup must not change (ADR 0017).
+if [ -z "$deploy" ]; then
+	if command -v uv >/dev/null 2>&1; then uv pip install -q --python .venv/bin/python -e .
+	else .venv/bin/python -m pip install -q -e .
+	fi || die "could not install the nexahome package" "read the error above (the build tool is fetched from the network); fix it, then run: make setup"
+	echo "ok    nexahome package (editable)"
+fi
+
 if [ -n "$deploy" ]; then
 	mkdir -p .config && printf '%s\n' "$@" >.config/stacks && echo "ok    .config/stacks: $*"
 	git remote set-url --push origin no_push && echo "ok    push disabled in this checkout"
