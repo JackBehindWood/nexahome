@@ -1,6 +1,6 @@
 # gatus
 
-[Gatus](https://github.com/TwiN/gatus) as the health view: it checks every named URL through the edge like a browser, shows red/green with history, and can notify ([ADR 0013](../../docs/adr/0013-health-view.md), Proposed). Reached by name at `gatus.<domain>:<port>`; it publishes no port, has no login (read-only page) and no Docker socket. Built locally from a six-line `Dockerfile` because the upstream image has no shell for a health check and a fresh volume is root-owned.
+[Gatus](https://github.com/TwiN/gatus) as the health view: it checks every named URL through the edge like a browser, shows red/green with history, and can notify ([ADR 0013](../../docs/adr/0013-health-view.md), decided). Reached by name at `gatus.<domain>:<port>`; it publishes no port, has no login (read-only page) and no Docker socket. Built locally from a short `Dockerfile` because the upstream image has no shell for a health check and a fresh volume is root-owned.
 
 ```sh
 make up STACK=gatus       # build, start and wait until healthy
