@@ -1,5 +1,7 @@
 # Add a stack
 
+Version 0.1 · Last reviewed 2026-11-02
+
 **Audience:** developers and contributors. **Admin rights needed:** no.
 
 ```sh
@@ -31,3 +33,5 @@ Stacks without a web UI skip this. `<domain>` and `<port>` are `NEXAHOME_DOMAIN`
 Check with `make smoke`: it lists any alias without a Caddyfile block or tile (or the reverse) and every tile's dot. `make check` does not catch a missing tile or alias; that check is deferred until the first miss.
 
 Rules: [Compose policy](../constraints.md#compose-policy). Contract: [ADR 0007](../adr/0007-stack-contract.md).
+
+Changelog: 0.1 (2026-11-02): version header and changelog added (PK2).

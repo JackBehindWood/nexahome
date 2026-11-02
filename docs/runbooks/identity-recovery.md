@@ -1,5 +1,7 @@
 # Recover access to identity and Actual
 
+Version 0.1 · Last reviewed 2026-11-02
+
 **Audience:** the person who runs NexaHome. **Admin rights needed:** yes: shell access to the host that runs the stacks (the commands below are admin power; a one-time link signs in as that user, so treat it like a password and never paste it into chat or a ticket). Needs the container runtime running ([README](../../README.md)). Design: [ADR 0010](../adr/0010-identity-provider.md), [ADR 0011](../adr/0011-edge-and-local-hostnames.md).
 
 ## Symptoms and where to go
@@ -56,3 +58,5 @@ Existing Actual sessions never expire by default and ignore group changes in the
 ## Evidence
 
 Drill of 2026-10-23 (laptop, Safari, one authenticator, admin passkey treated as lost), from the provider's audit log: `TOKEN_SIGN_IN` (link), add refused (same Keychain), `PASSKEY_REMOVED`, `PASSKEY_ADDED` three seconds later, `SIGN_IN` with the new passkey; then Actual opened through My Apps. Section A took about three minutes including the browser steps. Findings that changed the text: the command's last line is not only the address (use `grep`), and an account without a passkey cannot finish an app sign-in: the one-time link signs in to the provider only. Sections C and D were read from the Actual source and the ADR; the password reset (C) was run once and kept every budget; `disable-openid` and `enable-openid` were not run. Not verified: a second authenticator, Chrome, Firefox, Linux.
+
+Changelog: 0.1 (2026-11-02): version header and changelog added (PK2).
