@@ -91,7 +91,7 @@ Administrative interfaces are never exposed to the public internet. No firewall 
 
 ## Remote access
 
-SSH from the MacBook Air to the Mac mini is required, for administration and deployment, VS Code Remote-SSH, Claude Code on the mini, and file transfer and backups. The goal is decided; the method is proposed in [ADR 0015](adr/0015-remote-access.md) (keys only, LAN only, no VPN until a need exists) with a draft [runbook](runbooks/mini-ssh.md), both unconfirmed until the mini exists ([roadmap](roadmap.md)). The VPN choice is not decided.
+SSH from the MacBook Air to the Mac mini is required, for administration and deployment, VS Code Remote-SSH, Claude Code on the mini, and file transfer and backups. The goal is decided; the method is proposed in [ADR 0015](adr/0015-remote-access.md) (keys only, LAN only, no VPN until a need exists) with a draft [runbook](runbooks/mini-ssh.md), both unconfirmed until the mini exists ([roadmap](roadmap.md)). The VPN choice is not decided. SSH answers only while the mini is awake and unlocked: after a reboot or power cut it waits for the disk password at the desk ([ADR 0016](adr/0016-mac-mini-power-and-updates.md), proposed).
 
 ## Agent guardrails
 
@@ -144,4 +144,4 @@ Phase names refer to the [roadmap](roadmap.md#phases).
 
 The decision register is in [project.md](project.md#decision-register); rationale is in [adr/](adr/).
 
-Changelog: 0.1 (2026-11-02): remote access paragraph points at ADR 0015 and the SSH runbook; 0.1 (2026-10-26): Jetson row, per-hop table for P4; 0.1 (2026-10-21): identity bullet updated for P2.5; backup tool decided; 0.1 (2026-10-21): restore drill recorded; 0.1 (2026-10-21): backup model; 0.1 (2026-10-21): Layer 4 and 6 current state; 0.1 (2026-10-20): full planned-services capability table; rewritten; added failure domains, trust zones, backup and restore, identity, migration paths and a capability table; duplicated rules moved to constraints.
+Changelog: 0.1 (2026-11-02): remote access paragraph points at ADR 0016 for reboot behaviour; 0.1 (2026-11-02): remote access paragraph points at ADR 0015 and the SSH runbook; 0.1 (2026-10-26): Jetson row, per-hop table for P4; 0.1 (2026-10-21): identity bullet updated for P2.5; backup tool decided; 0.1 (2026-10-21): restore drill recorded; 0.1 (2026-10-21): backup model; 0.1 (2026-10-21): Layer 4 and 6 current state; 0.1 (2026-10-20): full planned-services capability table; rewritten; added failure domains, trust zones, backup and restore, identity, migration paths and a capability table; duplicated rules moved to constraints.

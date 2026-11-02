@@ -2,6 +2,27 @@
 
 Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
+## 2026-11-02: P4 A2, ADR 0016 sleep, power, FileVault and updates
+
+**Done**
+- Read-only audit of the draft against the laptop (macOS 27.0.1, FileVault on): `sleep`, `displaysleep` and `womp` read back with `pmset -g custom`; the laptop has no `autorestart` key, so that setting cannot be checked here. `softwareupdate -l` not run (owner chose to skip; the laptop's version says nothing about the mini).
+- Web look at practice for an always-on mini (forums and blogs only): adopted `sleep 0`, display sleep, `autorestart`, `fdesetup authrestart`; rejected Wake-on-LAN as a dependency, `caffeinate`, `disablesleep`, `disksleep 0`, FileVault off and MDM; left one candidate for a B1 test (SSH unlock before login on macOS 26).
+- Owner decisions: Ethernet plug and play (Wi-Fi only today); manual sleep only (no automatic system sleep, the owner may sleep or shut down by hand); restart after a power cut.
+- ADR 0016 drafted (Proposed), with an operating table and the after-reboot sequence. Changed from the old plan: the "no macOS 27.0" wording is dropped (the laptop already runs 27.0.1); a major upgrade waits for the owner's decision.
+
+**Doc changes and reasons**
+- `docs/project.md`: power policy row Open to Proposed, linked to the ADR. `docs/roadmap.md`: A2 done, ADR list, Next row. `docs/architecture.md`: reboot behaviour pointer. ADR 0015: "planned" became a link. Reason: one pointer per fact, nothing promoted.
+
+**Verification:** see the commit. Not verified: `pmset` keys and `autorestart` on macOS 26 and on the M6 with FileVault, `authrestart`, SSH unlock before login, M6 idle power, the macOS version the mini ships with, `softwareupdate -l` output, Ethernet behaviour (no cable), unclean-shutdown effect on Colima volumes.
+
+**Next:** A3 (ADR 0017, deploy flow), then Track B when the mini arrives; B1 tests ADR 0016.
+
+**Open questions**
+- Review of ADR 0016; whether to test SSH unlock before login in B1 and, if it needs a password, whether that is acceptable beside key-only SSH.
+
+**Pending (owner actions)**
+- Unchanged from the A1 entry (record order and delivery locally, `CLAUDE.md` hardware section, AppleCare+ and subscription decisions).
+
 ## 2026-11-02: P4 A1, SSH runbook and ADRs 0014 and 0015
 
 **Done**

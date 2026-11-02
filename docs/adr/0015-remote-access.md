@@ -31,7 +31,7 @@ Trigger to build: the first need to reach the mini away from home. Built in P6 (
 Leaning: WireGuard (open, no third party); Tailscale only if the router cannot do it.
 
 ## Consequences
-Easier: a small surface, nothing public, one runbook, the same settings on a Linux host later. Harder: no access away from home until P6; a lost key means editing `authorized_keys` at the desk; a rebooted mini does not answer SSH until the disk password is typed at the desk (FileVault; the power and update policy is planned as ADR 0016).
+Easier: a small surface, nothing public, one runbook, the same settings on a Linux host later. Harder: no access away from home until P6; a lost key means editing `authorized_keys` at the desk; a rebooted mini does not answer SSH until the disk password is typed at the desk (FileVault; the power and update policy is in [ADR 0016](0016-mac-mini-power-and-updates.md)).
 
 Failure modes: key lost, other client or desk login; wrong drop-in, desk login and delete the file (only remote login is affected); macOS update changes SSH defaults, desk login and correct the runbook (re-check `sshd -T` after every update); Wi-Fi drops or the address changes, Bonjour name or reservation.
 
