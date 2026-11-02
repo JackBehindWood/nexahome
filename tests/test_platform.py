@@ -31,7 +31,7 @@ def test_current_normalises_system_and_machine(
     monkeypatch: pytest.MonkeyPatch, sys_platform: str, machine: str, system: str, normalised: str
 ) -> None:
     monkeypatch.setattr(platform, "sys", types.SimpleNamespace(platform=sys_platform, version_info=sys.version_info))
-    monkeypatch.setattr(platform.stdlib_platform, "machine", lambda: machine)
+    monkeypatch.setattr(platform, "_machine", lambda: machine.lower())
     host = platform.current()
     assert (host.system, host.machine) == (system, normalised)
 
@@ -100,3 +100,8 @@ def test_remaining_fix_strings(make_host: MakeHost) -> None:
     assert platform.compose_install_fix(make_host()).startswith("https://docs.docker.com/")
     assert platform.engine_restart_fix(make_host(system="macos")) == "colima restart"
     assert platform.engine_restart_fix(make_host()) == "sudo systemctl restart docker"
+
+
+def test_machine_falls_back_to_the_stdlib_where_there_is_no_uname(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delattr(platform.os, "uname")  # Windows has no os.uname
+    assert isinstance(platform._machine(), str)

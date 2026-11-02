@@ -1,6 +1,7 @@
 """`nexahome update`: feed, checksum, confirmation and installer choice, all with replaced network and installer."""
 
 import hashlib
+import importlib.metadata
 import json
 import sys
 import threading
@@ -11,7 +12,7 @@ from pathlib import Path
 import pytest
 
 from nexahome import __version__, cli
-from nexahome.commands import update
+from nexahome import updater as update
 from nexahome.errors import ExitCode
 from nexahome.net import NetworkError
 from nexahome.runner import RunResult
@@ -44,6 +45,12 @@ class Net:
             raise answer
         return answer
 
+    def download(self, url: str, destination: Path, *, timeout: float, max_bytes: int) -> str:
+        """Like net.http_download: write the file, return its SHA-256."""
+        data = self(url, timeout=timeout, max_bytes=max_bytes)
+        destination.write_bytes(data)
+        return hashlib.sha256(data).hexdigest()
+
 
 class Installer:
     """A runner that accepts everything, remembers the commands and what the wheel file held at install time."""
@@ -65,6 +72,7 @@ def make(make_context: MakeContext, answers: dict[str, bytes | Exception], runne
          ask: Callable[[str], bool | None] | None = None, env: dict[str, str] | None = None) -> tuple:  # type: ignore[type-arg]
     ctx = make_context(runner=runner or Installer(), env={"NEXAHOME_UPDATE_URL": FEED_URL, **(env or {})})
     ctx.fetch = Net(answers)
+    ctx.download = ctx.fetch.download
     ctx.ask = ask or (lambda question: True)
     return ctx, ctx.fetch
 
@@ -207,7 +215,7 @@ def test_a_download_failure_installs_nothing(make_context: MakeContext) -> None:
 
 
 def test_the_source_can_come_from_the_installed_package_metadata(monkeypatch: pytest.MonkeyPatch, make_context: MakeContext) -> None:
-    monkeypatch.setattr(update.importlib.metadata, "metadata", lambda name: type("M", (), {"get_all": lambda self, key: ["Docs, https://x.example/d", "Latest release, https://x.example/feed"]})())
+    monkeypatch.setattr(importlib.metadata, "metadata", lambda name: type("M", (), {"get_all": lambda self, key: ["Docs, https://x.example/d", "Latest release, https://x.example/feed"]})())
     assert update.update_source(make_context(env={})) == "https://x.example/feed"
     assert update.update_source(make_context(env={"NEXAHOME_UPDATE_URL": "https://y.example/f"})) == "https://y.example/f"
 
@@ -239,7 +247,7 @@ def release_server() -> Iterator[str]:
         "/SHA256SUMS": SUMS,
         f"/{WHEEL_NAME}": WHEEL,
     }
-    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    thread = threading.Thread(target=httpd.serve_forever, kwargs={"poll_interval": 0.01}, daemon=True)
     thread.start()
     yield base
     httpd.shutdown()
@@ -269,7 +277,7 @@ class FakeDistribution:
 )
 def test_editable_installs_are_recognised_from_the_install_record(monkeypatch: pytest.MonkeyPatch, direct_url: str | None, editable: bool) -> None:
     monkeypatch.undo()  # drop the autouse stub so the real function runs
-    monkeypatch.setattr(update.importlib.metadata, "distribution", lambda name: FakeDistribution(direct_url))
+    monkeypatch.setattr(importlib.metadata, "distribution", lambda name: FakeDistribution(direct_url))
     assert update.installed_as_editable() is editable
 
 
@@ -277,10 +285,10 @@ def test_a_missing_package_record_is_not_editable_and_has_no_source(monkeypatch:
     monkeypatch.undo()
 
     def missing(name: str) -> object:
-        raise update.importlib.metadata.PackageNotFoundError(name)
+        raise importlib.metadata.PackageNotFoundError(name)
 
-    monkeypatch.setattr(update.importlib.metadata, "distribution", missing)
-    monkeypatch.setattr(update.importlib.metadata, "metadata", missing)
+    monkeypatch.setattr(importlib.metadata, "distribution", missing)
+    monkeypatch.setattr(importlib.metadata, "metadata", missing)
     assert update.installed_as_editable() is False
     assert update.update_source(make_context(env={})) is None
 

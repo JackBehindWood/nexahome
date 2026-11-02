@@ -1,5 +1,6 @@
 """How recent the backup is, read from the repository folder (port of `backup.sh status`; read-only)."""
 
+import os
 from collections.abc import Mapping
 from pathlib import Path
 
@@ -31,12 +32,20 @@ def human_size(size: float) -> str:
 def summary(directory: Path, now: float) -> list[str]:
     if not (directory / "config").is_file():
         return [f"backup: no repository at {directory} (make backup-init)"]
-    snapshots = [f for f in (directory / "snapshots").rglob("*") if f.is_file()]
-    if any(now - f.stat().st_mtime < RECENT_SECONDS for f in snapshots):
+    size = 0
+    newest: float | None = None  # modification time of the newest snapshot file; None if there is none
+    snapshots = directory / "snapshots"
+    for folder, _, files in os.walk(directory):  # one pass, constant memory however big the repository is
+        in_snapshots = Path(folder) == snapshots or snapshots in Path(folder).parents
+        for name in files:
+            info = os.stat(os.path.join(folder, name))
+            size += info.st_size
+            if in_snapshots and (newest is None or info.st_mtime > newest):
+                newest = info.st_mtime
+    if newest is not None and now - newest < RECENT_SECONDS:
         first = "backup: last snapshot within 7 days"
-    elif snapshots:
+    elif newest is not None:
         first = "backup: last snapshot OLDER than 7 days (make backup)"
     else:
         first = "backup: repository has no snapshots yet (make backup)"
-    size = sum(f.stat().st_size for f in directory.rglob("*") if f.is_file())
     return [first, f"backup: repository size {human_size(size)} in {directory}"]

@@ -2,12 +2,10 @@
 
 import subprocess
 from collections.abc import Sequence
-from dataclasses import dataclass
-from typing import Protocol
+from typing import NamedTuple, Protocol
 
 
-@dataclass(frozen=True)
-class RunResult:
+class RunResult(NamedTuple):
     returncode: int
     stdout: str = ""
     stderr: str = ""

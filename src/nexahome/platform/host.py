@@ -1,13 +1,11 @@
 """The facts about this machine, and what a per-system module provides."""
 
 from collections.abc import Callable
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Protocol
+from typing import NamedTuple, Protocol
 
 
-@dataclass(frozen=True)
-class Host:
+class Host(NamedTuple):
     system: str  # "macos", "linux" or "windows"
     machine: str  # "arm64", "amd64", or the raw value
     python: tuple[int, int, int]

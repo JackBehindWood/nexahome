@@ -6,9 +6,9 @@ from pathlib import Path
 import pytest
 
 from nexahome import cli
-from nexahome.commands import doctor
+from nexahome import diagnosis
 from nexahome.errors import ExitCode
-from nexahome.report import Status
+from nexahome.report import Check, Status
 from nexahome.runner import RunResult, SubprocessRunner
 
 from conftest import FakeDocker, FakeRunner, MakeContext, MakeHost
@@ -30,7 +30,7 @@ def without(*keys: tuple[str, ...]) -> dict[tuple[str, ...], RunResult]:
 
 def checks_of(ctx_runner: FakeRunner, make_context: MakeContext, **kwargs: object) -> dict[str, tuple[Status, str | None]]:
     ctx = make_context(runner=ctx_runner, **kwargs)  # type: ignore[arg-type]
-    return {c.id: (c.status, c.fix) for c in doctor.run_probes(ctx)}
+    return {c.id: (c.status, c.fix) for c in diagnosis.run_probes(ctx)}
 
 
 def test_a_healthy_host_passes(make_context: MakeContext) -> None:
@@ -68,7 +68,7 @@ def test_each_failure_names_one_exact_command(
 def test_low_disk_is_a_warning_with_a_command(make_context: MakeContext) -> None:
     ctx = make_context(runner=FakeRunner(HEALTHY))
     ctx.disk_free = lambda path: 1 * GIB
-    disk = next(c for c in doctor.run_probes(ctx) if c.id == "disk")
+    disk = next(c for c in diagnosis.run_probes(ctx) if c.id == "disk")
     assert (disk.status, disk.fix) == (Status.WARN, "df -h .")
 
 
@@ -83,10 +83,10 @@ def test_checkout_outside_home_on_macos_warns(make_context: MakeContext, make_ho
     home.mkdir()
     repo = make_checkout(tmp_path / "elsewhere")
     host = make_host(system="macos", home=home)
-    at_root = {c.id: c for c in doctor.run_probes(make_context(host=host, cwd=repo, runner=FakeRunner(HEALTHY)))}
+    at_root = {c.id: c for c in diagnosis.run_probes(make_context(host=host, cwd=repo, runner=FakeRunner(HEALTHY)))}
     assert (at_root["mount"].status, at_root["mount"].fix) == (Status.WARN, 'mv "$PWD" "$HOME/"')
     inside = repo / "stacks"
-    deeper = {c.id: c for c in doctor.run_probes(make_context(host=host, cwd=inside, runner=FakeRunner(HEALTHY)))}
+    deeper = {c.id: c for c in diagnosis.run_probes(make_context(host=host, cwd=inside, runner=FakeRunner(HEALTHY)))}
     assert deeper["mount"].fix == f'mv {repo} "$HOME/"'
 
 
@@ -94,8 +94,8 @@ def test_checkout_under_home_is_fine_and_linux_has_no_mount_probe(
     make_context: MakeContext, make_host: MakeHost, tmp_path: Path
 ) -> None:
     repo = make_checkout(tmp_path / "repo")
-    mac = {c.id: c.status for c in doctor.run_probes(make_context(host=make_host(system="macos", home=tmp_path), cwd=repo))}
-    linux = {c.id for c in doctor.run_probes(make_context(cwd=repo))}
+    mac = {c.id: c.status for c in diagnosis.run_probes(make_context(host=make_host(system="macos", home=tmp_path), cwd=repo))}
+    linux = {c.id for c in diagnosis.run_probes(make_context(cwd=repo))}
     assert mac["mount"] == Status.OK and "mount" not in linux
 
 
@@ -117,8 +117,8 @@ def test_a_broken_probe_is_reported_and_the_others_still_run(
     def broken(ctx: object, prior: object) -> None:
         raise RuntimeError("boom")
 
-    monkeypatch.setattr(doctor, "PROBES", (("python", broken), *doctor.PROBES[2:3]))
-    checks = doctor.run_probes(make_context(runner=FakeRunner(HEALTHY)))
+    monkeypatch.setattr(diagnosis, "PROBES", (("python", broken), *diagnosis.PROBES[2:3]))
+    checks = diagnosis.run_probes(make_context(runner=FakeRunner(HEALTHY)))
     assert [(c.id, c.status) for c in checks] == [("python", Status.FAIL), ("docker-cli", Status.OK)]
     assert checks[0].fix
 
@@ -156,7 +156,7 @@ def test_end_to_end_with_the_shim_is_read_only(
     shim = fake_docker(SHIM_HEALTHY)
     ctx = make_context(runner=SubprocessRunner())
     assert cli.main(["doctor"], ctx) == ExitCode.OK
-    assert shim.calls == ["--version", "compose version", "info --format {{.ServerVersion}}"]
+    assert sorted(shim.calls) == ["--version", "compose version", "info --format {{.ServerVersion}}"]  # side by side: any order
 
 
 def test_end_to_end_engine_down(fake_docker: Callable[..., FakeDocker], make_context: MakeContext) -> None:
@@ -170,7 +170,7 @@ def test_end_to_end_stuck_engine_times_out(
     monkeypatch: pytest.MonkeyPatch, fake_docker: Callable[..., FakeDocker], make_context: MakeContext
 ) -> None:
     fake_docker(SHIM_HEALTHY, hang="info --format {{.ServerVersion}}")
-    monkeypatch.setattr(doctor, "ENGINE_TIMEOUT", 0.5)
+    monkeypatch.setattr(diagnosis, "ENGINE_TIMEOUT", 0.5)
     ctx = make_context(runner=SubprocessRunner())
     assert cli.main(["doctor"], ctx) == ExitCode.NOT_READY
     assert "did not answer" in ctx.out.getvalue()  # type: ignore[attr-defined]
@@ -186,5 +186,18 @@ def test_end_to_end_without_docker(make_context: MakeContext) -> None:
 def test_an_unreadable_env_file_is_skipped_not_fatal(make_context: MakeContext, tmp_path: Path) -> None:
     repo = make_checkout(tmp_path / "repo")
     (repo / "stacks" / "demo" / ".env").mkdir()  # reading a directory raises OSError
-    checks = {c.id: c.status for c in doctor.run_probes(make_context(cwd=repo, runner=FakeRunner(HEALTHY)))}
+    checks = {c.id: c.status for c in diagnosis.run_probes(make_context(cwd=repo, runner=FakeRunner(HEALTHY)))}
     assert checks["env"] == Status.OK
+
+
+def test_the_prior_mapping_waits_for_a_probe_and_hides_those_that_did_not_apply() -> None:
+    from concurrent.futures import Future
+
+    done: Future[Check | None] = Future()
+    done.set_result(Check("docker-cli", Status.OK, "found"))
+    skipped: Future[Check | None] = Future()
+    skipped.set_result(None)
+    prior = diagnosis._Prior({"docker-cli": done, "mount": skipped})
+    assert prior["docker-cli"].status == Status.OK and list(prior) == ["docker-cli", "mount"] and len(prior) == 2
+    with pytest.raises(KeyError):
+        prior["mount"]

@@ -53,3 +53,29 @@ NETWORK = re.compile(r"^\s*(?:import|from)\s+(?:urllib|http|socket|ssl|ftplib|sm
 
 def test_only_net_py_touches_the_network() -> None:
     assert [p.name for p in SOURCES if p.name != "net.py" and NETWORK.search(p.read_text())] == []  # PK-S2
+
+
+# "Pay for what you use" (ADR 0021): heavy standard-library modules are imported inside the function that needs them.
+HEAVY_AT_TOP = {
+    "json", "subprocess", "hashlib", "hmac", "tempfile", "secrets", "random", "shutil", "shlex", "urllib", "ssl", "http",
+    "concurrent", "dataclasses", "inspect", "platform", "socket", "logging", "pkgutil", "zipfile", "email", "argparse",
+}
+# (file, module) pairs that must load whenever that file is loaded, because the file is only loaded by a command that needs it
+ALLOWED_AT_TOP = {
+    ("runner.py", "subprocess"),  # every command that gets as far as running a program
+    ("policy/compose.py", "json"),  # only loaded by `check`
+    ("updater.py", "json"),  # only loaded by `update`
+    ("commands/_base.py", "argparse"),  # types only; never imported at run time
+}
+
+
+def test_heavy_modules_are_imported_inside_functions() -> None:
+    found: list[str] = []
+    for path in SOURCES:
+        relative = path.relative_to(PACKAGE).as_posix()
+        for node in ast.parse(path.read_text()).body:  # module level only
+            if isinstance(node, ast.If) and getattr(node.test, "id", "") == "TYPE_CHECKING":
+                continue
+            names = [a.name for a in node.names] if isinstance(node, ast.Import) else [node.module or ""] if isinstance(node, ast.ImportFrom) and node.level == 0 else []
+            found += [f"{relative}: {n}" for n in names if n.split(".")[0] in HEAVY_AT_TOP and (relative, n.split(".")[0]) not in ALLOWED_AT_TOP]
+    assert found == []

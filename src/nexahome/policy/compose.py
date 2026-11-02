@@ -10,10 +10,10 @@ rules only. The pure functions take the output of `docker compose config --forma
 
 import json
 from collections.abc import Mapping
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 
+from nexahome.parallel import map_ordered
 from nexahome.runner import Runner
 
 SHARED_NETWORK = "nexahome-edge"
@@ -72,8 +72,7 @@ def check_config(directory: str, config: Config) -> list[str]:
     return problems
 
 
-@dataclass(frozen=True)
-class StackResult:
+class StackResult(NamedTuple):
     compose: Path
     problems: tuple[str, ...] = ()
     error: str | None = None  # the check could not run (no Docker CLI, or `docker compose config` failed)
@@ -106,8 +105,9 @@ def check_stack(runner: Runner, compose: Path, shown: Path | None = None) -> Sta
 
 
 def check_stacks(runner: Runner, root: Path = Path("stacks"), shown_root: Path | None = None) -> list[StackResult]:
-    """Check every stack under root. Messages print paths under shown_root (default: root itself)."""
-    return [
-        check_stack(runner, compose, shown_root / compose.relative_to(root) if shown_root else None)
-        for compose in sorted(root.glob("*/compose.yaml"))
-    ]
+    """Check every stack under root, side by side (each is a separate `docker compose config`). Messages print
+    paths under shown_root (default: root itself)."""
+    return map_ordered(
+        lambda compose: check_stack(runner, compose, shown_root / compose.relative_to(root) if shown_root else None),
+        sorted(root.glob("*/compose.yaml")),
+    )

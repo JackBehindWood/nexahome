@@ -7,10 +7,9 @@ JSON, schema 1 (`--json`):
 Check ids are a public contract: they are added, never renamed.
 """
 
-import json
 from collections.abc import Sequence
-from dataclasses import asdict, dataclass
 from enum import StrEnum
+from typing import NamedTuple
 
 SCHEMA = 1
 
@@ -22,19 +21,25 @@ class Status(StrEnum):
     SKIP = "skip"  # not run because a prerequisite failed
 
 
-@dataclass(frozen=True)
-class Check:
+class _CheckFields(NamedTuple):
     id: str
     status: Status
     summary: str
     fix: str | None = None
 
-    def __post_init__(self) -> None:
-        needs_fix = self.status in (Status.WARN, Status.FAIL)
-        if needs_fix and not (self.fix and self.fix.strip()):
-            raise ValueError(f"check {self.id}: a {self.status} needs a fix command")
-        if not needs_fix and self.fix is not None:
-            raise ValueError(f"check {self.id}: only a warn or fail carries a fix")
+
+class Check(_CheckFields):
+    """One finding. A warn or fail carries one fix command; the other statuses carry none."""
+
+    __slots__ = ()
+
+    def __new__(cls, id: str, status: Status, summary: str, fix: str | None = None) -> "Check":
+        needs_fix = status in (Status.WARN, Status.FAIL)
+        if needs_fix and not (fix and fix.strip()):
+            raise ValueError(f"check {id}: a {status} needs a fix command")
+        if not needs_fix and fix is not None:
+            raise ValueError(f"check {id}: only a warn or fail carries a fix")
+        return super().__new__(cls, id, status, summary, fix)
 
 
 def passed(checks: Sequence[Check]) -> bool:
@@ -61,5 +66,7 @@ def render_text(checks: Sequence[Check]) -> str:
 
 
 def render_json(checks: Sequence[Check]) -> str:
-    payload = {"schema": SCHEMA, "ok": passed(checks), "checks": [asdict(check) for check in checks]}
-    return json.dumps(payload, indent=2)
+    import json  # only a --json run needs it
+
+    rows = [{"id": c.id, "status": c.status, "summary": c.summary, "fix": c.fix} for c in checks]
+    return json.dumps({"schema": SCHEMA, "ok": passed(checks), "checks": rows}, indent=2)

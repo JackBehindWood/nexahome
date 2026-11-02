@@ -3,16 +3,18 @@
 Writes only inside the checkout, never overwrites a .env, never prints a secret, and starts nothing.
 """
 
-import argparse
-from pathlib import Path
+from __future__ import annotations
 
-from nexahome import envfile
-from nexahome import stacks as stack_catalogue
-from nexahome.commands import doctor
-from nexahome.commands._base import Subparsers
-from nexahome.context import Context
-from nexahome.errors import ExitCode, NexaHomeError
-from nexahome.report import passed, render_text
+from typing import TYPE_CHECKING
+
+from nexahome.errors import ExitCode
+
+if TYPE_CHECKING:
+    import argparse
+    from pathlib import Path
+
+    from nexahome.commands._base import Subparsers
+    from nexahome.context import Context
 
 NAME = "setup"
 
@@ -26,6 +28,8 @@ def register(subparsers: Subparsers) -> None:
 
 def _require_ignored(ctx: Context, checkout: Path, env_path: Path) -> None:
     """Secrets must never land in a path git would commit. Skipped when git cannot answer."""
+    from nexahome.errors import NexaHomeError
+
     relative = env_path.relative_to(checkout)
     result = ctx.runner.run(["git", "-C", str(checkout), "check-ignore", "-q", str(relative)], timeout=10)
     if result.returncode == 1 and not result.missing and not result.timed_out:
@@ -33,6 +37,11 @@ def _require_ignored(ctx: Context, checkout: Path, env_path: Path) -> None:
 
 
 def run(args: argparse.Namespace, ctx: Context) -> int:
+    from nexahome import diagnosis, envfile
+    from nexahome import stacks as stack_catalogue
+    from nexahome.errors import NexaHomeError
+    from nexahome.report import passed, render_text
+
     checkout = ctx.require_checkout()
     if args.stack and not stack_catalogue.compose_file(checkout, args.stack).is_file():
         raise NexaHomeError(f"no such stack: {args.stack}", "nexahome stacks")
@@ -60,7 +69,7 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         elif not (result.created or result.generated):
             print(f"ok    {shown} is ready", file=ctx.out)
     print(file=ctx.out)
-    checks = doctor.run_probes(ctx)
+    checks = diagnosis.run_probes(ctx)
     print(render_text(checks), file=ctx.out)
     if passed(checks) and not pending:
         print("Next: make up", file=ctx.out)

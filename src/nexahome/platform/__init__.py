@@ -6,7 +6,6 @@ neither macOS nor Windows are treated as Linux (best effort); WSL2 reports itsel
 """
 
 import os
-import platform as stdlib_platform
 import sys
 from pathlib import Path
 from typing import cast
@@ -24,6 +23,15 @@ __all__ = [
 ]
 
 
+def _machine() -> str:
+    """The CPU architecture. os.uname is cheaper than importing the stdlib platform module (Windows has none)."""
+    if hasattr(os, "uname"):
+        return os.uname().machine.lower()
+    import platform as stdlib_platform
+
+    return stdlib_platform.machine().lower()
+
+
 def current() -> Host:
     """Describe the machine this process runs on."""
     if sys.platform == "darwin":
@@ -32,7 +40,7 @@ def current() -> Host:
         system = windows.NAME
     else:
         system = linux.NAME
-    machine = stdlib_platform.machine().lower()
+    machine = _machine()
     return Host(
         system=system,
         machine=_MACHINES.get(machine, machine),

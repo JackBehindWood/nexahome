@@ -2,16 +2,15 @@
 
 import argparse
 from collections.abc import Callable
-from typing import Protocol, runtime_checkable
+from typing import Protocol
 
 from nexahome.context import Context
 
 type Subparsers = argparse._SubParsersAction[argparse.ArgumentParser]
 
 
-@runtime_checkable
 class Command(Protocol):
-    """Command modules satisfy this structurally: a NAME, register() and run()."""
+    """Command modules satisfy this structurally: a NAME equal to the module name, register() and run()."""
 
     NAME: str
     register: Callable[[Subparsers], None]

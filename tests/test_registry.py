@@ -8,7 +8,7 @@ import pytest
 from nexahome import cli
 from nexahome import commands
 from nexahome.commands import COMMANDS
-from nexahome.commands.doctor import PROBES
+from nexahome.diagnosis import PROBES
 from nexahome.errors import ExitCode
 
 from conftest import MakeContext, MakeHost
@@ -50,6 +50,16 @@ def test_commands_are_found_automatically_and_listed_alphabetically() -> None:
 
 
 def test_a_module_without_the_interface_is_refused_with_a_hint(monkeypatch: pytest.MonkeyPatch) -> None:
+    commands.load.cache_clear()
     monkeypatch.setattr(importlib, "import_module", lambda name: types.ModuleType(name))
-    with pytest.raises(TypeError, match="must define NAME, register"):
-        commands.discover()
+    with pytest.raises(TypeError, match="must define NAME = 'check', register"):
+        commands.load("check")
+    commands.load.cache_clear()
+
+
+def test_names_come_from_the_file_names_without_importing_anything() -> None:
+    assert commands.names() == ("check", "doctor", "setup", "stacks", "status", "update")
+
+
+def test_every_command_is_named_after_its_module() -> None:
+    assert all(command.NAME == command.__name__.rsplit(".", 1)[1] for command in COMMANDS)

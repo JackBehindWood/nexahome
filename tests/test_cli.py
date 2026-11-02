@@ -2,11 +2,12 @@ import argparse
 import subprocess
 import sys
 import types
+from pathlib import Path
 from collections.abc import Callable
 
 import pytest
 
-from nexahome import __version__, cli
+from nexahome import __version__, cli, commands
 from nexahome.commands._base import Subparsers
 from nexahome.errors import ExitCode, NexaHomeError
 
@@ -18,7 +19,9 @@ def install_command(monkeypatch: pytest.MonkeyPatch, run: Callable[[argparse.Nam
         subparsers.add_parser("dummy", help="a test command").set_defaults(run=run)
 
     dummy = types.SimpleNamespace(NAME="dummy", register=register, run=run)
-    monkeypatch.setattr(cli, "COMMANDS", (dummy,))
+    monkeypatch.setattr(commands, "names", lambda: ("dummy",))
+    monkeypatch.setattr(commands, "load", lambda name: dummy)
+    monkeypatch.setattr(commands, "load_all", lambda: (dummy,))
 
 
 def test_version(capsys: pytest.CaptureFixture[str], make_context: MakeContext) -> None:
@@ -99,3 +102,34 @@ def test_main_reads_sys_argv_and_the_real_context_by_default(monkeypatch: pytest
 def test_python_dash_m_works() -> None:
     done = subprocess.run([sys.executable, "-m", "nexahome", "--version"], capture_output=True, text=True, check=False)
     assert (done.returncode, done.stdout.strip()) == (0, f"nexahome {__version__}")
+
+
+def test_no_arguments_builds_the_real_context_and_shows_help(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setattr("sys.argv", ["nexahome"])
+    assert cli.main() == ExitCode.USAGE
+    assert "usage: nexahome" in capsys.readouterr().err
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="needs POSIX pipes")
+def test_a_reader_that_goes_away_ends_the_process_quietly(tmp_path: Path) -> None:
+    import os
+
+    read_end, write_end = os.pipe()
+    os.close(read_end)  # nobody reads our output
+    done = subprocess.run(
+        [sys.executable, "-m", "nexahome", "doctor"], stdout=write_end, stderr=subprocess.PIPE, text=True,
+        env={"PATH": str(tmp_path)}, cwd=tmp_path, check=False,
+    )
+    os.close(write_end)
+    assert (done.returncode, done.stderr) == (141, "")
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="needs POSIX pipes")
+def test_version_to_a_closed_pipe_is_quiet_too(tmp_path: Path) -> None:
+    import os
+
+    read_end, write_end = os.pipe()
+    os.close(read_end)
+    done = subprocess.run([sys.executable, "-m", "nexahome", "--version"], stdout=write_end, stderr=subprocess.PIPE, text=True, cwd=tmp_path, check=False)
+    os.close(write_end)
+    assert (done.returncode, done.stderr) == (141, "")

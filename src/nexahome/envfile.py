@@ -6,16 +6,13 @@ never returned for printing; only key names are.
 
 import os
 import re
-import secrets
-import string
-import tempfile
 from collections.abc import Callable
-from dataclasses import dataclass
 from pathlib import Path
+from typing import NamedTuple
 
 PLACEHOLDER = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)=CHANGE_ME", re.MULTILINE)
 GENERATE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)=GENERATE$", re.MULTILINE)
-ALPHABET = string.ascii_letters + string.digits
+ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 SECRET_LENGTH = 48
 
 
@@ -25,6 +22,8 @@ def placeholders(text: str) -> list[str]:
 
 
 def new_secret() -> str:
+    import secrets  # imports random, hashlib and more: only a run that generates a secret pays for it
+
     return "".join(secrets.choice(ALPHABET) for _ in range(SECRET_LENGTH))
 
 
@@ -45,8 +44,7 @@ def read_value(text: str, key: str) -> str | None:
     return match.group(1).strip().strip("'\"") if match else None
 
 
-@dataclass(frozen=True)
-class EnvResult:
+class EnvResult(NamedTuple):
     path: Path
     created: bool  # copied from .env.example
     generated: tuple[str, ...]  # keys that received a generated secret
@@ -61,6 +59,8 @@ def _write_new(path: Path, text: str) -> None:
 
 
 def _replace_private(path: Path, text: str) -> None:
+    import tempfile
+
     fd, temporary = tempfile.mkstemp(dir=path.parent, prefix=".env.")  # created mode 600
     try:
         with os.fdopen(fd, "w") as handle:

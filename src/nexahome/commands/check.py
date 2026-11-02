@@ -1,12 +1,16 @@
 """nexahome check: the Compose policy over the stacks (read-only; needs the Docker CLI, not a running engine)."""
 
-import argparse
+from __future__ import annotations
 
-from nexahome import platform as host_platform
-from nexahome.commands._base import Subparsers
-from nexahome.context import Context
-from nexahome.errors import ExitCode, NexaHomeError
-from nexahome.policy import compose
+from typing import TYPE_CHECKING
+
+from nexahome.errors import ExitCode
+
+if TYPE_CHECKING:
+    import argparse
+
+    from nexahome.commands._base import Subparsers
+    from nexahome.context import Context
 
 NAME = "check"
 
@@ -18,6 +22,10 @@ def register(subparsers: Subparsers) -> None:
 
 
 def run(args: argparse.Namespace, ctx: Context) -> int:
+    from nexahome import platform as host_platform
+    from nexahome.errors import NexaHomeError
+    from nexahome.policy import compose
+
     root = ctx.cwd / args.stacks if args.stacks else (ctx.checkout() or ctx.cwd) / "stacks"
     try:  # messages read stacks/x/... when the folder is inside the working directory
         shown = root.relative_to(ctx.cwd)
