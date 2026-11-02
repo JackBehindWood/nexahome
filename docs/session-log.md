@@ -7,14 +7,15 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 Last replaced 2026-11-02 (PK2 close). Older entries below end with a pointer here instead of their own list; their text is in git history.
 
 **Decide**
-- ADRs 0010 to 0012 and the other Proposed register rows (documentation conventions, repository layout, task runner, security baseline, roles, identity, edge, portal, three Packaging rows); review ADRs 0014 to 0020, the SSH runbook and the packaging audit.
-- Approve or reject the prepared rewords of lines that touch decided items (architecture text, the language rule, ADR 0007 wording, one register row): `.claude/tmp/pk2-confirmed-rewords.md`; the F9 batch: `.claude/tmp/pk2-decision-batch.md`; the pull request text: `.claude/tmp/pr-dev-to-main.md`.
+- The other Proposed register rows (documentation conventions, repository layout, task runner, security baseline, roles, three Packaging rows); review ADRs 0014 to 0020, the SSH runbook and the packaging audit.
+- Rewords still waiting (they touch decided items): B1, B2 (language rule in the register and ADR 0007), C1, C2 (ADR 0007), D1 (one register row): `.claude/tmp/pk2-confirmed-rewords.md`. The pull request text: `.claude/tmp/pr-dev-to-main.md`.
+- GitHub setting (read-only check, 2026-11-02): Dependabot alerts and Dependabot security updates are disabled for the repository. Enabling them is your action (Settings, Code security).
 - Open choices: digest pinning; paid tier versus the open-source rule; keep `hello` on the edge and in the portal; the root `.env.example` now holds no setting (delete it?).
 
 **Git**
 - Push `feat/packaging` and open the `dev` to `main` pull request only when you say so (description prepared locally, not opened). Afterwards check under Insights, Dependency graph, Dependabot that every stack entry parses.
 - GitHub account setting "Block command line pushes that expose my email"; optional SSH-signed commits.
-- Optional read-only `gh` calls to verify branch protection, secret scanning, push protection and private vulnerability reporting (not verified in PK1 or PK2).
+- Making the `gate` job a required check on `main` (a GitHub setting) once it exists and has been green on a pull request.
 
 **Local only**
 - Record the mini's order and delivery locally; update the `CLAUDE.md` hardware section (a Jetson is owned, the mini is planned); keep real hostnames in the gitignored `inventory.local.md`; decide extras and subscriptions; plan the return window before B1.
@@ -30,6 +31,22 @@ Last replaced 2026-11-02 (PK2 close). Older entries below end with a pointer her
 **Open work**
 - Diagnose the Pocket ID self-restart; optional admin-only sign-in for the health view.
 - Backup `.env.example` ships example paths that `make check` needs (audit F26): fix with PK5 or PK7.
+
+## 2026-11-02: Packaging PK2 close, owner decisions applied
+
+**Done**
+- Committed the PK2 session-end edits (one commit), then applied the rewords the owner approved: A1, A2, A3 (architecture: layer 5, identity wording, central dashboard in P2.5) and B3, B4 (constraints and roadmap point at ADR 0018); one commit each, `make check` exit 0 before each.
+- Promoted ADRs 0010, 0011 and 0012 to Confirmed on the owner's explicit yes (decision batch items 1 to 3): register rows, ADR status and date lines, "not decided yet" to "decided" in four stack READMEs and the roadmap. One commit per ADR. Sub-items marked Proposed inside ADR 0010 (access tiers, API key contract, token expiry proposal) were not promoted: the yes covered the ADRs.
+- Read-only `gh` checks (GET only): `main` protection requires `checks` and `secrets`, branches must be up to date, admins included, no force pushes, no required reviews. Secret scanning and push protection are enabled; private vulnerability reporting is enabled. Dependabot alerts and Dependabot security updates are disabled.
+
+**Doc changes and reasons**
+- `docs/architecture.md`, `docs/constraints.md`, `docs/roadmap.md`: wording that was stale or contradicted the code package proposal (F6, F4). Changelog entries added; header dates were already 2026-11-02.
+- `docs/project.md`, ADRs 0010 to 0012, stack READMEs (actual, edge, identity, portal), `docs/roadmap.md`: three label changes by the owner's yes; the wording outside the register and ADRs says "decided".
+- Not applied (no yes): B1, B2, C1, C2, D1, items 4 to 11 of the decision batch.
+
+**Verification:** `make check` exit 0 before every commit. Not verified: CI (nothing pushed yet), Dependabot parsing of the config.
+
+**Next:** PK3 (CI and platform proof); the owner approved pushing `feat/packaging` and opening a pull request into `dev` so CI runs. No merge, no `dev` to `main` pull request.
 
 ## 2026-11-02: Packaging PK2, docs fixes and catch-up preparation
 
