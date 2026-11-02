@@ -13,6 +13,11 @@ class Handler(BaseHTTPRequestHandler):
             body = b"hello"
         elif self.path == "/big":
             body = b"x" * 5000
+        elif self.path == "/hop":
+            self.send_response(302)
+            self.send_header("Location", "/ok")
+            self.end_headers()
+            return
         elif self.path == "/away":
             self.send_response(302)
             self.send_header("Location", "http://example.invalid/elsewhere")
@@ -76,3 +81,7 @@ def test_only_https_or_the_local_machine_is_used(url: str) -> None:
 @pytest.mark.parametrize("url", ["https://example.com/x?token=1", "http://localhost:8000/x", "http://127.0.0.1/x"])
 def test_allowed_addresses(url: str) -> None:
     net.check_url(url)
+
+
+def test_a_redirect_that_stays_allowed_is_followed(server: str) -> None:
+    assert net.http_get(f"{server}/hop", timeout=5, max_bytes=100) == b"hello"

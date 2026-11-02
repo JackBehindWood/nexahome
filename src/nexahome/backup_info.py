@@ -21,11 +21,11 @@ def repository_dir(checkout: Path, env: Mapping[str, str]) -> Path:
 
 
 def human_size(size: float) -> str:
-    for unit in _UNITS:
-        if size < 1024 or unit == _UNITS[-1]:
-            return f"{size:.0f}{unit}" if unit == "B" else f"{size:.1f}{unit}"
+    unit = 0
+    while size >= 1024 and unit < len(_UNITS) - 1:
         size /= 1024
-    return f"{size}"  # unreachable
+        unit += 1
+    return f"{size:.0f}B" if unit == 0 else f"{size:.1f}{_UNITS[unit]}"
 
 
 def summary(directory: Path, now: float) -> list[str]:

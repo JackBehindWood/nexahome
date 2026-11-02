@@ -3,6 +3,8 @@ import stat
 from collections.abc import Callable
 from pathlib import Path
 
+import pytest
+
 from nexahome import envfile
 
 
@@ -92,3 +94,16 @@ def test_dry_run_leaves_an_existing_env_alone(tmp_path: Path) -> None:
 
 def test_a_stack_without_env_files_is_skipped(tmp_path: Path) -> None:
     assert envfile.prepare(stack(tmp_path)) is None
+
+
+def test_a_failed_rewrite_leaves_the_env_untouched_and_no_temporary_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    directory = stack(tmp_path, env="KEY=GENERATE\n")
+
+    def broken(source: object, target: object) -> None:
+        raise OSError("disk full")
+
+    monkeypatch.setattr(envfile.os, "replace", broken)
+    with pytest.raises(OSError, match="disk full"):
+        envfile.prepare(directory, make=counter())
+    assert (directory / ".env").read_text() == "KEY=GENERATE\n"
+    assert sorted(p.name for p in directory.iterdir()) == [".env"]

@@ -87,3 +87,16 @@ def test_every_system_module_satisfies_the_interface() -> None:
         for fix in (module.docker_install_fix, module.compose_install_fix, module.engine_start_fix, module.engine_restart_fix):
             assert callable(fix) and isinstance(module.MOUNTS_HOME_ONLY, bool)
     assert [n for n, m in platform.SYSTEMS.items() if m.REFUSAL] == ["windows"]
+
+
+def test_windows_fixes_all_point_at_wsl2(make_host: MakeHost) -> None:
+    windows = make_host(system="windows")
+    fixes = {platform.docker_install_fix(windows), platform.compose_install_fix(windows), platform.engine_start_fix(windows), platform.engine_restart_fix(windows)}
+    assert fixes == {"wsl --install"}
+
+
+def test_remaining_fix_strings(make_host: MakeHost) -> None:
+    assert platform.compose_install_fix(make_host(debian_like=True)) == "sudo apt-get install docker-compose-v2"
+    assert platform.compose_install_fix(make_host()).startswith("https://docs.docker.com/")
+    assert platform.engine_restart_fix(make_host(system="macos")) == "colima restart"
+    assert platform.engine_restart_fix(make_host()) == "sudo systemctl restart docker"

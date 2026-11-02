@@ -7,7 +7,7 @@ request, no credentials, and no data about the user: the request carries the too
 import urllib.error
 import urllib.parse
 import urllib.request
-from email.message import Message
+from http.client import HTTPMessage
 from typing import IO, Protocol
 
 from nexahome import __version__
@@ -34,7 +34,7 @@ def check_url(url: str) -> None:
 
 class _CheckedRedirects(urllib.request.HTTPRedirectHandler):
     def redirect_request(
-        self, req: urllib.request.Request, fp: IO[bytes], code: int, msg: str, headers: Message, newurl: str
+        self, req: urllib.request.Request, fp: IO[bytes], code: int, msg: str, headers: HTTPMessage, newurl: str
     ) -> urllib.request.Request | None:
         check_url(newurl)  # a redirect may not leave https
         return super().redirect_request(req, fp, code, msg, headers, newurl)

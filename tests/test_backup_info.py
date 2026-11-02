@@ -39,6 +39,7 @@ def test_the_size_line(tmp_path: Path) -> None:
 
 def test_human_size() -> None:
     assert [backup_info.human_size(n) for n in (0, 1023, 1024, 1536, 5 * 1024**2, 3 * 1024**3)] == ["0B", "1023B", "1.0K", "1.5K", "5.0M", "3.0G"]
+    assert backup_info.human_size(5 * 1024**5) == "5120.0T"  # the largest unit stops the scaling
 
 
 def test_repository_dir_precedence(tmp_path: Path) -> None:

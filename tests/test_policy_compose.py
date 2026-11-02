@@ -126,3 +126,16 @@ def test_the_real_stacks_give_the_same_output_as_the_original(
     results = compose.check_stacks(SubprocessRunner())
     assert [line for r in results for line in r.lines()] == original
     assert (code == 0) == all(not r.problems and r.error is None for r in results)
+
+
+def test_check_stack_reports_json_it_cannot_read(tmp_path: Path) -> None:
+    stack = make_stack(tmp_path, False)
+    result = compose.check_stack(FakeRunner({argv_for(stack): RunResult(0, "not json")}), stack)
+    assert result.error == f"{stack}: docker compose config did not return JSON" and result.lines() == []
+
+
+def test_check_stack_can_print_a_different_path_than_it_runs(tmp_path: Path) -> None:
+    stack = make_stack(tmp_path, False)
+    config = json.dumps({"name": "nexahome-demo", "services": {}})
+    shown = Path("stacks/demo/compose.yaml")
+    assert compose.check_stack(FakeRunner({argv_for(stack): RunResult(0, config)}), stack, shown).lines() == ["stacks/demo/compose.yaml: ok"]

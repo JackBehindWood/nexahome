@@ -181,3 +181,10 @@ def test_end_to_end_without_docker(make_context: MakeContext) -> None:
     ctx = make_context(runner=SubprocessRunner())
     assert cli.main(["doctor"], ctx) == ExitCode.NOT_READY
     assert "docker-cli" in ctx.out.getvalue() and "skip  compose" in ctx.out.getvalue()  # type: ignore[attr-defined]
+
+
+def test_an_unreadable_env_file_is_skipped_not_fatal(make_context: MakeContext, tmp_path: Path) -> None:
+    repo = make_checkout(tmp_path / "repo")
+    (repo / "stacks" / "demo" / ".env").mkdir()  # reading a directory raises OSError
+    checks = {c.id: c.status for c in doctor.run_probes(make_context(cwd=repo, runner=FakeRunner(HEALTHY)))}
+    assert checks["env"] == Status.OK

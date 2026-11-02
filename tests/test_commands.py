@@ -209,3 +209,14 @@ def test_status_without_an_engine_says_how_to_start_it(make_checkout: MakeChecko
     ctx = make_context(host=make_host(system="macos"), cwd=make_checkout(), runner=FakeRunner())
     assert cli.main(["status"], ctx) == ExitCode.OK
     assert out(ctx).startswith("no container runtime running; start it with: colima start --cpu 2 --memory 2 --disk 20\n")
+
+
+def test_check_shows_an_absolute_path_for_a_folder_outside_the_working_directory(
+    make_checkout: MakeCheckout, make_context: MakeContext, tmp_path: Path
+) -> None:
+    other = make_checkout(root=tmp_path / "other")
+    work = tmp_path / "work"
+    work.mkdir()
+    ctx = make_context(cwd=work, runner=FakeRunner({config_argv(other, "demo"): RunResult(0, GOOD_CONFIG)}))
+    assert cli.main(["check", "--stacks", str(other / "stacks")], ctx) == ExitCode.OK
+    assert out(ctx) == f"{other / 'stacks' / 'demo' / 'compose.yaml'}: ok\n"

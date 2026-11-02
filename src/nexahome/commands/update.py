@@ -48,7 +48,8 @@ def update_source(ctx: Context) -> str | None:
     if ctx.env.get("NEXAHOME_UPDATE_URL"):
         return ctx.env["NEXAHOME_UPDATE_URL"]
     try:
-        for entry in importlib.metadata.metadata("nexahome").get_all("Project-URL") or []:
+        entries: list[str] = importlib.metadata.metadata("nexahome").get_all("Project-URL") or []
+        for entry in entries:
             label, _, address = entry.partition(",")
             if label.strip() == "Latest release":
                 return address.strip()

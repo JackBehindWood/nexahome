@@ -253,3 +253,41 @@ def test_end_to_end_over_a_local_server(release_server: str, make_context: MakeC
     ctx.ask = lambda question: True
     assert cli.main(["update"], ctx) == ExitCode.OK
     assert installer.installed_bytes == WHEEL
+
+
+class FakeDistribution:
+    def __init__(self, direct_url: str | None) -> None:
+        self.direct_url = direct_url
+
+    def read_text(self, name: str) -> str | None:
+        return self.direct_url if name == "direct_url.json" else None
+
+
+@pytest.mark.parametrize(
+    ("direct_url", "editable"),
+    [('{"url": "file:///x", "dir_info": {"editable": true}}', True), ('{"url": "file:///x", "dir_info": {}}', False), (None, False), ("not json", False)],
+)
+def test_editable_installs_are_recognised_from_the_install_record(monkeypatch: pytest.MonkeyPatch, direct_url: str | None, editable: bool) -> None:
+    monkeypatch.undo()  # drop the autouse stub so the real function runs
+    monkeypatch.setattr(update.importlib.metadata, "distribution", lambda name: FakeDistribution(direct_url))
+    assert update.installed_as_editable() is editable
+
+
+def test_a_missing_package_record_is_not_editable_and_has_no_source(monkeypatch: pytest.MonkeyPatch, make_context: MakeContext) -> None:
+    monkeypatch.undo()
+
+    def missing(name: str) -> object:
+        raise update.importlib.metadata.PackageNotFoundError(name)
+
+    monkeypatch.setattr(update.importlib.metadata, "distribution", missing)
+    monkeypatch.setattr(update.importlib.metadata, "metadata", missing)
+    assert update.installed_as_editable() is False
+    assert update.update_source(make_context(env={})) is None
+
+
+def test_a_wheel_name_with_a_path_is_refused(make_context: MakeContext) -> None:
+    sneaky = "nexahome-1/../../evil.whl"
+    installer = Installer()
+    ctx, _ = make(make_context, {**GOOD, FEED_URL: feed(assets={sneaky: WHEEL_URL, "SHA256SUMS": SUMS_URL})}, installer)
+    assert cli.main(["update", "--yes"], ctx) == ExitCode.NOT_READY
+    assert "names its wheel with a path" in text(ctx, "err") and installer.calls == []

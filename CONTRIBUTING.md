@@ -23,7 +23,7 @@ make hooks     # optional: install the git pre-commit hook in this repo only
 `make setup` also installs the `nexahome` package (editable) and pytest:
 
 ```sh
-.venv/bin/pytest              # the package tests
+make test                     # the package tests (pytest)
 .venv/bin/nexahome --help     # the commands: check, doctor, setup, stacks, status, update
 .venv/bin/nexahome doctor     # diagnose this machine (read-only)
 ```
