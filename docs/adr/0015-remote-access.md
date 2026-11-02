@@ -16,7 +16,7 @@ SSH with keys only, on the LAN only: no port forward, no public DNS, no VPN unti
 - **Server:** a drop-in `/etc/ssh/sshd_config.d/050-nexahome.conf` with `PasswordAuthentication no`, `KbdInteractiveAuthentication no`, `PermitRootLogin no`, `AuthenticationMethods publickey`, `AllowUsers <daily-user>`, `MaxAuthTries 3`, `AllowAgentForwarding no`, `X11Forwarding no`. TCP forwarding stays on (model tunnel, Remote-SSH). The daily user is not an admin; the agent never holds `sudo`.
 - **Keys:** ed25519 with a passphrase, one per client, never copied between machines. Each `authorized_keys` line may carry `from="<lan-cidr>"`. `restrict` is not used (it would disable what Remote-SSH needs).
 - **Model server:** listens on the mini's loopback only and is reached through an SSH tunnel, not a port.
-- **Git:** the deploy checkout pulls with a read-only deploy key; the workspace checkout pushes with a per-device user key (passphrase, Keychain). Agent forwarding is rejected both ways (client `ForwardAgent no`, server `AllowAgentForwarding no`): a compromised mini must not borrow the laptop's keys.
+- **Git:** the deploy checkout pulls over anonymous HTTPS (the repository is public; no key, push disabled, see [ADR 0017](0017-deploy-flow.md)); the workspace checkout pushes with a per-device user key (passphrase, Keychain). Agent forwarding is rejected both ways (client `ForwardAgent no`, server `AllowAgentForwarding no`): a compromised mini must not borrow the laptop's keys.
 - **Finding the mini:** Bonjour name, or a DHCP reservation in the router.
 
 ### Remote access from outside the home (decision deferred)
@@ -51,7 +51,7 @@ Deferred or rejected, with the trigger to reconsider:
 | Tailscale SSH | rejected: needs the VPN decision first | P6 |
 | Screen Sharing / VNC | deferred | a task that needs the mini's GUI from the laptop |
 | `ssh-audit` or similar checker | not added | B1, with the install questions asked first |
-| Docker context over SSH | rejected for deploy (planned ADR 0017) | never |
+| Docker context over SSH | rejected for deploy ([ADR 0017](0017-deploy-flow.md)) | never |
 
 ## Verification and status
-Rehearsed on 2026-11-02 against a throwaway non-root `sshd` on the laptop (macOS 27, not the mini's version): A1, A2 and A5 behaved as written, A4's procedure worked, `from=` and the tunnel worked. Details are in the runbook's evidence section. **Not confirmed on a real mini** (P4-X4): `sshd_config.d` handling and PAM on its macOS version, Remote Login, Bonjour on this network, the `from=` range as seen by the mini, VS Code Remote-SSH, the deploy-key flow on GitHub for this repository, rsync over SSH and Full Disk Access (B3), Tailscale terms, router VPN support. B1 tests the first group, B3 and B4 the rest.
+Rehearsed on 2026-11-02 against a throwaway non-root `sshd` on the laptop (macOS 27, not the mini's version): A1, A2 and A5 behaved as written, A4's procedure worked, `from=` and the tunnel worked. Details are in the runbook's evidence section. **Not confirmed on a real mini** (P4-X4): `sshd_config.d` handling and PAM on its macOS version, Remote Login, Bonjour on this network, the `from=` range as seen by the mini, VS Code Remote-SSH, rsync over SSH and Full Disk Access (B3), Tailscale terms, router VPN support. B1 tests the first group, B3 and B4 the rest.

@@ -118,7 +118,7 @@ Once login works, prefix the key's line in `~/.ssh/authorized_keys` on the mini 
 
 ## Git access from the mini
 
-The deploy checkout pulls with a read-only deploy key; the workspace checkout pushes with a per-device user key (passphrase, Keychain). Agent forwarding is off, so a compromised mini cannot use the laptop's keys. Set up in the bring-up sessions; [ADR 0015](../adr/0015-remote-access.md).
+The deploy checkout pulls over anonymous HTTPS (the repository is public: no key, push disabled); the workspace checkout pushes with a per-device user key (passphrase, Keychain). Agent forwarding is off, so a compromised mini cannot use the laptop's keys. Set up in the bring-up sessions; [ADR 0015](../adr/0015-remote-access.md), [ADR 0017](../adr/0017-deploy-flow.md).
 
 ## Recovery
 
@@ -128,4 +128,4 @@ A wrong drop-in only affects remote login. Log in at the desk (or as `<admin-use
 
 Not run on a mini. Rehearsal of 2026-11-02 on the laptop (macOS 27.0.1, OpenSSH 10.3, not the 26.x the mini will run), against a throwaway `sshd` started without `sudo` on a loopback port, with scratch keys and a scratch drop-in of the same lines, all deleted afterwards. Results: `sshd -t` clean; `sshd -T` showed every value in the list above and `allowtcpforwarding yes`; key login exited 0; the recorded host key equalled the server's fingerprint; the password attempt and a wrong key ended "Permission denied (publickey)"; a tunnel to a loopback web server answered 200; `ssh -A` left no agent socket on the server; a `from=` range that excluded the client refused a correct key (the server log said so). Findings: start such an `sshd` with an absolute path to its config (a relative path made every connection reset), and the exit code printed by `ssh ... | filter` is the filter's, so read the message, not `$?`. Not covered: PAM (`UsePAM no` in the scratch), `/etc/ssh/sshd_config.d` itself, Remote Login, Bonjour, VS Code Remote-SSH, the `log show` query. Not verified: everything on the mini.
 
-Changelog: 0.1 (2026-11-02): initial draft, A1.
+Changelog: 0.1 (2026-11-02): pull over HTTPS instead of a deploy key (A3); 0.1 (2026-11-02): initial draft, A1.

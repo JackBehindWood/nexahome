@@ -2,13 +2,13 @@ VENV  := .venv
 BIN   := $(VENV)/bin
 EDGE_NET := nexahome-edge
 CORE := edge identity
-ALL = $(filter-out _template backup,$(notdir $(patsubst %/,%,$(wildcard stacks/*/))))
-# STACK=name acts on one stack. Without it, every stack except the template and the backup tool,
-# with the core stacks (edge, identity) first.
+ALL = $(or $(strip $(shell cat .config/stacks 2>/dev/null)),$(filter-out _template backup,$(notdir $(patsubst %/,%,$(wildcard stacks/*/)))))
+# STACK=name acts on one stack. Without it, the stacks listed in .config/stacks (this host only,
+# gitignored) or else every stack except the template and the backup tool, core stacks (edge, identity) first.
 STACKS = $(if $(STACK),$(STACK),$(filter $(CORE),$(ALL)) $(filter-out $(CORE),$(ALL)))
 
 .DEFAULT_GOAL := help
-.PHONY: help up down ps status smoke open portal backup-init backup restore snapshots verify backup-check setup hooks unhooks check
+.PHONY: help up down ps status smoke open portal backup-init backup restore snapshots verify backup-check deploy setup hooks unhooks check
 
 ##@ Use
 
@@ -75,6 +75,9 @@ verify: ## Compare stopped stacks' volumes with a restored copy, then remove the
 
 backup-check: ## Read the whole repository to prove it is intact (READ=1/10 reads a tenth)
 	@READ=$(READ) sh scripts/backup.sh check
+
+deploy: ## Pull, check and start on this machine (the deploy-only checkout on main)
+	@sh scripts/deploy.sh
 
 ##@ Develop
 

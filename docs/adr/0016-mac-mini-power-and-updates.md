@@ -12,7 +12,7 @@ Requirements and how each is verified (both on the mini): S1 `pmset -g custom` s
 - **Sleep and power:** no automatic system sleep on power, display sleep after 10 minutes, restart automatically after a power failure, every other power setting at its default. Manual sleep and shutdown stay allowed; while the mini sleeps or is off, SSH, deploy and local AI are unavailable and nothing else is affected.
 - **FileVault:** on. Before a planned restart the admin runs `sudo fdesetup authrestart`. After a power cut the mini starts itself and waits for the disk password at the desk.
 - **Updates:** no automatic macOS install. Check monthly with `softwareupdate -l`, install by hand, log the version, and re-check `sshd -T` afterwards ([ADR 0015](0015-remote-access.md)). A major upgrade waits for the owner: a mini that ships with 26.x stays on it until they decide. Time sync stays at its default.
-- **After a reboot:** type the disk password, then `colima start && make up`, then `make smoke`. Autostart is deferred (trigger: a stack that must stay up unattended), as is headless use (trigger: the mini leaves the desk).
+- **After a reboot:** type the disk password, then `colima start && make up`, then `make ps` (`make smoke` fails on a host without the edge, open in [ADR 0017](0017-deploy-flow.md)). Autostart is deferred (trigger: a stack that must stay up unattended), as is headless use (trigger: the mini leaves the desk).
 - **Network:** Wi-Fi now. Plugging in Ethernet needs no setting (macOS prefers a wired link; not verified). Only the address changes, so keep using the Bonjour name or a DHCP reservation; if a key carries `from="<lan-cidr>"`, check the range covers both links. Wake-on-LAN is not relied on and `womp` stays at its default.
 - The agent never holds `sudo`; the owner types every command below.
 
@@ -27,7 +27,7 @@ Operating it (the only place these live; the same values can be set in System Se
 | Undo | `sudo pmset -a restoredefaults` |
 
 ## Consequences
-Easier: SSH answers whenever the mini is on and unlocked; no wake logic; a power cut needs one password and two commands. Harder: a cut or reboot leaves SSH, deploy and local AI down until the password is typed at the desk (the laptop and its stacks are unaffected); a cut is an unclean shutdown, so run `make smoke` after it and `make verify` if a stack misbehaves; about 4 W idle is the M4 figure, no M6 figure was found.
+Easier: SSH answers whenever the mini is on and unlocked; no wake logic; a power cut needs one password and two commands. Harder: a cut or reboot leaves SSH, deploy and local AI down until the password is typed at the desk (the laptop and its stacks are unaffected); a cut is an unclean shutdown, so run `make ps` after it and `make verify` if a stack misbehaves; about 4 W idle is the M4 figure, no M6 figure was found.
 
 Failure modes: autorestart while the owner is away leaves the mini at the prompt, harmless; an update changes defaults, re-check the values and `sshd -T`. Evolution: on a NAS or Linux host `pmset`, `fdesetup` and `softwareupdate` become systemd and power settings, LUKS and apt; a UPS (P5) removes the power-cut question. Evidence reused: [ADR 0013](0013-health-view.md) session 3 (laptop sleep: a 127 s gap in checks, clocks equal after wake, Pocket ID restarted itself, identity is not placed on the mini); re-measure only if automatic sleep is ever chosen.
 
