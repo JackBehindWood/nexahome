@@ -27,13 +27,11 @@ ssh <mini-alias> 'cd ~/nexahome && make deploy'
 
 ```
 git clone https://github.com/<owner>/nexahome.git ~/nexahome && cd ~/nexahome
-git remote set-url --push origin no_push
-mkdir -p .config && printf 'hello\nactual\n' > .config/stacks
-make setup
+sh scripts/setup.sh --deploy hello actual
 make deploy
 ```
 
-`make up` creates each `.env` and generates secrets; copy them to the password manager. `make setup` and the clone need Xcode command line tools, Homebrew and Colima first ([plan](../roadmap.md), B2).
+[`scripts/setup.sh`](../../scripts/setup.sh) is also what `make setup` runs (without `--deploy`, for the laptop, a workspace and CI). It checks `git`, `make` and `python3` (stops with the next command if one is missing), warns when Docker or its runtime is absent, creates `.venv` with the pinned tools, and with `--deploy` writes `.config/stacks` and disables push. It never installs system software and is safe to run again. `make up` creates each `.env` and generates secrets; copy them to the password manager. The mini needs Xcode command line tools, Homebrew and Colima first ([plan](../roadmap.md), B2).
 
 **Rollback.** `git checkout <previous-sha> && make up`, then `git switch main` before the next deploy (a detached checkout is refused by the guard). Data: `make restore` (never overwrites; an app that migrated its data forward may not run on the old version, so restore a backup taken before the deploy).
 
@@ -60,6 +58,7 @@ Practice was checked in a short web look at homelab threads and tool pages, plus
 | Watchtower, Flux, Argo, Portainer or Komodo | rejected: unpinned tags, Kubernetes, or a UI for many hosts; Dependabot pull requests are the update path | more than one host |
 | Laptop `make deploy` wrapper with host variables | rejected by the owner for now: two ways to do one thing | the `ssh` line is typed often enough to hurt |
 | One checkout, or a `git worktree` | rejected: one checkout would switch the running stacks with every branch; a worktree adds a concept and breaks when its parent is deleted | never |
+| Automated bootstrap of the whole mini (a script that installs Homebrew, Colima and the rest) | rejected: it changes system settings, needs `sudo` and GUI steps, and differs per macOS version; `setup.sh` only prepares a checkout | a second rebuild of any host |
 | Configuration management (Ansible) | rejected: one machine, the runbook is the configuration | a third machine |
 
 ## Verification and status
@@ -77,6 +76,7 @@ Rehearsed on 2026-11-02 on the laptop (macOS 27, GNU make 3.81, Colima), in a se
 | `.config/stacks` | `make -n up` lists only the file's stacks; without it, all six as before |
 | `make smoke` on a hello-only host | fails: edge not running (open item above) |
 | Colima stopped | stopped at `up` with the `colima start` hint |
+| `scripts/setup.sh`, scratch copy | uv path and pip path (modern Python) pass; a second run is safe; `--deploy` writes the list and disables push; an unknown stack, a missing argument and a missing tool stop with the next command; a venv built on an old Python fails with the Python version named. Found and fixed: a half-made `.venv` made the second run fail |
 
 Findings along the way: the checkout must be under `$HOME` (a checkout in `/private/tmp` gave hello an empty web root and an unhealthy container); `COMPOSE_PROJECT_NAME` must not be exported while `make check` runs (`check_compose.py` enforces `nexahome-<stack>`), so the rehearsal set it in hello's `.env`.
 

@@ -81,12 +81,8 @@ deploy: ## Pull, check and start on this machine (the deploy-only checkout on ma
 
 ##@ Develop
 
-setup: ## Create .venv and install the pinned dev tools (uv if installed, else pip)
-	@if command -v uv >/dev/null 2>&1; then \
-		uv venv -q $(VENV) && uv pip install -q --python $(BIN)/python -r requirements-dev.txt; \
-	else \
-		python3 -m venv $(VENV) && $(BIN)/python -m pip install -q -r requirements-dev.txt; \
-	fi
+setup: ## Check prerequisites, create .venv with the pinned dev tools (deploy checkout: sh scripts/setup.sh --deploy stack...)
+	@sh scripts/setup.sh
 
 hooks: ## Install the git pre-commit hook in this repo only (opt-in)
 	$(BIN)/pre-commit install

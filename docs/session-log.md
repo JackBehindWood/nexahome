@@ -9,20 +9,20 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 - Owner decisions: `make deploy` runs on the mini (no laptop wrapper); anonymous HTTPS pull instead of a deploy key (public repository); a gitignored `.config/stacks` per host; the smoke question stays open for B2. Practice was checked in a short web look (homelab threads, tool pages) plus general knowledge: adopted pull on target, adapted to one script behind one target, rejected Docker context, runner, webhook, Watchtower and GitOps tools, deferred a timer.
 - Added `scripts/deploy.sh` (25 lines) and a `deploy` target; `ALL` in the Makefile reads `.config/stacks` (Makefile 99 lines, make 3.81). The laptop's `make -n up` and `make -n down` are identical to before.
 - Rehearsal on the laptop (Colima started and stopped, `hello` only, throwaway project and port, second checkout against a throwaway bare repository, all removed, Docker state equal to the start): clean deploy, local-change guard, failing check, rollback and detached checkout, recovery, `SKIP` need, host list, smoke failure, Colima stopped. Results are in ADR 0017. Findings: the checkout must be under `$HOME` (Colima mounts only the home directory); `COMPOSE_PROJECT_NAME` must not be exported while `make check` runs.
-- Answered the owner's question about a `setup.sh`: not added; `make setup` is the setup and the first-deploy commands are a block in ADR 0017.
+- Added `scripts/setup.sh` at the owner's request (I had advised against it): `make setup` now runs it; checks git, make, python3, warns about Docker, creates `.venv`, `--deploy <stacks>` writes `.config/stacks` and disables push; never installs system software; safe to repeat. Tested in a scratch copy (uv and pip paths, re-run, deploy mode, errors); found and fixed a half-made `.venv` breaking the second run. Not tested on the mini or Linux.
 
 **Doc changes and reasons**
 - ADR 0017 new (Proposed). `docs/project.md`: deploy flow row Open to Proposed. `docs/roadmap.md`: A3 done, ADR list, Next row. ADR 0015 and `docs/runbooks/mini-ssh.md`: deploy key replaced by anonymous HTTPS for pulling, links to ADR 0017 (one source per fact; still Proposed). ADR 0016: after a reboot `make ps` instead of `make smoke` until the smoke question is decided. `docs/architecture.md`: pointer and hop table.
 
 **Verification:** `make check` and `git diff --staged` before the commit (see the commit). Not verified: everything on the mini (D2, D3, make 3.81 and command line tools there, `make setup` on macOS 26, HTTPS from its network, `docker` on the PATH of a non-login SSH shell), a rollback that changes Compose files, `actual`, Linux.
 
-**Next:** Track B when the mini arrives (B1 tests ADRs 0015 and 0016, B2 tests 0014 and 0017). Open for B2: smoke on a partial host (partial-host mode, or the edge on the mini).
+**Next:** the owner's review of ADRs 0014 to 0017 and the runbook; Track A is drafted and rehearsed but not reviewed. Then Track B when the mini arrives (B1 tests ADRs 0015 and 0016, B2 tests 0014 and 0017). Open for B2: smoke on a partial host (partial-host mode, or the edge on the mini).
 
 **Open questions**
 - Review of ADR 0017; which smoke fix to take in B2.
 
 **Pending (owner actions)**
-- Unchanged from the A1 entry (record order and delivery locally, `CLAUDE.md` hardware section, AppleCare+ and subscription decisions). Track A is complete; nothing is pushed or merged (`feat/p4-Atrack` is ahead of `feat/p4-plan`).
+- Unchanged from the A1 entry (record order and delivery locally, `CLAUDE.md` hardware section, AppleCare+ and subscription decisions). Nothing is pushed; `feat/p4-Atrack` was merged into `feat/p4-plan` locally on the owner's instruction.
 
 ## 2026-11-02: P4 A2, ADR 0016 sleep, power, FileVault and updates
 
