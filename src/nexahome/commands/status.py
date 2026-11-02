@@ -1,0 +1,30 @@
+"""nexahome status: how the stacks and the backup are doing (read-only)."""
+
+import argparse
+
+from nexahome import backup_info, docker
+from nexahome import platform as host_platform
+from nexahome import stacks as stack_catalogue
+from nexahome.commands._base import Subparsers
+from nexahome.context import Context
+from nexahome.errors import ExitCode
+
+NAME = "status"
+
+
+def register(subparsers: Subparsers) -> None:
+    parser = subparsers.add_parser(NAME, help="show stack health and how recent the backup is", description=__doc__.split("\n")[0])
+    parser.set_defaults(run=run)
+
+
+def run(args: argparse.Namespace, ctx: Context) -> int:
+    checkout = ctx.require_checkout()
+    if docker.engine_info(ctx).ok:
+        for name in stack_catalogue.enabled(checkout):
+            result = docker.compose_ps(ctx, stack_catalogue.compose_file(checkout, name))
+            print(result.stdout.rstrip() if result.ok else f"{name}: could not read its state (docker compose ps failed)", file=ctx.out)
+    else:
+        print(f"no container runtime running; start it with: {host_platform.engine_start_fix(ctx.host)}", file=ctx.out)
+    directory = backup_info.repository_dir(checkout, ctx.env)
+    print("\n".join(backup_info.summary(directory, ctx.now())), file=ctx.out)
+    return ExitCode.OK

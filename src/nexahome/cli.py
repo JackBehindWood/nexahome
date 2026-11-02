@@ -1,6 +1,8 @@
 """The nexahome command line: builds the parser from COMMANDS, runs one command, owns printing and exit."""
 
 import argparse
+import os
+import sys
 from collections.abc import Sequence
 
 from nexahome import __version__
@@ -37,3 +39,7 @@ def main(argv: Sequence[str] | None = None, ctx: Context | None = None) -> int:
         return int(error.exit_code)
     except KeyboardInterrupt:
         return ExitCode.INTERRUPTED
+    except BrokenPipeError:  # the reader went away, for example `nexahome doctor | head`
+        if ctx.out is sys.stdout:
+            os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())  # no second error at exit
+        return ExitCode.PIPE_CLOSED

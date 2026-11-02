@@ -77,6 +77,7 @@ class StackResult:
     compose: Path
     problems: tuple[str, ...] = ()
     error: str | None = None  # the check could not run (no Docker CLI, or `docker compose config` failed)
+    docker_missing: bool = False
 
     def lines(self) -> list[str]:
         """What the original script printed on stdout for this stack."""
@@ -85,18 +86,28 @@ class StackResult:
         return [f"{self.compose}: {p}" for p in self.problems] or [f"{self.compose}: ok"]
 
 
-def check_stack(runner: Runner, compose: Path) -> StackResult:
+def check_stack(runner: Runner, compose: Path, shown: Path | None = None) -> StackResult:
+    """Check one stack. `compose` is used to run and read; `shown` (default: the same) is what messages print."""
+    label = shown or compose
     env_example = compose.parent / ".env.example"
     argv = ["docker", "compose", "-f", str(compose)]
     if env_example.is_file():
         argv += ["--env-file", str(env_example)]
     result = runner.run([*argv, "config", "--format", "json"], timeout=CONFIG_TIMEOUT)
     if result.missing:
-        return StackResult(compose, error="docker CLI not found; cannot validate stacks")
+        return StackResult(label, error="docker CLI not found; cannot validate stacks", docker_missing=True)
     if not result.ok:
-        return StackResult(compose, error=f"{compose}: docker compose config failed\n{result.stderr}")
-    return StackResult(compose, tuple(check_config(compose.parent.name, json.loads(result.stdout))))
+        return StackResult(label, error=f"{label}: docker compose config failed\n{result.stderr}")
+    try:
+        config = json.loads(result.stdout)
+    except ValueError:
+        return StackResult(label, error=f"{label}: docker compose config did not return JSON")
+    return StackResult(label, tuple(check_config(compose.parent.name, config)))
 
 
-def check_stacks(runner: Runner, root: Path = Path("stacks")) -> list[StackResult]:
-    return [check_stack(runner, compose) for compose in sorted(root.glob("*/compose.yaml"))]
+def check_stacks(runner: Runner, root: Path = Path("stacks"), shown_root: Path | None = None) -> list[StackResult]:
+    """Check every stack under root. Messages print paths under shown_root (default: root itself)."""
+    return [
+        check_stack(runner, compose, shown_root / compose.relative_to(root) if shown_root else None)
+        for compose in sorted(root.glob("*/compose.yaml"))
+    ]

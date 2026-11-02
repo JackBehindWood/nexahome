@@ -1,11 +1,13 @@
 import argparse
+import subprocess
+import sys
 import types
 from collections.abc import Callable
 
 import pytest
 
 from nexahome import __version__, cli
-from nexahome.commands.base import Subparsers
+from nexahome.commands._base import Subparsers
 from nexahome.errors import ExitCode, NexaHomeError
 
 from conftest import MakeContext, MakeHost
@@ -78,3 +80,22 @@ def test_native_windows_is_refused_before_the_command_runs(
     err = ctx.err.getvalue()  # type: ignore[attr-defined]
     assert "WSL2" in err and err.endswith("Next: wsl --install\n")
     assert not ran
+
+
+def test_a_closed_pipe_ends_quietly_with_141(monkeypatch: pytest.MonkeyPatch, make_context: MakeContext) -> None:
+    def run(args: argparse.Namespace, ctx: object) -> int:
+        raise BrokenPipeError
+
+    install_command(monkeypatch, run)
+    assert cli.main(["dummy"], make_context()) == ExitCode.PIPE_CLOSED == 141
+
+
+def test_main_reads_sys_argv_and_the_real_context_by_default(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setattr("sys.argv", ["nexahome", "--version"])
+    assert cli.main() == ExitCode.OK
+    assert __version__ in capsys.readouterr().out
+
+
+def test_python_dash_m_works() -> None:
+    done = subprocess.run([sys.executable, "-m", "nexahome", "--version"], capture_output=True, text=True, check=False)
+    assert (done.returncode, done.stdout.strip()) == (0, f"nexahome {__version__}")

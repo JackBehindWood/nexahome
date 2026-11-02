@@ -4,7 +4,9 @@ import importlib.util
 import io
 import os
 import shlex
+import shutil
 import stat
+import subprocess
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -117,3 +119,38 @@ def load_script(name: str) -> ModuleType:
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+type MakeCheckout = Callable[..., Path]
+
+
+@pytest.fixture
+def make_checkout(tmp_path: Path) -> MakeCheckout:
+    """A minimal NexaHome checkout: stacks/<name>/compose.yaml (+ .env.example) and a Makefile."""
+
+    def make(stacks: dict[str, str | None] | None = None, root: Path | None = None) -> Path:
+        base = root or tmp_path / "repo"
+        (base / "stacks").mkdir(parents=True)
+        (base / "Makefile").write_text("")
+        for name, example in (stacks if stacks is not None else {"demo": None}).items():
+            (base / "stacks" / name).mkdir()
+            (base / "stacks" / name / "compose.yaml").write_text("")
+            if example is not None:
+                (base / "stacks" / name / ".env.example").write_text(example)
+        return base
+
+    return make
+
+
+DOCKER_HEALTHY = {
+    ("docker", "--version"): RunResult(0, "Docker version 27.1.0, build abc123\n"),
+    ("docker", "compose", "version"): RunResult(0, "Docker Compose version v2.29.0\n"),
+    ("docker", "info", "--format", "{{.ServerVersion}}"): RunResult(0, "27.1.0\n"),
+}
+
+
+def has_compose() -> bool:
+    """True when this machine has the Docker CLI with the Compose plugin (no engine needed)."""
+    if shutil.which("docker") is None:
+        return False
+    return subprocess.run(["docker", "compose", "version"], capture_output=True).returncode == 0

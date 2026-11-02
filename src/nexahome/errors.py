@@ -11,6 +11,7 @@ class ExitCode(IntEnum):
     USAGE = 2  # argparse and unknown commands
     NOT_READY = 3  # the environment is not ready
     INTERRUPTED = 130
+    PIPE_CLOSED = 141  # the reader went away, for example `| head` (128 + SIGPIPE)
 
 
 class NexaHomeError(Exception):

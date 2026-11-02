@@ -1,8 +1,12 @@
 """Every registered command and probe is covered by the same rules, so adding one needs no new rule."""
 
+import importlib
+import types
+
 import pytest
 
 from nexahome import cli
+from nexahome import commands
 from nexahome.commands import COMMANDS
 from nexahome.commands.doctor import PROBES
 from nexahome.errors import ExitCode
@@ -38,3 +42,14 @@ def test_probe_ids_are_unique_and_stable() -> None:
     ids = [probe_id for probe_id, _ in PROBES]
     assert ids == ["platform", "python", "docker-cli", "compose", "engine", "disk", "mount", "env"]
     assert len(ids) == len(set(ids))
+
+
+def test_commands_are_found_automatically_and_listed_alphabetically() -> None:
+    assert [command.NAME for command in COMMANDS] == ["check", "doctor", "setup", "stacks", "status", "update"]
+    assert all(command.__name__ == f"nexahome.commands.{command.NAME}" for command in COMMANDS)  # one module per command
+
+
+def test_a_module_without_the_interface_is_refused_with_a_hint(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(importlib, "import_module", lambda name: types.ModuleType(name))
+    with pytest.raises(TypeError, match="must define NAME, register"):
+        commands.discover()

@@ -46,3 +46,10 @@ def test_every_function_is_fully_annotated() -> None:  # PK-C4 without a type ch
 
 def test_the_package_is_marked_typed() -> None:
     assert (PACKAGE / "py.typed").is_file()
+
+
+NETWORK = re.compile(r"^\s*(?:import|from)\s+(?:urllib|http|socket|ssl|ftplib|smtplib|requests)\b", re.M)
+
+
+def test_only_net_py_touches_the_network() -> None:
+    assert [p.name for p in SOURCES if p.name != "net.py" and NETWORK.search(p.read_text())] == []  # PK-S2

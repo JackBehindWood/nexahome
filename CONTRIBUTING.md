@@ -24,8 +24,11 @@ make hooks     # optional: install the git pre-commit hook in this repo only
 
 ```sh
 .venv/bin/pytest              # the package tests
+.venv/bin/nexahome --help     # the commands: check, doctor, setup, stacks, status, update
 .venv/bin/nexahome doctor     # diagnose this machine (read-only)
 ```
+
+Run `nexahome` from the checkout (or set `NEXAHOME_HOME` to it). The commands sit beside the Makefile, which stays the way to start and stop stacks; none of them starts a container. `update` is the only command that uses the network (`net.py`, https only); it asks before it installs and checks the wheel against `SHA256SUMS`.
 
 To add a stack, follow [Add a stack](docs/runbooks/add-a-stack.md).
 
@@ -37,7 +40,7 @@ Agent and editor configuration (`CLAUDE.md`, `.claude/`, `.vscode/`) stays local
 
 The code is in `src/nexahome/`, tests in `tests/` ([ADR 0018](docs/adr/0018-code-package-and-language-strategy.md)). Standard library only; every function is annotated. To extend it:
 
-- **A command:** a module in `commands/` with `NAME`, `register()` and `run()`, and one line in `COMMANDS` (`commands/__init__.py`). Raise `NexaHomeError(message, fix)` for a failure the user can fix: the fix is one exact command. The registry tests check `--help` and the Windows refusal for every command.
+- **A command:** one new module in `commands/` with `NAME`, `register()` and `run()`; it is found automatically (a module whose name starts with an underscore is a helper). Raise `NexaHomeError(message, fix)` for a failure the user can fix: the fix is one exact command. The registry tests check `--help` and the Windows refusal for every command. Put logic that other commands will reuse outside `commands/` (see `envfile.py`, `stacks.py`, `docker.py`), and take everything from the `Context` (runner, environment, working directory, clock), so a test can replace it.
 - **A `doctor` check:** a function `(ctx, prior) -> Check | None`, one `(id, function)` entry in `PROBES`, and a row in `tests/test_doctor.py`. A `warn` or `fail` needs a fix command; check ids are never renamed. The JSON schema is described once, in `nexahome/report.py`.
 - **A system (macOS, Linux, ...):** a module in `platform/` and one line in `SYSTEMS`. Only `nexahome.platform` may read the operating system; a test enforces it.
 - **A repository check:** `policy/` holds the Compose policy and personal-data checks. The hooks still run the originals in `scripts/` until PK5; the golden tests compare both.

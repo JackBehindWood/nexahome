@@ -15,7 +15,7 @@ Requirements and how each is verified:
 | PK-I3 | Upgrade never touches `.env`, data or backups and can be rolled back | Rehearsal: init at version A, upgrade to B, compare fingerprints, roll back |
 | PK-I4 | Uninstall removes the tool and leaves the instance, and prints the command | Rehearsal |
 | PK-S1 | `init` and `upgrade` never overwrite user-owned files; secrets use `secrets`, mode 600, never printed | Unit tests |
-| PK-S2 | No network access except `docker`; no telemetry; no archive extraction | Code review; test with network blocked |
+| PK-S2 | No network access except `docker` and an explicit `nexahome update` (release feed and assets over https, checksum-verified); no telemetry; no archive extraction | Code review; a test that only `net.py` imports network modules; tests with the network blocked |
 | PK-R1 | A tag builds a wheel and sdist with checksums, installable from the release URL | Dry-run on a branch, install in a scratch environment |
 | PK-R2 | The wheel contains the stacks and `init` output passes `nexahome check` | Wheel round-trip test in CI |
 

@@ -5,13 +5,13 @@ tests/test_doctor.py. A probe returns None when it does not apply, and SKIP when
 """
 
 import argparse
-import re
 import shlex
 from collections.abc import Callable, Mapping
 from pathlib import Path
 
+from nexahome import envfile
 from nexahome import platform as host_platform
-from nexahome.commands.base import Subparsers
+from nexahome.commands._base import Subparsers
 from nexahome.context import Context
 from nexahome.errors import ExitCode, NexaHomeError
 from nexahome.report import Check, Status, passed, render_json, render_text
@@ -19,7 +19,6 @@ from nexahome.report import Check, Status, passed, render_json, render_text
 NAME = "doctor"
 ENGINE_TIMEOUT = 10  # seconds; a stuck VM must not hang the command
 LOW_DISK_BYTES = 5 * 1024**3
-PLACEHOLDER = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)=CHANGE_ME", re.MULTILINE)
 
 type Probe = Callable[[Context, Mapping[str, Check]], Check | None]
 
@@ -81,14 +80,6 @@ def probe_disk(ctx: Context, prior: Mapping[str, Check]) -> Check:
     return Check("disk", Status.OK, summary)
 
 
-def _path(ctx: Context, path: Path) -> str:
-    """A path for a command line: relative to the working directory when it is inside it."""
-    try:
-        return shlex.quote(str(path.relative_to(ctx.cwd)))
-    except ValueError:
-        return shlex.quote(str(path))
-
-
 def probe_mount(ctx: Context, prior: Mapping[str, Check]) -> Check | None:
     checkout = ctx.checkout()
     if checkout is None or not host_platform.colima_mount_applies(ctx.host):
@@ -114,12 +105,12 @@ def probe_env(ctx: Context, prior: Mapping[str, Check]) -> Check | None:
             text = env_file.read_text()
         except OSError:
             continue
-        found += [(env_file, key) for key in PLACEHOLDER.findall(text)]
+        found += [(env_file, key) for key in envfile.placeholders(text)]
     if not found:
         return Check("env", Status.OK, "no .env value is still CHANGE_ME")
     names = ", ".join(f"{path.parent.name}/{key}" for path, key in found)
     return Check(
-        "env", Status.WARN, f"{len(found)} value(s) still CHANGE_ME: {names}", f"${{EDITOR:-vi}} {_path(ctx, found[0][0])}"
+        "env", Status.WARN, f"{len(found)} value(s) still CHANGE_ME: {names}", f"${{EDITOR:-vi}} {ctx.display(found[0][0])}"
     )
 
 

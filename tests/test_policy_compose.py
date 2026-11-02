@@ -1,8 +1,6 @@
 """Golden parity (PK-C3): the port gives the same answers as scripts/check_compose.py."""
 
 import json
-import shutil
-import subprocess
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -12,7 +10,7 @@ import pytest
 from nexahome.policy import compose
 from nexahome.runner import RunResult, SubprocessRunner
 
-from conftest import REPO, FakeRunner, load_script
+from conftest import REPO, FakeRunner, has_compose, load_script
 
 GOOD: dict[str, Any] = {
     "image": "example/app:1.2.3",
@@ -116,12 +114,6 @@ def test_check_stack_errors_when_docker_is_missing_or_compose_fails(tmp_path: Pa
     assert compose.check_stack(FakeRunner(), stack).error == "docker CLI not found; cannot validate stacks"
     failed = compose.check_stack(FakeRunner({argv_for(stack): RunResult(1, stderr="bad yaml")}), stack)
     assert failed.error == f"{stack}: docker compose config failed\nbad yaml" and failed.lines() == []
-
-
-def has_compose() -> bool:
-    if shutil.which("docker") is None:
-        return False
-    return subprocess.run(["docker", "compose", "version"], capture_output=True).returncode == 0
 
 
 @pytest.mark.skipif(not has_compose(), reason="needs the Docker CLI with the Compose plugin (no engine)")
