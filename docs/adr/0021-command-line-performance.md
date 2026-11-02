@@ -1,6 +1,6 @@
 # 0021. Command-line performance: pay for what you use
 
-* **Status:** Proposed (the owner stated the principle on 2026-11-02; the label is theirs to promote; the numbers below are measurements on one laptop, not a promise for other hosts)
+* **Status:** Confirmed (the owner's design principle, confirmed on their explicit yes on 2026-11-02; the numbers below are measurements on one laptop, not a promise for other hosts)
 * **Date:** 2026-11-02
 
 ## Context
