@@ -2,11 +2,11 @@
 
 A modular, self-hosted homelab platform: local AI, development tools, storage, networking and home automation. Built to be reproducible, secure and easy to adapt to your own hardware.
 
-**Status:** early foundation. Two stacks run on a laptop: a demo (`hello`) and Actual Budget (`actual`, a local expense tracker; use dummy data until backups are proven). CI (secret scan and `make check`) has run once and passed; see the [session log](docs/session-log.md).
+**Status:** early foundation. Seven stacks run on a laptop: a demo (`hello`), Actual Budget (`actual`, a local expense tracker; use dummy data until backups are proven), `backup`, `edge`, `identity`, `portal` and `gatus`. CI (secret scan and `make check`) runs on every push and pull request to `main` and `dev`; see the [session log](docs/session-log.md).
 
 ## Quick start
 
-Needs `git`, `make`, and a Docker CLI with Compose and a running engine. On Linux, Docker Engine runs directly. On macOS the project uses [Colima](docs/adr/0004-colima-runtime.md); start it once per boot:
+Needs `git`, `make`, and a Docker CLI with Compose and a running engine. On Linux, Docker Engine runs directly. On macOS the project uses [Colima](docs/adr/0004-colima-runtime.md); start it once per boot. Running stacks needs no Python; Python 3.11 or newer (or `uv`) is only for [contributing](CONTRIBUTING.md):
 
 ```sh
 colima start --cpu 2 --memory 2 --disk 20

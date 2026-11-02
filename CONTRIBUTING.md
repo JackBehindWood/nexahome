@@ -12,7 +12,7 @@ Pull requests are welcome. This is a solo hobby project with no support promise,
 
 This is the only developer entry point ([ADR 0006](docs/adr/0006-concerns-and-audiences.md)); to just run a stack, use the [README](README.md).
 
-Needs the README prerequisites plus Python 3 (`uv` is optional).
+Needs the README prerequisites plus Python 3.11 or newer, or `uv` (which fetches a suitable Python). The stock macOS `python3` is older, so install `uv` or a newer Python first; the pinned `pre-commit` needs 3.11 or newer.
 
 ```sh
 make setup     # create .venv and install the pinned dev tools
