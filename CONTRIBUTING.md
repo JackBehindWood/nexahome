@@ -41,10 +41,24 @@ Agent and editor configuration (`CLAUDE.md`, `.claude/`, `.vscode/`) stays local
 
 The code is in `src/nexahome/`, tests in `tests/` ([ADR 0018](docs/adr/0018-code-package-and-language-strategy.md)). Standard library only; every function is annotated. To extend it:
 
-- **A command:** one new module in `commands/` with `NAME`, `register()` and `run()`; it is found automatically (a module whose name starts with an underscore is a helper). Raise `NexaHomeError(message, fix)` for a failure the user can fix: the fix is one exact command. The registry tests check `--help` and the Windows refusal for every command. Put logic that other commands will reuse outside `commands/` (see `envfile.py`, `stacks.py`, `docker.py`), and take everything from the `Context` (runner, environment, working directory, clock), so a test can replace it.
-- **A `doctor` check:** a function `(ctx, prior) -> Check | None`, one `(id, function)` entry in `PROBES`, and a row in `tests/test_doctor.py`. A `warn` or `fail` needs a fix command; check ids are never renamed. The JSON schema is described once, in `nexahome/report.py`.
+- **A command:** one new thin module in `commands/`, named after the command, with `NAME` (the same as the file name), `register()` (name, help, options) and `run()`; it is found automatically (a module whose name starts with an underscore is a helper). Put the logic in a module outside `commands/` and import it inside `run()` (see `commands/doctor.py` and `diagnosis.py`). Raise `NexaHomeError(message, fix)` for a failure the user can fix: the fix is one exact command. The registry tests check `--help` and the Windows refusal for every command. Take everything from the `Context` (runner, environment, working directory, clock), so a test can replace it; logic that other commands will reuse goes outside `commands/` too (`envfile.py`, `stacks.py`, `docker.py`).
+- **A `doctor` check:** a function `(ctx, prior) -> Check | None`, one `(id, function)` entry in `PROBES` in `diagnosis.py`, and a row in `tests/test_doctor.py`. A `warn` or `fail` needs a fix command; check ids are never renamed. Probes run side by side; reading `prior[...]` waits for that probe. The JSON schema is described once, in `nexahome/report.py`.
 - **A system (macOS, Linux, ...):** a module in `platform/` and one line in `SYSTEMS`. Only `nexahome.platform` may read the operating system; a test enforces it.
 - **A repository check:** `policy/` holds the Compose policy and personal-data checks. The hooks still run the originals in `scripts/` until PK5; the golden tests compare both.
+
+### Keeping the command fast
+
+The principle is **pay for what you use**: a call costs only what it needs, in start-up time, memory, processes and network ([ADR 0021](docs/adr/0021-command-line-performance.md) has the reasons, the measurements and what was considered). Checklist for every change:
+
+1. **Import inside the function.** `json`, `hashlib`, `hmac`, `tempfile`, `secrets`, `shutil`, `shlex`, `urllib`, `ssl`, `http`, `concurrent`, `dataclasses`, `importlib.metadata`, the stdlib `platform` and `logging` are imported in the function that needs them. Type-only imports go under `if TYPE_CHECKING:`, and the module starts with `from __future__ import annotations` (3.13 evaluates annotations eagerly; 3.14 does not, so a local run on 3.14 alone hides the mistake).
+2. **Keep `commands/` thin** and the logic outside it, so `nexahome --help` and every other command do not load it.
+3. **No work at import time:** no I/O, no subprocess, no environment read when a module is imported.
+4. **Run waiting calls side by side:** several independent `docker` calls go through `nexahome.parallel.map_ordered`.
+5. **Stream and cap:** a file or answer of unknown size is read in pieces and has a size limit; a directory is walked once.
+6. **Use `NamedTuple` or a plain class for small records**, not `dataclass`.
+7. **Measure before and after** and keep the number in the pull request: `python -X importtime -m nexahome <call> 2>&1 >/dev/null | sort -t'|' -k2 -n -r | head` for imports, `/usr/bin/time -l .venv/bin/python -m nexahome <call>` for peak memory (`-v` on Linux), the median of 15 runs for wall time.
+
+`make test` enforces the checklist: `tests/test_startup.py` lists the modules each call imports in a fresh process, and `tests/test_packaging.py` rejects heavy top-level imports. If a new command truly needs a heavy module, add it to its own function and add the call to the budget in `test_startup.py`; add to the allowlist in `test_packaging.py` only with a reason next to the entry.
 
 ## Workflow
 
