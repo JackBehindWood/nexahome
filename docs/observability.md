@@ -45,4 +45,4 @@ Hostnames and addresses must not be published. Keep the real inventory in a giti
 | Power | `<UPS or none>` |
 | Backup | `<last verified restore date>` |
 
-Changelog: 0.1 (2026-10-26): shortlist result (Gatus), notifications row; 0.1 (2026-11-02): ADR 0013 called decided (PK2); 0.1 (2026-10-21): version renamed from 1.0 (pre-release project); 0.1 (2026-10-20): notifications signal added; reduced to the decoupling rule, a testable phase 0, a shortlist and an inventory template; dashboard and portal aspirations removed.
+Changelog: 0.1 (2026-11-02): ADR 0013 called decided (PK2); 0.1 (2026-10-26): shortlist result (Gatus), notifications row; 0.1 (2026-10-21): version renamed from 1.0 (pre-release project); 0.1 (2026-10-20): notifications signal added; reduced to the decoupling rule, a testable phase 0, a shortlist and an inventory template; dashboard and portal aspirations removed.
