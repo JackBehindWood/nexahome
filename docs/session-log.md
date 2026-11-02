@@ -2,6 +2,35 @@
 
 Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
+## Pending owner actions (the one current list)
+
+Last replaced 2026-11-02 (PK2). Older entries below end with a pointer here instead of their own list; their text is in git history.
+
+**Decide**
+- ADRs 0010 to 0012 and the other Proposed register rows (documentation conventions, repository layout, task runner, security baseline, roles, identity, edge, portal, three Packaging rows); review ADRs 0014 to 0020, the SSH runbook and the packaging audit.
+- Approve or reject the prepared rewords of lines that touch decided items (architecture text, the language rule, ADR 0007 wording, one register row).
+- Open choices: digest pinning; paid tier versus the open-source rule; keep `hello` on the edge and in the portal; the root `.env.example` now holds no setting (delete it?).
+
+**Git**
+- Push `feat/packaging` and open the `dev` to `main` pull request only when you say so (description prepared locally, not opened). Afterwards check under Insights, Dependency graph, Dependabot that every stack entry parses.
+- GitHub account setting "Block command line pushes that expose my email"; optional SSH-signed commits.
+- Optional read-only `gh` calls to verify branch protection, secret scanning, push protection and private vulnerability reporting (not verified in PK1 or PK2).
+
+**Local only**
+- Record the mini's order and delivery locally; update the `CLAUDE.md` hardware section (a Jetson is owned, the mini is planned); keep real hostnames in the gitignored `inventory.local.md`; decide extras and subscriptions; plan the return window before B1.
+- Local `.claude/settings.json`: allow `make status` and `make snapshots`; ask for `make backup-init`, `make backup` and `make restore`.
+- Delete the leftover scratch clone `data/fresh-s3` and a dummy `.env` in the working folder if they still exist.
+
+**Security hygiene**
+- Keep `ENCRYPTION_KEY` and the restic password in a password manager (the repository is on the same disk: a drill, not protection); keep the ntfy topic secret.
+- Confirm in Pocket ID that the first Actual client secret and the session 2 key `s2-config` are gone.
+- A real second authenticator before real data exists; a permanent outsider test account and one Safari profile per test account ([test-sso](runbooks/test-sso.md)).
+- Watch security alerts on GitHub for `pocket-id/pocket-id`, `caddyserver/caddy`, `gethomepage/homepage`, `TwiN/gatus`.
+
+**Open work**
+- Diagnose the Pocket ID self-restart; optional admin-only sign-in for the health view.
+- Backup `.env.example` ships example paths that `make check` needs (audit F26): fix with PK5 or PK7.
+
 ## 2026-11-02: Packaging PK1, audit report (read-only)
 
 **Done**
@@ -20,11 +49,7 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 - The decision batch of 11 items (F9); runbook headers: add or relax (F12); label rule and a session-log exemption (F24); `NEXAHOME_DATA_DIR`: delete the claim or build it (F22); the country and education wording in committed files (F33).
 - Review of ADRs 0018 to 0020 and of the audit.
 
-**Pending (owner actions, consolidated; PK2 replaces this with the one list at the top of the log)**
-- Record the order and delivery locally; update the `CLAUDE.md` hardware section; decide AppleCare+ and the subscription to cancel (all local).
-- Decide ADRs 0010 to 0012 and the other Proposed rows (the batch above); review ADRs 0014 to 0020 and the SSH runbook.
-- Push `feat/packaging` and open the `dev` to `main` pull request only when you say so; then check Dependabot's stack entries (Insights, Dependency graph).
-- Open: diagnose the Pocket ID self-restart; optional admin-only sign-in for the health view; delete the leftover scratch clone `data/fresh-s3` if it still exists.
+**Pending:** superseded by the single list at the top of this log (2026-11-02, PK2).
 
 ## 2026-11-02: Packaging PK0, ADRs 0018 to 0020
 
@@ -45,8 +70,7 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 **Open questions**
 - Review of ADRs 0018 to 0020. The F9 batch (ADRs 0010 to 0012, stale Proposed rows) waits for PK2.
 
-**Pending (owner actions)**
-- Unchanged from the A1 entry. `feat/p4-Atrack` deletion is approved for PK2.
+**Pending:** superseded by the single list at the top of this log (2026-11-02, PK2).
 
 ## 2026-11-02: P4 A3, ADR 0017 deploy flow and `make deploy`
 
@@ -67,8 +91,7 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 **Open questions**
 - Review of ADR 0017; which smoke fix to take in B2.
 
-**Pending (owner actions)**
-- Unchanged from the A1 entry (record order and delivery locally, `CLAUDE.md` hardware section, AppleCare+ and subscription decisions). Nothing is pushed; `feat/p4-Atrack` was merged into `feat/p4-plan` locally on the owner's instruction.
+**Pending:** superseded by the single list at the top of this log (2026-11-02, PK2).
 
 ## 2026-11-02: P4 A2, ADR 0016 sleep, power, FileVault and updates
 
@@ -88,8 +111,7 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 **Open questions**
 - Review of ADR 0016; whether to test SSH unlock before login in B1 and, if it needs a password, whether that is acceptable beside key-only SSH.
 
-**Pending (owner actions)**
-- Unchanged from the A1 entry (record order and delivery locally, `CLAUDE.md` hardware section, AppleCare+ and subscription decisions).
+**Pending:** superseded by the single list at the top of this log (2026-11-02, PK2).
 
 ## 2026-11-02: P4 A1, SSH runbook and ADRs 0014 and 0015
 
@@ -113,8 +135,7 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 - Review of ADRs 0014 and 0015 and the runbook (cold read); whether to keep `from=` as a recommended step or an option.
 - The small-model laptop test (T1) was dropped by the owner, so ADR 0014 rests on the sizing rule until B2 measures.
 
-**Pending (owner actions)**
-- Record the order date and delivery date locally; update `CLAUDE.md` hardware section; decide AppleCare+ and the subscription to cancel (local).
+**Pending:** superseded by the single list at the top of this log (2026-11-02, PK2).
 
 ## 2026-10-26: P4 planning (docs only)
 
@@ -138,10 +159,7 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 - Education discount amount for the mini and your eligibility; AppleCare+ yes or no; external SSD size and price.
 - Whether "a NexaHome code package" means something other than a Python or CLI wrapper (deferred with a trigger meanwhile).
 
-**Pending (owner actions)**
-- Update the local `CLAUDE.md` hardware section (a Jetson is owned; the mini is planned) and keep real hostnames in the gitignored `inventory.local.md`.
-- Read the live Dutch education configurator and the Apple return form before any purchase.
-- Everything in the earlier Pending lists below still stands, except the merge of `feat/p3-s3-verify`, which is done.
+**Pending:** superseded by the single list at the top of this log (2026-11-02, PK2).
 
 ## 2026-10-26: P3 session 3, notifier, quiet Health tile, verification of S2 gaps
 
@@ -169,16 +187,7 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 - Pocket ID restart: own session now?
 - Admin-only OIDC for the Gatus UI (Proposed follow-up).
 
-**Pending (owner actions, consolidated)**
-- Merge `feat/p3-s3-verify` into `dev` (approval needed); push `dev`; later `dev` into `main` by pull request, then check Dependabot's `/stacks/gatus` row (Insights, Dependency graph).
-- Delete the leftover scratch clone `data/fresh-s3` (gitignored; my delete was denied). Keep your ntfy topic (in `stacks/gatus/.env`) secret.
-- Add `TwiN/gatus` to the GitHub security-alert watch (Watch, Custom, Security alerts); also `pocket-id/pocket-id`, `caddyserver/caddy`, `gethomepage/homepage`.
-- Keep `ENCRYPTION_KEY` and the restic password in a password manager (the repository is on this disk: a drill, not protection).
-- Confirm in Pocket ID that the first Actual client secret and the session 2 key `s2-config` are gone.
-- A real second authenticator before real data exists; permanent outsider test account and one Safari profile per test account ([test-sso](runbooks/test-sso.md)).
-- Accept, change or reject ADRs 0010, 0011 and 0012 (all Proposed); digest pinning; paid tier vs the open-source rule; keep `hello` on the edge and in the portal?
-- Carried over: delete the local plan `.claude/plans/concerns-and-audiences.md`; GitHub setting "Block command line pushes that expose my email"; Makefile, repository layout and security baseline still Proposed; the volumes `nexahome-actual_data`, `nexahome-identity_data`, `nexahome-gatus_data` and the network `nexahome-edge` stay until you remove them.
-- `main` is behind `dev`: merge `dev` into `main` by pull request when you want the P2.5 and P3 work there.
+**Pending:** superseded by the single list at the top of this log (2026-11-02, PK2).
 
 ## 2026-10-26: P3 session 2, Gatus stack built; ADR 0013 accepted
 
@@ -207,15 +216,7 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 - Which notifier channel for session 3 (what leaves the machine)?
 - Admin-only OIDC for the Gatus UI (Proposed follow-up, needs its own design).
 
-**Pending (owner actions, consolidated)**
-- Uncommitted: this log and roadmap edit sits on `dev` in the working tree; the hook blocks commits on `dev`, so commit it on a branch (for example `docs/p3-s2-close`) and merge by your approval.
-- Add `TwiN/gatus` to the GitHub security-alert watch (Watch, Custom, Security alerts); also `pocket-id/pocket-id`, `caddyserver/caddy`, `gethomepage/homepage`.
-- Keep `ENCRYPTION_KEY` and the restic password in a password manager (the repository is on this disk: a drill, not protection).
-- Confirm in Pocket ID that the first Actual client secret and the session 2 key `s2-config` are gone.
-- A real second authenticator before real data exists; permanent outsider test account and one Safari profile per test account ([test-sso](runbooks/test-sso.md)).
-- Accept, change or reject ADRs 0010, 0011 and 0012 (all Proposed; 0013 is now Confirmed); digest pinning; paid tier vs the open-source rule; keep `hello` on the edge and in the portal?
-- Carried over: delete the local plan `.claude/plans/concerns-and-audiences.md`; GitHub setting "Block command line pushes that expose my email"; Makefile, repository layout and security baseline still Proposed; the volumes `nexahome-actual_data`, `nexahome-identity_data`, `nexahome-gatus_data` and the network `nexahome-edge` stay until you remove them. Dependabot parsing of the stack entries is checked in session 3.
-- `main` is behind `dev`: merge `dev` into `main` by pull request when you want the P2.5 and P3 work there.
+**Pending:** superseded by the single list at the top of this log (2026-11-02, PK2).
 
 ## 2026-10-26: P3 session 1, health view spike and ADR 0013
 
@@ -243,14 +244,7 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 - Logs out of scope (Proposed): confirm the narrowing.
 - Branch session 2 from `dev` after merging `feat/p3-s1-health`, or from this branch?
 
-**Pending (owner actions, consolidated)**
-- Approval to push `feat/p3-s1-health` and `dev` (not yet pushed since 2026-10-23: `feat/p2-5-s5-restore` work is in `dev`) and open pull requests as needed; merging `dev` into `main` is by pull request only.
-- Keep `ENCRYPTION_KEY` and the restic password in a password manager (the repository is on this disk: a drill, not protection).
-- Confirm in Pocket ID that the first Actual client secret and the session 2 key `s2-config` are gone.
-- A real second authenticator before real data exists; permanent outsider test account and one Safari profile per test account ([test-sso](runbooks/test-sso.md)).
-- Watch security alerts for `pocket-id/pocket-id`, `caddyserver/caddy`, `gethomepage/homepage`; add `TwiN/gatus` when the stack exists.
-- Accept, change or reject ADRs 0010, 0011, 0012 and 0013 (all Proposed); digest pinning; paid tier vs the open-source rule; keep `hello` on the edge and in the portal?
-- Carried over: Dependabot parsing of the stack entries; delete the local plan `.claude/plans/concerns-and-audiences.md`; GitHub setting "Block command line pushes that expose my email"; Makefile, repository layout and security baseline still Proposed; the volumes `nexahome-actual_data`, `nexahome-identity_data` and the network `nexahome-edge` stay until you remove them.
+**Pending:** superseded by the single list at the top of this log (2026-11-02, PK2).
 
 ## 2026-10-23: P2.5 session 5, backup and restore drill, P2.5 closed
 
@@ -282,13 +276,7 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 - Digest pinning for all stacks; paid tier vs the open-source rule (deferred).
 - Keep `hello` on the edge and in the portal? (commit `4109083`.)
 
-**Pending (owner actions, consolidated)**
-- Approval to push `dev` (and `feat/p2-5-s5-restore`) and open pull requests as needed; merging `dev` into `main` is by pull request only.
-- Keep `ENCRYPTION_KEY` and the restic password in a password manager (the repository is on this disk: a drill, not protection).
-- Confirm in Pocket ID that the first Actual client secret and the session 2 key `s2-config` are gone.
-- A real second authenticator (phone or security key) before real data exists; create the permanent outsider test account and one Safari profile per test account ([test-sso](runbooks/test-sso.md)).
-- Watch security alerts for `pocket-id/pocket-id`, `caddyserver/caddy`, `gethomepage/homepage`.
-- Carried over: Dependabot parsing of the stack entries; delete the local plan `.claude/plans/concerns-and-audiences.md`; GitHub setting "Block command line pushes that expose my email"; Makefile, repository layout and security baseline still Proposed; the volumes `nexahome-actual_data` and `nexahome-identity_data` and the network `nexahome-edge` stay until you remove them.
+**Pending:** superseded by the single list at the top of this log (2026-11-02, PK2).
 
 ## 2026-10-23: P2.5 session 4, portal, four-step contract, make smoke
 
@@ -318,14 +306,7 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 - Digest pinning for all stacks (carried from session 2); paid tier vs the open-source rule (deferred).
 - Portal dots refresh interval in the browser (red on opening, green after start seen; timing not measured).
 
-**Pending (owner actions, consolidated)**
-- Approval to push `feat/p2-5-s4-portal` and open a pull request into `dev`.
-- Confirm in Pocket ID that the first Actual client secret is deleted (it was pasted into chat in session 3 and rotated).
-- Confirm in Pocket ID, Settings, API Keys, that the session 2 key `s2-config` is gone.
-- Run `make backup-init` before session 5 if not done; keep `ENCRYPTION_KEY` and the restic password in a password manager.
-- A real second authenticator (phone or security key) before real data exists.
-- Watch security alerts for `pocket-id/pocket-id`, `caddyserver/caddy`, `gethomepage/homepage`; Dependabot proposes later tags.
-- Carried over: Dependabot parsing of the new stack entries (Insights, Dependency graph, Dependabot); delete the local plan `.claude/plans/concerns-and-audiences.md`; GitHub setting "Block command line pushes that expose my email"; Makefile, repository layout and security baseline still Proposed; the volumes `nexahome-actual_data` and `nexahome-identity_data` and the network `nexahome-edge` stay until you remove them.
+**Pending:** superseded by the single list at the top of this log (2026-11-02, PK2).
 
 ## 2026-10-23: P2.5 session 3, Actual as first client (written afterwards)
 
@@ -369,12 +350,7 @@ This entry was missing when session 3 ended; it is reconstructed from the commit
 - A real second authenticator (phone or security key) before real data exists.
 - Pocket ID `v2.18.0` or a later patch: Dependabot will propose; the agent path needs a newer release (not verified).
 
-**Pending (owner)**
-- Run nothing for the key: confirm in Settings, API Keys that `s2-config` is gone.
-- Approval to push `feat/p2-5-s2-stacks` and open a pull request into `dev`.
-- Watch security alerts for `pocket-id/pocket-id` and `caddyserver/caddy` on GitHub.
-- Remove `nexahome-edge` and the identity volume only if you want them gone (kept for S3).
-- Carried over: Dependabot parsing of the new stack entries; the local `.claude/plans/concerns-and-audiences.md`; GitHub setting "Block command line pushes that expose my email"; Makefile, repository layout and security baseline still Proposed.
+**Pending:** superseded by the single list at the top of this log (2026-11-02, PK2).
 
 ## 2026-10-22: P2.5 session 1, spike and decision
 
@@ -473,12 +449,7 @@ This entry was missing when session 3 ended; it is reconstructed from the commit
 - Where the restic password copy is kept (not decided; dummy data only until then). Real data waits for that and for a second copy.
 - User system (P2.5): scope and whether it is a new phase are not decided. The documents currently say no identity provider until a second user or about three apps with logins ([architecture](architecture.md#secrets-and-identity)); the owner wants it planned before the own expense app. The planning session decides, by ADR, and changes the roadmap only with the owner's approval.
 
-**Pending (owner actions, not actioned)**
-- Cold read of `docs/runbooks/restore.md`: follow its first block once on the drill volume and note gaps.
-- Merge approvals: push, pull request and merge for each of the three branches, in order (asked one by one in the next step); merges into `main` are out of scope.
-- Local `.claude/settings.json`: allow `make status`, `make snapshots`; ask for `make backup-init`, `make backup`, `make restore`.
-- The live volume `nexahome-actual_data` holds dummy data, and `data/backup` holds the test repository (`rm -rf data/backup .config` removes both).
-- Carried over: Dependabot parses under Insights, Dependency graph, Dependabot (includes `stacks/actual` and `stacks/backup`); delete the dummy `.env` in the working folder by hand; GitHub setting "Block command line pushes that expose my email"; Makefile, repository layout and security baseline still Proposed; delete the local plan `.claude/plans/concerns-and-audiences.md`.
+**Pending:** superseded by the single list at the top of this log (2026-11-02, PK2).
 
 ## 2026-10-21: P2 session 2, backup
 
@@ -508,11 +479,7 @@ This entry was missing when session 3 ended; it is reconstructed from the commit
 - Where the restic password copy will be kept (not decided; dummy data only until then).
 - Branch order: S1 (`feat/persistence-restore`) and S2 (`feat/backup`) are stacked and unmerged; S3 is planned on `feat/restore` from `feat/backup`. Merge order will be S1, then S2, then S3, each by pull request into `dev`.
 
-**Pending (owner actions, not actioned)**
-- Local `.claude/settings.json`: allow `make status` and `make snapshots`; ask for `make backup-init` and `make backup`. Local plan deviations for S2 and S3 (restic host name, `.config/`, `data/backup`, copy-up restore, no root container) are not written to `.claude/plans/p2-persistence-restore.md` yet.
-- Push the three stacked branches and open pull requests into `dev` when ready; decide ADRs 0006 to 0009.
-- Start S3: first a fresh `make backup-init` and `make backup`, run by the owner.
-- Carried over: Dependabot parses under Insights, Dependency graph, Dependabot (now includes `stacks/backup`); delete the dummy `.env` in the working folder by hand; GitHub setting "Block command line pushes that expose my email"; Makefile, repository layout and security baseline still Proposed; delete the local plan `.claude/plans/concerns-and-audiences.md`.
+**Pending:** superseded by the single list at the top of this log (2026-11-02, PK2).
 
 ## 2026-10-21: P2 session 1, stack contract and first app
 
@@ -540,10 +507,7 @@ This entry was missing when session 3 ended; it is reconstructed from the commit
 - Where the restic password copy will be kept; whether an external disk is available for the backup directory (needed before session 2).
 - Delete the local plan `.claude/plans/concerns-and-audiences.md` (its note says to delete it after this session) and remove the test volume `nexahome-actual_data`, or keep it as the session 2 backup subject.
 
-**Pending (owner actions, not actioned)**
-- Push `feat/persistence-restore` and open a pull request into `dev` (S2 needs it merged); decide ADRs 0006, 0007, 0009.
-- Done this session by the owner: local allow rules for `make`, `make check`, `make ps`. Local plan, compose rules and `CLAUDE.md` repo map were updated (untracked files).
-- Carried over: Dependabot parses under Insights, Dependency graph, Dependabot; delete the dummy `.env` in the working folder by hand; GitHub setting "Block command line pushes that expose my email"; Makefile, repository layout and security baseline still Proposed.
+**Pending:** superseded by the single list at the top of this log (2026-11-02, PK2).
 
 ## 2026-10-21: Entry points and instance boundary (docs only)
 
@@ -569,10 +533,7 @@ This entry was missing when session 3 ended; it is reconstructed from the commit
 - Push the branch and open a pull request into `dev`? (needs the owner's approval).
 - TLS and a reverse proxy are deferred until a service is reachable beyond `127.0.0.1` (P4 or P6).
 
-**Pending (owner actions, not actioned)**
-- Decide ADR 0006; push `feat/concerns-and-audiences` and merge into `dev` by pull request.
-- Carried over from 2026-10-20, status unconfirmed in this session: Dependabot parses under Insights, Dependency graph, Dependabot; delete the dummy `.env` in the working folder by hand; GitHub account setting "Block command line pushes that expose my email".
-- Still Proposed and undecided: Makefile, repository layout, security baseline; optional SSH-signed commits.
+**Pending:** superseded by the single list at the top of this log (2026-11-02, PK2).
 
 ## 2026-10-20: Documentation foundation (version 1.0)
 
@@ -597,14 +558,7 @@ This entry was missing when session 3 ended; it is reconstructed from the commit
 
 **Update, later the same day:** GitHub Actions had been disabled for the repository. After the owner enabled it, CI ran for the first time on pull request 3: jobs `secrets` and `checks` both succeeded. Pull requests 1 to 3 were merged into `dev`; `dev` was then merged into `main` by pull request.
 
-**Pending (owner actions, not actioned)**
-- Done by the owner: `secrets` and `checks` are required on `main`.
-- Dependabot added (`.github/dependabot.yml`); confirm under Insights, Dependency graph, Dependabot that it parses.
-- Delete the dummy `.env` in the working folder by hand.
-- GitHub account setting "Block command line pushes that expose my email".
-- Private vulnerability reporting was enabled afterwards (done; `SECURITY.md` updated).
-- Ask rules for `docker compose up` and `docker run`: confirmed on 2026-10-20, the owner was asked to approve both (done).
-- Optional: SSH-signed commits; decide Makefile, repository layout and security baseline (Proposed).
+**Pending:** superseded by the single list at the top of this log (2026-11-02, PK2).
 
 ## 2026-10-20: Session 2, Publish safely
 
