@@ -22,10 +22,10 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
 **Open questions**
 - Review of ADRs 0014 and 0015 and the runbook (cold read); whether to keep `from=` as a recommended step or an option.
-- Small-model laptop test results (T1) are not in the repo: keep local or summarise without personal figures.
+- The small-model laptop test (T1) was dropped by the owner, so ADR 0014 rests on the sizing rule until B2 measures.
 
 **Pending (owner actions)**
-- Record the order date locally; update `CLAUDE.md` hardware section; decide AppleCare+ and the subscription to cancel (local).
+- Record the order date and delivery date locally; update `CLAUDE.md` hardware section; decide AppleCare+ and the subscription to cancel (local).
 
 ## 2026-10-26: P4 planning (docs only)
 
