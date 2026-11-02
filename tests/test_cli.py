@@ -5,13 +5,14 @@ from collections.abc import Callable
 import pytest
 
 from nexahome import __version__, cli
+from nexahome.commands.base import Subparsers
 from nexahome.errors import ExitCode, NexaHomeError
 
 from conftest import MakeContext, MakeHost
 
 
 def install_command(monkeypatch: pytest.MonkeyPatch, run: Callable[[argparse.Namespace, object], int]) -> None:
-    def register(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    def register(subparsers: Subparsers) -> None:
         subparsers.add_parser("dummy", help="a test command").set_defaults(run=run)
 
     dummy = types.SimpleNamespace(NAME="dummy", register=register, run=run)
