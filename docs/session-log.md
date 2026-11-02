@@ -4,7 +4,7 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
 ## Pending owner actions (the one current list)
 
-Last replaced 2026-11-02 (PK3). Older entries below end with a pointer here instead of their own list; their text is in git history.
+Last replaced 2026-11-02 (PK4). Older entries below end with a pointer here instead of their own list; their text is in git history.
 
 **Decide**
 - The other Proposed register rows (documentation conventions, repository layout, task runner, security baseline, roles, three Packaging rows); review ADRs 0014 to 0020, the SSH runbook and the packaging audit.
@@ -13,9 +13,9 @@ Last replaced 2026-11-02 (PK3). Older entries below end with a pointer here inst
 - Open choices: digest pinning; paid tier versus the open-source rule; keep `hello` on the edge and in the portal; the root `.env.example` now holds no setting (delete it?).
 
 **Git**
-- `feat/packaging` is pushed and pull request 21 into `dev` is open and green; merging it is your call. The `dev` to `main` pull request opens only when you say so (description prepared locally). Afterwards check under Insights, Dependency graph, Dependabot that every stack entry parses.
+- Pull request 21 is merged into `dev` (owner). `feat/packaging` is 11 commits ahead of `dev` and not pushed. Decide: (1) the `tests` job diff in `.github/workflows/ci.yml` is prepared but not committed (workflow changes need your yes; `git diff .github/workflows/ci.yml`); (2) push `feat/packaging` and open a pull request into `dev`, which is the only way to run the new job. The `dev` to `main` pull request opens only when you say so (description prepared locally). Afterwards check under Insights, Dependency graph, Dependabot that every stack entry parses.
 - GitHub account setting "Block command line pushes that expose my email"; optional SSH-signed commits.
-- Making the `gate` job a required check on `main` (a GitHub setting) once it exists and has been green on a pull request.
+- Making the `gate` job a required check on `main` (a GitHub setting): your answer is after PK4, once `gate` has been green on a pull request that includes the `tests` job.
 
 **Local only**
 - Record the mini's order and delivery locally; update the `CLAUDE.md` hardware section (a Jetson is owned, the mini is planned); keep real hostnames in the gitignored `inventory.local.md`; decide extras and subscriptions; plan the return window before B1.
@@ -31,6 +31,38 @@ Last replaced 2026-11-02 (PK3). Older entries below end with a pointer here inst
 **Open work**
 - Diagnose the Pocket ID self-restart; optional admin-only sign-in for the health view.
 - Backup `.env.example` ships example paths that `make check` needs (audit F26): fix with PK5 or PK7.
+
+## 2026-11-02: Packaging PK4, package skeleton, `doctor` and the first ports (built locally; CI proof pending)
+
+**Done**
+- Entry: pull request 21 merged into `dev` (merge commit `61e4166`); its last run on `2fdb38b` passed all 7 jobs; the run on `dev` for the merge was still queued (macOS capacity) when read. PK3 results committed; `git merge --no-ff origin/dev` (approved Step 0) brought in only that merge commit (identical tree, no conflict); `make check` passed before and after. Run-path files unchanged since `2e5a558`. Nothing pushed.
+- Dev tools (approved): `pytest==9.1.1` in `requirements-dev.txt` and `hatchling==1.32.4` under `[build-system]` (the newest releases at least two weeks old on PyPI; 9.2.0 and 1.33.0 were under a week old). `requirements-dev.txt` stays (PEP 735 groups: pip needs 25.1, no evidence Dependabot reads them; ADR 0003 names the file).
+- Package `src/nexahome` (standard library only, fully annotated, `py.typed`): `errors` (a `NexaHomeError` always carries one fix command), `runner` (no shell, timeout, missing program is a result), `context` (everything injected), `platform/` (one module each for macOS, Linux, Windows; the only code that reads the operating system), `report` (shared check model, text and JSON schema 1), `commands/doctor` (probes: platform, python, docker-cli, compose, engine, disk, mount, env; a failed prerequisite skips its dependants), `policy/` (the Compose policy and personal-data checks as library modules).
+- Tests: 102, on Python 3.14.7 (`.venv`) and 3.13.3 (scratch venv). They cover the PK-I2 table, a `docker` shell script on `PATH`, a stuck engine, offline and no-leak behaviour, mechanical rules (no runtime dependency, annotations, OS code only in `platform/`, no shell), and golden parity of the two ports against `scripts/check_compose.py` and `scripts/check_personal_data.py` (including the real `stacks/`). The 3.13 run found a test-only incompatibility (3.13 cannot subscript `argparse._SubParsersAction`), fixed.
+- `scripts/setup.sh`: `make setup` installs the package editable, except with `--deploy` (the mini's deploy setup is unchanged). Rehearsed in scratch copies with `uv`, with and without `--deploy`; ShellCheck at warning severity passes.
+- Build proof: `uv build` gave a wheel holding only `nexahome/` and its metadata, and an sdist with `src`, `tests`, `LICENSE`, `pyproject.toml`. The wheel installed as a uv tool with scratch `UV_TOOL_DIR`, `UV_TOOL_BIN_DIR` and `HOME`; `--version`, `doctor`, `doctor --json` and an unknown command (exit 2) behave. `doctor` on the laptop with Colima stopped: engine failed, fix `colima start --cpu 2 --memory 2 --disk 20`, exit 3 (Colima was not started: no approval). In the scratch `HOME` it also reported the Compose plugin missing, because the plugin lives under the real home.
+- CI: a `tests` job (five jobs: Python 3.13 on three platforms, 3.14 on `ubuntu-amd64` and `macos-arm64`, `doctor` on Linux, wheel-contents listing) and `gate` waiting for it is prepared in `ci.yml` and **not committed** (workflow change needs your yes). Nothing ran in CI.
+
+**Doc changes and reasons**
+- `docs/roadmap.md`, `docs/adr/0018-...md`: the freeze rule is now a risk test (new code beside an untouched old script is allowed; switching a caller or porting commands that change data or hosts waits for B2). Reason: the owner asked for it; the risk it guards is that B2 tests the run path on the mini. ADR 0018 also drops the claim that `doctor` names the fix for a wrong Python (pip refuses the wheel first) and says the platform code is a package.
+- `docs/adr/0019-...md`: platform package, the `tests` job (written, not run), WSL2 note.
+- `CONTRIBUTING.md`: tests, `doctor`, and a short checklist for adding a command, a check or a system.
+- Pull request 21 is recorded as merged in the Next row and Packaging status. No status label, Confirmed row or ADR status changed. The Confirmed ADR 0007 rule ("Python for checks only") and the register row about `pyproject.toml` are not edited; the code sits beside them as ADR 0018 says.
+
+**Deviations from the plan**
+- `docker-cli` runs `docker --version` (client only, needs no engine), not `docker version`. The `arch` probe was merged into `platform` (an untested architecture is a note, not a warning, since no single command fixes it). The `disk` fix is `df -h .`, not `docker system df` (it measures the host disk).
+- `platform.py` became a package at the owner's request (PK-P3 now says "one package").
+- The ports came before the CI step so the workflow is written once; `make check` does not cover new untracked files, so `detect-secrets` flagged a test string only at commit (fixed); stage files before running it.
+
+**Verification:** `make check` exit 0 at every commit; `pytest` 102 passed on 3.14.7 and 3.13.3; no old script, Makefile, hook or stack file changed since `2e5a558` (only `setup.sh`, deliberately); `git status` shows only the uncommitted `ci.yml`; no `.env`, key, `data/` or `.claude/` tracked. **Not verified:** any CI run of the new job, `gate`, or the pip path of `make setup` (the only `python3` without `uv` here is too old); the mini; Colima behaviour (stopped); `colima start` and mount advice (B1/B2); the non-Debian Linux install text; WSL2 and native Windows beyond the injected-host test; that `uv tool install` fetches Python 3.13 by itself (a 3.13 was already installed, so nothing was downloaded); Dependabot's reading of `pyproject.toml`; golden parity of the Compose check on a host without the Docker CLI.
+
+**Next:** your yes to commit the `ci.yml` diff, then a push and a pull request into `dev` to see the new job; make `gate` required afterwards; PK5 (switch the hooks and CI to the package, delete the old checks in a separate commit, wheel with the stacks). Also check the CI run on `dev` for the merge commit.
+
+**Open questions**
+- `make test` as a one-line Makefile target? (Not added: the Makefile is unchanged.)
+- Start Colima for a green `doctor` on the laptop, and let `uv` fetch Python 3.13 to test ADR 0018's unverified claim?
+
+**Pending:** superseded by the single list at the top of this log (2026-11-02, PK4).
 
 ## 2026-11-02: Packaging PK3, CI and platform jobs (green on pull request 21)
 
