@@ -10,4 +10,4 @@ make down STACK=hello
 
 Port is configurable with `HELLO_PORT` (see `.env.example`).
 
-On the edge since the R10 dry run: `http://hello.<domain>:<port>/` (alias on the edge, one Caddyfile block, one portal tile); `make smoke` checks all three.
+On the edge since the P2.5 dry run of adding an app: `http://hello.<domain>:<port>/` (alias on the edge, one Caddyfile block, one portal tile); `make smoke` checks all three.
