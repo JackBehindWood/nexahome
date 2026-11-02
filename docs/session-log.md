@@ -4,11 +4,11 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
 ## Pending owner actions (the one current list)
 
-Last replaced 2026-11-02 (PK2). Older entries below end with a pointer here instead of their own list; their text is in git history.
+Last replaced 2026-11-02 (PK2 close). Older entries below end with a pointer here instead of their own list; their text is in git history.
 
 **Decide**
 - ADRs 0010 to 0012 and the other Proposed register rows (documentation conventions, repository layout, task runner, security baseline, roles, identity, edge, portal, three Packaging rows); review ADRs 0014 to 0020, the SSH runbook and the packaging audit.
-- Approve or reject the prepared rewords of lines that touch decided items (architecture text, the language rule, ADR 0007 wording, one register row).
+- Approve or reject the prepared rewords of lines that touch decided items (architecture text, the language rule, ADR 0007 wording, one register row): `.claude/tmp/pk2-confirmed-rewords.md`; the F9 batch: `.claude/tmp/pk2-decision-batch.md`; the pull request text: `.claude/tmp/pr-dev-to-main.md`.
 - Open choices: digest pinning; paid tier versus the open-source rule; keep `hello` on the edge and in the portal; the root `.env.example` now holds no setting (delete it?).
 
 **Git**
@@ -30,6 +30,32 @@ Last replaced 2026-11-02 (PK2). Older entries below end with a pointer here inst
 **Open work**
 - Diagnose the Pocket ID self-restart; optional admin-only sign-in for the health view.
 - Backup `.env.example` ships example paths that `make check` needs (audit F26): fix with PK5 or PK7.
+
+## 2026-11-02: Packaging PK2, docs fixes and catch-up preparation
+
+**Done**
+- Entry: `feat/packaging` had uncommitted PK1 edits (committed first); `dev` = `origin/dev`; local `main` 3 behind `origin/main`; `make check` passed. PK2 split into PK2a (wording) and PK2b (catch-up), as approved.
+- Owner answers: runbooks get version headers; the session log is exempt from the label rule; the `NEXAHOME_DATA_DIR` claim is deleted; live files drop the country and purchase detail (log history stays).
+- Fixed audit rows F5, F7, F8, F10 to F12, F16, F22 to F25, F27 to F29, F32 and F33 (live files). Deleted the merged branch `feat/p4-Atrack` with `git branch -d`.
+- Prepared locally, not applied or opened: the Confirmed-adjacent rewords (F4, F6, F30, one register row), the decision batch for 11 items (F9), and the `dev` to `main` pull request text.
+- Deferred: F26 (commenting out the backup example paths breaks `make check`; it needs a check or `backup.sh` change in PK5 or PK7).
+
+**Doc changes and reasons**
+- `README.md`, `CONTRIBUTING.md`, `docs/project.md` (Current status only): seven stacks, regular CI, Python 3.11 or newer or uv. Reason: stale statements (F5, F10, F32).
+- `docs/README.md`, `roadmap.md`, `observability.md`, five stack READMEs: labels reworded to decided or not decided yet; log exemption added. Reason: label rule (F7, F23, F24).
+- Four runbooks: version header and changelog. Reason: convention (F12).
+- `.env.example`, `architecture.md`, `constraints.md`: `NEXAHOME_DATA_DIR` removed; constraints date aligned. Reason: nothing reads it (F22, F11).
+- `add-a-stack.md`, ADR 0010 and 0012 (wording only), `stacks/hello`, `stacks/backup`, `project.md` open question, `roadmap.md`: five-step contract, self-contained requirement text, backup removal names only the password file, stale model-test line, country removed. Reason: F25, F27 to F29, F33.
+- `docs/session-log.md`: one Pending list at the top; 17 old blocks reduced to a pointer. Reason: F8.
+- No status label, Confirmed row or ADR status changed. F9 promotions were not made: "do all" is not an explicit yes per item.
+
+**Verification:** `make check` exit 0; link, anchor, header-date and label checks clean (label hits remain only in the rule text and PR template checklist); personal-data scan of the local files clean; `git status` clean. Not verified: CI (nothing pushed), GitHub settings, the mini and the P4 documents, Docker-dependent runbook steps, Linux and WSL2, `make setup` on Python 3.9.6, PR rendering. One commit went in while `make check` failed (F26); the next commit restored it and every later commit was gated.
+
+**Next:** PK3 (CI and platform proof). First the owner's answers on the local files in `.claude/tmp/` (rewords, decision batch, merge of `feat/packaging` into `dev` and the pull request). PK3 needs a push to run CI.
+
+**Open questions**
+- Which of the prepared rewords (A1 to A3, B1 to B4, C1, C2, D1) to apply; which F9 items to promote (recommended: ADRs 0010 to 0012, then the roles row after A2).
+- Merge `feat/packaging` into `dev` before the pull request, so the README fixes reach `main`?
 
 ## 2026-11-02: Packaging PK1, audit report (read-only)
 
