@@ -60,6 +60,29 @@ def test_error_prints_fail_and_next_and_uses_its_exit_code(
     assert ctx.err.getvalue() == "FAIL  engine is down\nNext: colima start\n"  # type: ignore[attr-defined]
 
 
+@pytest.mark.parametrize("error", [PermissionError(13, "Permission denied", "nexahome.toml"), UnicodeDecodeError("utf-8", b"\xff", 0, 1, "invalid start byte")])
+def test_a_file_error_ends_in_one_command_not_a_traceback(
+    monkeypatch: pytest.MonkeyPatch, make_context: MakeContext, error: Exception
+) -> None:
+    def run(args: argparse.Namespace, ctx: object) -> int:
+        raise error
+
+    install_command(monkeypatch, run)
+    ctx = make_context()
+    assert cli.main(["dummy"], ctx) == ExitCode.NOT_READY
+    text = ctx.err.getvalue()  # type: ignore[attr-defined]
+    assert text.startswith("FAIL  ") and text.endswith("Next: nexahome doctor\n") and "Traceback" not in text
+
+
+def test_the_debug_setting_keeps_the_traceback(monkeypatch: pytest.MonkeyPatch, make_context: MakeContext) -> None:
+    def run(args: argparse.Namespace, ctx: object) -> int:
+        raise PermissionError(13, "Permission denied", "nexahome.toml")
+
+    install_command(monkeypatch, run)
+    with pytest.raises(PermissionError):
+        cli.main(["dummy"], make_context(env={"NEXAHOME_DEBUG": "1"}))
+
+
 def test_error_without_a_fix_is_refused() -> None:
     with pytest.raises(ValueError):
         NexaHomeError("broken", " ")
