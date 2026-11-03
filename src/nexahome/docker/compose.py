@@ -41,15 +41,23 @@ def ps(ctx: Context, compose: Path) -> RunResult:
     return ctx.runner.run([*file_argv(compose), "ps"], timeout=TIMEOUT)
 
 
+def network_command() -> str:
+    """Create the shared network unless it exists, as `make up` does."""
+    return f"docker network inspect {EDGE_NETWORK} >/dev/null 2>&1 || docker network create {EDGE_NETWORK}"
+
+
+def up_command(stack: str) -> str:
+    return f"docker compose -f stacks/{stack}/compose.yaml up -d --wait"
+
+
+def down_command(stack: str) -> str:
+    return f"docker compose -f stacks/{stack}/compose.yaml down"
+
+
 def demo_commands(stack: str) -> list[str]:
-    """The command lines that start and stop one stack by hand, which `nexahome init` prints until `nexahome up` exists
-    (PK7). The network is created only when it is missing, as `make up` does."""
-    file = f"stacks/{stack}/compose.yaml"
-    return [
-        f"docker network inspect {EDGE_NETWORK} >/dev/null 2>&1 || docker network create {EDGE_NETWORK}",
-        f"docker compose -f {file} up -d --wait",
-        f"docker compose -f {file} down",
-    ]
+    """The command lines that start and stop one stack by hand, which `nexahome init` and `nexahome env` print in an
+    instance until `nexahome up` exists (PK7)."""
+    return [network_command(), up_command(stack), down_command(stack)]
 
 
 def config_json(runner: Runner, compose: Path) -> RunResult:

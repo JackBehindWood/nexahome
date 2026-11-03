@@ -72,6 +72,14 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
     checks = diagnosis.run_probes(ctx)
     print(render_text(checks), file=ctx.out)
     if passed(checks) and not pending:
-        print("Next: make up", file=ctx.out)
+        if (checkout / "Makefile").is_file():
+            print("Next: make up", file=ctx.out)
+        else:  # an instance made by `nexahome init` has no Makefile; `nexahome up` does not exist yet (PK7)
+            from nexahome.docker import compose
+
+            print(f"Next: {compose.network_command()}", file=ctx.out)
+            print("Then start each stack (`nexahome up` will replace these lines):", file=ctx.out)
+            for name in names:
+                print(f"  {compose.up_command(name)}", file=ctx.out)
         return ExitCode.OK
     return ExitCode.NOT_READY

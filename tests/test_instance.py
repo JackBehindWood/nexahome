@@ -4,7 +4,7 @@ from pathlib import Path
 
 from nexahome import cli
 from nexahome.errors import ExitCode
-from nexahome.instance import home
+from nexahome.instance import config, home
 
 from conftest import FakeRunner, MakeCheckout, MakeContext
 
@@ -12,10 +12,10 @@ from conftest import FakeRunner, MakeCheckout, MakeContext
 def make_instance(root: Path, stacks: tuple[str, ...] = ("demo",)) -> Path:
     """What `nexahome init` leaves: nexahome.toml and stacks/, no Makefile."""
     (root / "stacks").mkdir(parents=True)
-    (root / "nexahome.toml").write_text("schema = 1\n")
     for name in stacks:
         (root / "stacks" / name).mkdir()
         (root / "stacks" / name / "compose.yaml").write_text("")
+    (root / "nexahome.toml").write_text(config.render(stacks))
     return root
 
 
