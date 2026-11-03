@@ -85,6 +85,8 @@ def test_a_wrong_setting_or_value_is_refused_with_exit_2_and_changes_nothing(
     [
         ("stacks = [", "not valid TOML"),
         ('schema = "one"\nstacks = ["hello"]\n', "schema must be a number"),
+        ('schema = 0\nstacks = ["hello"]\n', "schema must be a number"),
+        ('schema = -5\nstacks = ["hello"]\n', "schema must be a number"),
         ('schema = 1\nstacks = ["hello"]\ncolour = "red"\n', "unknown key colour"),
         ('schema = 1\nstacks = "hello"\n', "stacks a list"),
         ("schema = 1\nstacks = []\n", "at least one stack"),

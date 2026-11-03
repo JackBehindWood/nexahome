@@ -30,6 +30,11 @@ def test_generate_secrets_replaces_only_generate_lines() -> None:
     assert keys == ["KEY", "LAST"]
 
 
+def test_generate_secrets_also_fills_a_line_that_ends_in_carriage_return() -> None:
+    new, keys = envfile.generate_secrets("KEY=GENERATE\r\nOTHER=keep\r\n", counter())  # P-17: CRLF from WSL or a Windows editor
+    assert new == "KEY=secret1\r\nOTHER=keep\r\n" and keys == ["KEY"]
+
+
 def test_real_secrets_are_long_alphanumeric_and_differ() -> None:
     first, second = envfile.new_secret(), envfile.new_secret()
     assert len(first) == 48 and re.fullmatch(r"[A-Za-z0-9]+", first) and first != second

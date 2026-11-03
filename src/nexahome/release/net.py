@@ -43,6 +43,7 @@ def check_url(url: str) -> None:
 
 def _open(url: str, timeout: float) -> HTTPResponse:
     """Open an address. Every redirect is checked too; the caller closes the response."""
+    import http.client
     import urllib.error
     import urllib.request
 
@@ -62,7 +63,7 @@ def _open(url: str, timeout: float) -> HTTPResponse:
     except urllib.error.HTTPError as error:
         error.close()  # it holds the response body open
         raise NetworkError(f"the server answered HTTP {error.code}") from error
-    except (urllib.error.URLError, OSError, ValueError) as error:
+    except (urllib.error.URLError, http.client.HTTPException, OSError, ValueError) as error:
         raise NetworkError(str(getattr(error, "reason", error))) from error
     return response
 

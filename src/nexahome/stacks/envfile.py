@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import NamedTuple
 
 PLACEHOLDER = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)=CHANGE_ME", re.MULTILINE)
-GENERATE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)=GENERATE$", re.MULTILINE)
+GENERATE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)=GENERATE(?=\r?$)", re.MULTILINE)
 ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 SECRET_LENGTH = 48
 

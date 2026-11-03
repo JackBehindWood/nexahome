@@ -85,7 +85,7 @@ def read(directory: Path) -> Settings | None:
     except (tomllib.TOMLDecodeError, UnicodeDecodeError) as error:
         raise NexaHomeError(f"{CONFIG_NAME} is not valid TOML: {error}", edit) from error
     schema = data.get("schema")
-    if not isinstance(schema, int) or isinstance(schema, bool):
+    if not isinstance(schema, int) or isinstance(schema, bool) or schema < 1:
         raise NexaHomeError(f"{CONFIG_NAME}: schema must be a number (this version writes {SCHEMA})", edit)
     if schema > SCHEMA:
         raise NexaHomeError(f"{CONFIG_NAME} has schema {schema}; this nexahome understands up to {SCHEMA}", "nexahome update --available")

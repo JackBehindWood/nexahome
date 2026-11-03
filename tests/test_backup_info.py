@@ -32,6 +32,12 @@ def test_empty_recent_and_old_repositories(tmp_path: Path) -> None:
     assert backup_info.summary(repository(old, [30, 8]), NOW)[0] == "backup: last snapshot OLDER than 7 days (make backup)"
 
 
+def test_a_file_that_vanishes_or_dangles_is_skipped_not_a_crash(tmp_path: Path) -> None:
+    directory = repository(tmp_path, [1])
+    (directory / "snapshots" / "gone").symlink_to(directory / "nowhere")  # P-04: restic prunes while status walks
+    assert backup_info.summary(directory, NOW)[0] == "backup: last snapshot within 7 days"
+
+
 def test_the_size_line(tmp_path: Path) -> None:
     directory = repository(tmp_path, [1])
     assert backup_info.summary(directory, NOW)[1] == f"backup: repository size 110B in {directory}"

@@ -39,7 +39,10 @@ def summary(directory: Path, now: float) -> list[str]:
     for folder, _, files in os.walk(directory):  # one pass, constant memory however big the repository is
         in_snapshots = Path(folder) == snapshots or snapshots in Path(folder).parents
         for name in files:
-            info = os.stat(os.path.join(folder, name))
+            try:
+                info = os.stat(os.path.join(folder, name))
+            except FileNotFoundError:  # a dangling link, or restic pruned the file while this walk ran
+                continue
             size += info.st_size
             if in_snapshots and (newest is None or info.st_mtime > newest):
                 newest = info.st_mtime
