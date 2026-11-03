@@ -34,7 +34,9 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
     if args.json:
         import json
 
-        print(json.dumps({"schema": 1, "stacks": rows}, indent=2), file=ctx.out)
+        from nexahome.defaults import STACKS_JSON_SCHEMA
+
+        print(json.dumps({"schema": STACKS_JSON_SCHEMA, "stacks": rows}, indent=2), file=ctx.out)
         return ExitCode.OK
     width = max([len("stack"), *(len(str(row["name"])) for row in rows)])
     print(f"{'stack':<{width}}  enabled  state", file=ctx.out)

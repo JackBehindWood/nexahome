@@ -13,12 +13,11 @@ from pathlib import Path
 
 from nexahome import platform as host_platform
 from nexahome.context import Context
+from nexahome.defaults import LOW_DISK_BYTES
 from nexahome.docker.probes import probe_compose, probe_docker_cli, probe_engine
 from nexahome.errors import NexaHomeError
 from nexahome.report import Check, Status
 from nexahome.stacks import envfile
-
-LOW_DISK_BYTES = 5 * 1024**3
 
 type Probe = Callable[[Context, Mapping[str, Check]], Check | None]
 

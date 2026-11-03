@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from nexahome.instance import SCHEMA
+from nexahome.defaults import INSTANCE_SCHEMA
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -20,4 +20,4 @@ def render(version: str, files: Mapping[str, str]) -> str:
     """The manifest text for `files` (instance-relative path -> sha256 hex digest)."""
     import json  # only a command that writes or reads the manifest pays for it
 
-    return json.dumps({"schema": SCHEMA, "created_by": f"nexahome {version}", "files": dict(sorted(files.items()))}, indent=2) + "\n"
+    return json.dumps({"schema": INSTANCE_SCHEMA, "created_by": f"nexahome {version}", "files": dict(sorted(files.items()))}, indent=2) + "\n"

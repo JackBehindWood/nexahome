@@ -80,14 +80,17 @@ class Context:
     def checkout(self) -> Path | None:
         """The NexaHome instance (a clone or a folder made by `nexahome init`): see nexahome.instance.home.find.
         --home sets NEXAHOME_HOME for the run. None when there is none."""
+        from nexahome.defaults import ENV_HOME
         from nexahome.instance import home  # only commands that need the folder pay for the lookup
 
-        return home.find(self.cwd, self.env.get("NEXAHOME_HOME"), self.host.home)
+        return home.find(self.cwd, self.env.get(ENV_HOME), self.host.home)
 
     def require_checkout(self) -> Path:
+        from nexahome.defaults import ENV_HOME
+
         checkout = self.checkout()
         if checkout is None:
-            if self.env.get("NEXAHOME_HOME"):
+            if self.env.get(ENV_HOME):
                 raise NexaHomeError(
                     "NEXAHOME_HOME does not point at a NexaHome instance or clone (a folder with nexahome.toml, or with stacks/ and a Makefile)",
                     'ls "$NEXAHOME_HOME"',

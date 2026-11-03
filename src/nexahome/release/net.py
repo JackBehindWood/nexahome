@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from nexahome import __version__
+from nexahome.defaults import DOWNLOAD_CHUNK_BYTES
 
 if TYPE_CHECKING:
     from http.client import HTTPMessage, HTTPResponse
@@ -92,7 +93,7 @@ def http_download(url: str, destination: Path, *, timeout: float, max_bytes: int
     written = 0
     try:
         with _open(url, timeout) as response, destination.open("wb") as out:
-            while piece := response.read(65536):
+            while piece := response.read(DOWNLOAD_CHUNK_BYTES):
                 written += len(piece)
                 if written > max_bytes:
                     raise NetworkError(f"the download is larger than the {max_bytes} byte limit")

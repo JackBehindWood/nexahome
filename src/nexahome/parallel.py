@@ -2,8 +2,10 @@
 
 from collections.abc import Callable, Iterable
 
+from nexahome.defaults import MAX_WORKERS
 
-def map_ordered[T, R](function: Callable[[T], R], items: Iterable[T], *, limit: int = 8) -> list[R]:
+
+def map_ordered[T, R](function: Callable[[T], R], items: Iterable[T], *, limit: int = MAX_WORKERS) -> list[R]:
     """function over items, in threads when there is more than one item. The thread pool is only imported then."""
     work = list(items)
     if len(work) <= 1:

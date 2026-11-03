@@ -26,7 +26,7 @@ def others(name: str) -> set[str]:
 
 # what each call may NOT import (everything else it may)
 BUDGET: dict[str, tuple[list[str], set[str]]] = {
-    "--version": (["--version"], HEAVY | {"argparse", "nexahome.context", "nexahome.runner", "nexahome.commands.doctor", "nexahome.diagnosis"}),
+    "--version": (["--version"], HEAVY | {"argparse", "nexahome.context", "nexahome.runner", "nexahome.commands.doctor", "nexahome.diagnosis", "nexahome.defaults"}),
     "--help": (["--help"], HEAVY - ARGPARSE_COST | {"nexahome.context", "nexahome.runner", "nexahome.diagnosis", "nexahome.release.updater", "nexahome.stacks.envfile", "nexahome.policy"}),
     "doctor --help": (["doctor", "--help"], HEAVY - ARGPARSE_COST | {"nexahome.diagnosis", "nexahome.commands.update", "nexahome.commands.env", "nexahome.release.updater"}),
     "doctor": (["doctor"], HEAVY - ARGPARSE_COST - {"subprocess", "concurrent.futures"} | {"nexahome.release.updater", "nexahome.commands.update", "nexahome.commands.env"}),

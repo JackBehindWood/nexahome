@@ -10,7 +10,6 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-MAX_FILE_BYTES = 1024 * 1024  # a stack file is configuration; anything bigger is not ours to copy
 SKIP_NAMES = frozenset({"README.md", ".env", "data", "__pycache__"})  # READMEs stay on GitHub (their links break here)
 SECRET_SUFFIXES = (".pem", ".key", ".p12", ".kdbx")
 

@@ -2,10 +2,9 @@
 
 from pathlib import Path
 
+from nexahome.defaults import CORE_STACKS, NON_SERVICE_STACKS
 from nexahome.instance import CONFIG_NAME
 
-CORE = ("edge", "identity")  # started first, as the Makefile does
-NOT_SERVICES = ("_template", "backup")  # the template, and the one-shot backup tool
 
 
 def all_stacks(checkout: Path) -> list[str]:
@@ -29,8 +28,8 @@ def enabled(checkout: Path) -> list[str]:
         except OSError:
             pass
     if not names:
-        names = [n for n in all_stacks(checkout) if n not in NOT_SERVICES]
-    return [n for n in names if n in CORE] + [n for n in names if n not in CORE]
+        names = [n for n in all_stacks(checkout) if n not in NON_SERVICE_STACKS]
+    return [n for n in names if n in CORE_STACKS] + [n for n in names if n not in CORE_STACKS]
 
 
 def compose_file(checkout: Path, name: str) -> Path:

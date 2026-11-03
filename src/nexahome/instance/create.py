@@ -11,14 +11,13 @@ import os
 from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
+from nexahome.defaults import DEFAULT_STACKS, ENV_HOME, PUBLIC_DIR_MODE, PUBLIC_FILE_MODE, STACK_FILE_MAX_BYTES
 from nexahome.errors import NexaHomeError
 from nexahome.instance import CONFIG_NAME, REINSTALL, bundle, config, home, manifest
 
 if TYPE_CHECKING:
     from nexahome.context import Context
 
-FILE_MODE = 0o644  # package files are not secret, and a container user must be able to read them whatever the umask
-DIR_MODE = 0o755
 
 
 class Created(NamedTuple):
@@ -30,7 +29,7 @@ class Created(NamedTuple):
 
 def target(ctx: Context, directory: str | None) -> Path:
     """DIR, else --home or $NEXAHOME_HOME, else ~/nexahome, as an absolute path."""
-    chosen = directory or ctx.env.get("NEXAHOME_HOME")
+    chosen = directory or ctx.env.get(ENV_HOME)
     return Path(os.path.abspath(ctx.cwd / chosen if chosen else ctx.host.home / home.DEFAULT_NAME))
 
 
@@ -58,15 +57,15 @@ def _make_directory(path: Path, created: list[Path]) -> None:
     for folder in reversed(missing):
         folder.mkdir()
         created.append(folder)
-        os.chmod(folder, DIR_MODE)
+        os.chmod(folder, PUBLIC_DIR_MODE)
 
 
 def _write(path: Path, data: bytes, created: list[Path]) -> None:
-    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, FILE_MODE)
+    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, PUBLIC_FILE_MODE)
     created.append(path)
     with os.fdopen(descriptor, "wb") as handle:
         handle.write(data)
-    os.chmod(path, FILE_MODE)
+    os.chmod(path, PUBLIC_FILE_MODE)
 
 
 def _remove(created: list[Path]) -> None:
@@ -84,7 +83,7 @@ def create(root: Path, source: Path, version: str) -> Created:
 
     directories, files = bundle.walk(source)
     stacks = tuple(sorted(name for name in directories if "/" not in name))
-    if config.DEFAULT_STACKS[0] not in stacks:
+    if DEFAULT_STACKS[0] not in stacks:
         raise NexaHomeError("this install's bundled stacks do not include the demo stack", REINSTALL)
     created: list[Path] = []
     hashes: dict[str, str] = {}
@@ -93,12 +92,12 @@ def create(root: Path, source: Path, version: str) -> Created:
         for name in directories:
             _make_directory(root / "stacks" / name, created)
         for name in files:
-            if (source / name).stat().st_size > bundle.MAX_FILE_BYTES:
-                raise NexaHomeError(f"{name} is larger than {bundle.MAX_FILE_BYTES} bytes", REINSTALL)
+            if (source / name).stat().st_size > STACK_FILE_MAX_BYTES:
+                raise NexaHomeError(f"{name} is larger than {STACK_FILE_MAX_BYTES} bytes", REINSTALL)
             data = (source / name).read_bytes()
             _write(root / "stacks" / name, data, created)
             hashes[f"stacks/{name}"] = hashlib.sha256(data).hexdigest()
-        _write(root / CONFIG_NAME, config.render(config.DEFAULT_STACKS).encode(), created)
+        _write(root / CONFIG_NAME, config.render(DEFAULT_STACKS).encode(), created)
         _make_directory(root / ".nexahome", created)
         _write(root / manifest.PATH, manifest.render(version, hashes).encode(), created)
     except OSError as error:
@@ -107,4 +106,4 @@ def create(root: Path, source: Path, version: str) -> Created:
     except BaseException:
         _remove(created)
         raise
-    return Created(root, stacks, config.DEFAULT_STACKS, len(files))
+    return Created(root, stacks, DEFAULT_STACKS, len(files))
