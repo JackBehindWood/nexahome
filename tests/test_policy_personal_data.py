@@ -64,3 +64,17 @@ def test_denylist_ignores_comments_and_blank_lines(tmp_path: Path) -> None:
     path.write_text("# c\n\n Term One \n")
     assert load_denylist(path) == ["term one"]
     assert load_denylist(tmp_path / "absent") == []
+
+
+def test_the_hook_entry_prints_findings_and_sets_the_exit_code(tmp_path: Path) -> None:
+    import subprocess
+    import sys
+
+    (tmp_path / "flagged.txt").write_text(FLAGGED)
+    (tmp_path / "clean.txt").write_text("nothing to see\n")
+    run = lambda *names: subprocess.run(  # noqa: E731
+        [sys.executable, "-m", "nexahome.policy.personal_data", *names], cwd=tmp_path, capture_output=True, text=True
+    )
+    flagged, clean = run("flagged.txt", "clean.txt"), run("clean.txt")
+    assert (flagged.returncode, flagged.stdout.splitlines()) == (1, scan_text("flagged.txt", FLAGGED))
+    assert (clean.returncode, clean.stdout) == (0, "")
