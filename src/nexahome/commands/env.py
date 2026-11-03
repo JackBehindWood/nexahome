@@ -26,12 +26,12 @@ def register(subparsers: Subparsers) -> None:
     parser.set_defaults(run=run)
 
 
-def _require_ignored(ctx: Context, checkout: Path, env_path: Path) -> None:
+def _require_ignored(ctx: Context, instance: Path, env_path: Path) -> None:
     """Secrets must never land in a path git would commit. Skipped when git cannot answer."""
     from nexahome.errors import NexaHomeError
 
-    relative = env_path.relative_to(checkout)
-    result = ctx.runner.run(["git", "-C", str(checkout), "check-ignore", "-q", str(relative)], timeout=10)
+    relative = env_path.relative_to(instance)
+    result = ctx.runner.run(["git", "-C", str(instance), "check-ignore", "-q", str(relative)], timeout=10)
     if result.returncode == 1 and not result.missing and not result.timed_out:
         raise NexaHomeError(f"{relative} is not gitignored; refusing to write secrets there", f"git check-ignore -v {relative}")
 
@@ -43,14 +43,14 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
     from nexahome.errors import NexaHomeError
     from nexahome.report import passed, render_text
 
-    checkout = ctx.require_checkout()
-    if args.stack and not stack_catalogue.compose_file(checkout, args.stack).is_file():
+    instance = ctx.require_instance()
+    if args.stack and not stack_catalogue.compose_file(instance, args.stack).is_file():
         raise NexaHomeError(f"no such stack: {args.stack}", "nexahome stacks")
-    names = [args.stack] if args.stack else stack_catalogue.enabled(checkout)
+    names = [args.stack] if args.stack else stack_catalogue.enabled(instance)
     pending = False
     for name in names:
-        stack_dir = checkout / "stacks" / name
-        _require_ignored(ctx, checkout, stack_dir / ".env")
+        stack_dir = instance / "stacks" / name
+        _require_ignored(ctx, instance, stack_dir / ".env")
         result = envfile.prepare(stack_dir, dry_run=args.dry_run)
         if result is None:
             continue
@@ -73,7 +73,7 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
     checks = diagnosis.run_probes(ctx)
     print(render_text(checks), file=ctx.out)
     if passed(checks) and not pending:
-        if (checkout / "Makefile").is_file():
+        if (instance / "Makefile").is_file():
             print("Next: make up", file=ctx.out)
         else:  # an instance made by `nexahome init` has no Makefile; `nexahome up` does not exist yet (PK7)
             from nexahome.docker import compose

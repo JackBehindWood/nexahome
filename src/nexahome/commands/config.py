@@ -31,7 +31,7 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
     from nexahome.errors import NexaHomeError
     from nexahome.instance import CONFIG_NAME, config
 
-    root = ctx.require_checkout()
+    root = ctx.require_instance()
     if not (root / CONFIG_NAME).is_file():
         raise NexaHomeError(
             f"{ctx.display(root)} is a git clone: its stacks are listed in .config/stacks, which the Makefile reads, not in {CONFIG_NAME}",

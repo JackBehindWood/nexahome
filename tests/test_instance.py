@@ -52,7 +52,7 @@ def test_the_default_folder_counts_only_when_it_holds_nexahome_toml(tmp_path: Pa
 def test_every_command_finds_an_instance_without_a_makefile(make_context: MakeContext, tmp_path: Path) -> None:
     root = make_instance(tmp_path / "made")
     ctx = make_context(cwd=root / "stacks", runner=FakeRunner())
-    assert ctx.checkout() == root
+    assert ctx.instance() == root
     assert cli.main(["stacks"], ctx) == ExitCode.OK and "demo" in ctx.out.getvalue()  # type: ignore[attr-defined]
 
 

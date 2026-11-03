@@ -10,15 +10,15 @@ from nexahome.stacks import envfile
 _UNITS = ("B", "K", "M", "G", "T")
 
 
-def repository_dir(checkout: Path, env: Mapping[str, str]) -> Path:
+def repository_dir(instance: Path, env: Mapping[str, str]) -> Path:
     """stacks/backup/.env wins, then $NEXAHOME_BACKUP_DIR, then data/backup (as backup.sh does)."""
     value = None
     try:
-        value = envfile.read_value((checkout / "stacks" / "backup" / ".env").read_text(), ENV_BACKUP_DIR)
+        value = envfile.read_value((instance / "stacks" / "backup" / ".env").read_text(), ENV_BACKUP_DIR)
     except OSError:
         pass
     chosen = value or env.get(ENV_BACKUP_DIR)
-    return Path(chosen) if chosen else checkout / "data" / "backup"
+    return Path(chosen) if chosen else instance / "data" / "backup"
 
 
 def human_size(size: float) -> str:

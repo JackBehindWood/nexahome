@@ -77,7 +77,7 @@ class Context:
     def default(cls) -> "Context":
         return cls(host=current(), runner=SubprocessRunner(), env=dict(os.environ), cwd=Path.cwd())
 
-    def checkout(self) -> Path | None:
+    def instance(self) -> Path | None:
         """The NexaHome instance (a clone or a folder made by `nexahome init`): see nexahome.instance.home.find.
         --home sets NEXAHOME_HOME for the run. None when there is none."""
         from nexahome.defaults import ENV_HOME
@@ -85,11 +85,11 @@ class Context:
 
         return home.find(self.cwd, self.env.get(ENV_HOME), self.host.home)
 
-    def require_checkout(self) -> Path:
+    def require_instance(self) -> Path:
         from nexahome.defaults import ENV_HOME
 
-        checkout = self.checkout()
-        if checkout is None:
+        instance = self.instance()
+        if instance is None:
             if self.env.get(ENV_HOME):
                 raise NexaHomeError(
                     "NEXAHOME_HOME does not point at a NexaHome instance or clone (a folder with nexahome.toml, or with stacks/ and a Makefile)",
@@ -99,7 +99,7 @@ class Context:
                 "no NexaHome instance here: this folder is not inside one (nexahome.toml, or a clone with stacks/ and a Makefile) and ~/nexahome has none",
                 "nexahome init",
             )
-        return checkout
+        return instance
 
     def display(self, path: Path) -> str:
         """A path for a message or command line: relative to the working directory when inside it."""
