@@ -32,7 +32,7 @@ def human_size(size: float) -> str:
 def summary(directory: Path, now: float) -> list[str]:
     """Lines for `nexahome status`: whether the newest snapshot is under 7 days old, and the repository size, from one walk of the folder."""
     if not (directory / "config").is_file():
-        return [f"backup: no repository at {directory} (make backup-init)"]
+        return [f"backup: no repository at {directory} (in a git clone: make backup-init)"]
     size = 0
     newest: float | None = None  # modification time of the newest snapshot file; None if there is none
     snapshots = directory / "snapshots"
@@ -49,7 +49,7 @@ def summary(directory: Path, now: float) -> list[str]:
     if newest is not None and now - newest < RECENT_SECONDS:
         first = "backup: last snapshot within 7 days"
     elif newest is not None:
-        first = "backup: last snapshot OLDER than 7 days (make backup)"
+        first = "backup: last snapshot OLDER than 7 days (in a git clone: make backup)"
     else:
-        first = "backup: repository has no snapshots yet (make backup)"
+        first = "backup: repository has no snapshots yet (in a git clone: make backup)"
     return [first, f"backup: repository size {human_size(size)} in {directory}"]

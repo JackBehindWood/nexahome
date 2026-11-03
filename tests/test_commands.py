@@ -199,7 +199,7 @@ def test_status_prints_compose_ps_and_the_backup_summary(make_checkout: MakeChec
     ctx = make_context(cwd=checkout, runner=FakeRunner({**DOCKER_HEALTHY, ps: RunResult(0, "NAME  STATUS\nedge  healthy\n")}))
     assert cli.main(["status"], ctx) == ExitCode.OK
     assert out(ctx).splitlines()[:2] == ["NAME  STATUS", "edge  healthy"]
-    assert f"backup: no repository at {checkout / 'data' / 'backup'} (make backup-init)" in out(ctx)
+    assert f"backup: no repository at {checkout / 'data' / 'backup'} (in a git clone: make backup-init)" in out(ctx)
 
 
 def test_status_without_an_engine_says_how_to_start_it(make_checkout: MakeCheckout, make_context: MakeContext, make_host: MakeHost) -> None:

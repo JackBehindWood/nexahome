@@ -21,7 +21,7 @@ NAME = "doctor"
 
 
 def register(subparsers: Subparsers) -> None:
-    parser = subparsers.add_parser(NAME, help="diagnose this host (read-only)", description=__doc__.split("\n")[0])
+    parser = subparsers.add_parser(NAME, help="diagnose this host (read-only)", description=(__doc__ or NAME).split("\n")[0])
     parser.add_argument("--json", action="store_true", help="print the result as JSON (schema 1, see nexahome.report)")
     parser.set_defaults(run=run)
 

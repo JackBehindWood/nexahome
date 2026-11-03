@@ -18,7 +18,7 @@ NAME = "update"
 
 
 def register(subparsers: Subparsers) -> None:
-    parser = subparsers.add_parser(NAME, help="update nexahome to the newest release", description=__doc__.split("\n")[0])
+    parser = subparsers.add_parser(NAME, help="update nexahome to the newest release", description=(__doc__ or NAME).split("\n")[0])
     parser.add_argument("--available", action="store_true", help="only say whether a newer version exists; install nothing")
     parser.add_argument("--json", action="store_true", help='with --available: {"schema": 1, "installed", "latest", "available"}')
     parser.add_argument("--yes", action="store_true", help="do not ask before installing")

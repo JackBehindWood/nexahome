@@ -35,6 +35,12 @@ def init(make_context: MakeContext, target: Path, **options: object) -> tuple[in
     return cli.main(["init", str(target)], ctx), ctx
 
 
+def test_the_summary_counts_services_not_the_template_or_the_backup_tool(make_context: MakeContext, tmp_path: Path) -> None:
+    code, ctx = init(make_context, tmp_path / "made")
+    services = [p for p in (REPO / "stacks").iterdir() if p.is_dir() and p.name not in ("_template", "backup")]  # P-28
+    assert code == ExitCode.OK and f": {len(services)} stacks," in out(ctx)
+
+
 def test_the_stacks_are_found_without_a_wheel_or_a_makefile() -> None:
     assert bundle.location() in (REPO / "stacks", Path(bundle.__file__).resolve().parents[1] / "_stacks")
 

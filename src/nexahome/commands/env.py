@@ -20,7 +20,7 @@ NAME = "env"
 
 
 def register(subparsers: Subparsers) -> None:
-    parser = subparsers.add_parser(NAME, help="create each stack's .env, generate secrets, then run doctor", description=__doc__.split("\n")[0])
+    parser = subparsers.add_parser(NAME, help="create each stack's .env, generate secrets, then run doctor", description=(__doc__ or NAME).split("\n")[0])
     parser.add_argument("--stack", metavar="NAME", help="only this stack (default: the stacks this host runs)")
     parser.add_argument("--dry-run", action="store_true", help="show what would change and write nothing")
     parser.set_defaults(run=run)

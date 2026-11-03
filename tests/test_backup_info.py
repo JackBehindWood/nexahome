@@ -19,17 +19,17 @@ def repository(tmp_path: Path, ages_in_days: list[float]) -> Path:
 
 
 def test_no_repository(tmp_path: Path) -> None:
-    assert backup_info.summary(tmp_path / "none", NOW) == [f"backup: no repository at {tmp_path / 'none'} (make backup-init)"]
+    assert backup_info.summary(tmp_path / "none", NOW) == [f"backup: no repository at {tmp_path / 'none'} (in a git clone: make backup-init)"]
 
 
 def test_empty_recent_and_old_repositories(tmp_path: Path) -> None:
-    assert backup_info.summary(repository(tmp_path, []), NOW)[0] == "backup: repository has no snapshots yet (make backup)"
+    assert backup_info.summary(repository(tmp_path, []), NOW)[0] == "backup: repository has no snapshots yet (in a git clone: make backup)"
     recent = tmp_path / "a"
     recent.mkdir()
     assert backup_info.summary(repository(recent, [30, 2]), NOW)[0] == "backup: last snapshot within 7 days"
     old = tmp_path / "b"
     old.mkdir()
-    assert backup_info.summary(repository(old, [30, 8]), NOW)[0] == "backup: last snapshot OLDER than 7 days (make backup)"
+    assert backup_info.summary(repository(old, [30, 8]), NOW)[0] == "backup: last snapshot OLDER than 7 days (in a git clone: make backup)"
 
 
 def test_a_file_that_vanishes_or_dangles_is_skipped_not_a_crash(tmp_path: Path) -> None:

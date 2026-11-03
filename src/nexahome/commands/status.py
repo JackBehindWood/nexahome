@@ -16,7 +16,7 @@ NAME = "status"
 
 
 def register(subparsers: Subparsers) -> None:
-    parser = subparsers.add_parser(NAME, help="show stack health and how recent the backup is", description=__doc__.split("\n")[0])
+    parser = subparsers.add_parser(NAME, help="show stack health and how recent the backup is", description=(__doc__ or NAME).split("\n")[0])
     parser.set_defaults(run=run)
 
 

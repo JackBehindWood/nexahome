@@ -16,7 +16,7 @@ NAME = "stacks"
 
 
 def register(subparsers: Subparsers) -> None:
-    parser = subparsers.add_parser(NAME, help="list the stacks and their state", description=__doc__.split("\n")[0])
+    parser = subparsers.add_parser(NAME, help="list the stacks and their state", description=(__doc__ or NAME).split("\n")[0])
     parser.add_argument("--json", action="store_true", help='print JSON: {"schema": 1, "stacks": [{"name", "enabled", "state"}]}')
     parser.set_defaults(run=run)
 

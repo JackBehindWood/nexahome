@@ -16,7 +16,7 @@ NAME = "check"
 
 
 def register(subparsers: Subparsers) -> None:
-    parser = subparsers.add_parser(NAME, help="check the stacks against the Compose policy", description=__doc__.split("\n")[0])
+    parser = subparsers.add_parser(NAME, help="check the stacks against the Compose policy", description=(__doc__ or NAME).split("\n")[0])
     parser.add_argument("--stacks", metavar="DIR", help="the folder that holds the stacks (default: stacks/ of the instance or clone)")
     parser.set_defaults(run=run)
 

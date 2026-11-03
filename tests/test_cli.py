@@ -122,6 +122,11 @@ def test_main_reads_sys_argv_and_the_real_context_by_default(monkeypatch: pytest
     assert __version__ in capsys.readouterr().out
 
 
+def test_the_command_runs_without_docstrings() -> None:
+    done = subprocess.run([sys.executable, "-OO", "-m", "nexahome", "--help"], capture_output=True, text=True, check=False)  # P-23
+    assert done.returncode == 0 and "doctor" in done.stdout and "Traceback" not in done.stderr
+
+
 def test_python_dash_m_works() -> None:
     done = subprocess.run([sys.executable, "-m", "nexahome", "--version"], capture_output=True, text=True, check=False)
     assert (done.returncode, done.stdout.strip()) == (0, f"nexahome {__version__}")
