@@ -4,7 +4,7 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
 ## Pending owner actions (the one current list)
 
-Last replaced 2026-11-03 (PK5). Older entries below end with a pointer here instead of their own list; their text is in git history.
+Last replaced 2026-11-03 (PK6). Older entries below end with a pointer here instead of their own list; their text is in git history.
 
 **Decide**
 - ADR 0021 is decided (owner, 2026-11-02). Still to decide: the other Proposed register rows (documentation conventions, repository layout, task runner, security baseline, roles, three Packaging rows); review ADRs 0014 to 0020, the SSH runbook and the packaging audit.
@@ -13,11 +13,10 @@ Last replaced 2026-11-03 (PK5). Older entries below end with a pointer here inst
 - Open choices: digest pinning; paid tier versus the open-source rule; keep `hello` on the edge and in the portal; the root `.env.example` now holds no setting (delete it?).
 
 **Git**
-- `feat/packaging` is up to date with `dev` (merged 2026-11-03, no conflict) and 9 commits ahead of `origin/feat/packaging`, none pushed. Decide: push it (with your yes) and open a pull request into `dev`; that is the first run of the new wheel steps. **Decided 2026-11-03: the `dev` to `main` pull request is opened after PK6**, not before. Until then `main` still holds the old `ci.yml` without `gate`, so any pull request into `main` would wait for a check that never appears; none is open (`gh pr list`, 2026-11-03). `main` also has 6 commits `dev` lacks (`git rev-list --left-right --count origin/main...origin/dev` = `6 127`), so check for conflicts when the pull request is prepared. The weekly schedule cannot fire until that pull request lands.
-- `gate` is a required check on `main` (added 2026-11-02 on your request: required are now `checks`, `secrets` and `gate`, branches up to date). **Caveat, not verified:** `main` still holds the old `ci.yml` without a `gate` job, and a pull request runs the workflow of its merge result, so any pull request into `main` whose workflow lacks `gate` (for example a Dependabot update before the `dev` to `main` pull request) would wait for a check that never appears. The `dev` to `main` pull request carries the new workflow; open it soon. `platforms` is never to be required.
-- Pull request 21 is merged into `dev` (owner). `feat/packaging` is ahead of `dev` and not pushed. Decide: (1) the `tests` job is committed in `.github/workflows/ci.yml` (last commit but one); (2) push `feat/packaging` and open a pull request into `dev`, which is the only way to run the new job. The `dev` to `main` pull request opens only when you say so (description prepared locally). Afterwards check under Insights, Dependency graph, Dependabot that every stack entry parses.
+- 2026-11-03: `feat/packaging` is pushed and a pull request into `dev` is open, and so is a `dev` to `main` pull request (`gh pr list`). Neither is merged: each merge needs your explicit yes. The `dev` to `main` pull request shows the packaging work only after the first one is merged, and it carries the new `ci.yml` with `gate`. The first run of the PK5 and PK6 CI steps (wheel contents, instance round trip, demo start) is on the pull request into `dev`: read it before merging.
+- `gate` is a required check on `main` (since 2026-11-02; required: `checks`, `secrets`, `gate`, branches up to date). `main` still holds the old `ci.yml` without `gate`, so any other pull request into `main` before the catch-up lands waits for a check that never appears (for example a Dependabot update). `platforms` is never to be required. The weekly schedule fires only once the new workflow is on `main`. After the catch-up check under Insights, Dependency graph, Dependabot that every stack entry parses.
+- Merge of `dev` into `main`: `main` has 6 commits `dev` lacks (`git merge-tree` shows a clean merge). Delete merged branches only with your yes.
 - GitHub account setting "Block command line pushes that expose my email"; optional SSH-signed commits.
-- Making the `gate` job a required check on `main` (a GitHub setting): deferred until the CI redesign above, because `gate` must not depend on macOS runner capacity.
 
 **Local only**
 - Record the mini's order and delivery locally; update the `CLAUDE.md` hardware section (a Jetson is owned, the mini is planned); keep real hostnames in the gitignored `inventory.local.md`; decide extras and subscriptions; plan the return window before B1.
@@ -35,6 +34,29 @@ Last replaced 2026-11-03 (PK5). Older entries below end with a pointer here inst
 - `docs/constraints.md` (the run-path line) still says "Python is for checks"; with `src/nexahome` that is incomplete, but the line restates a decided rule, so it is left for the owner's rewords (B2, C1) with ADR 0018.
 - Backup `.env.example` ships example paths that `make check` needs (audit F26): fix with PK7 (not done in PK5).
 - ADR 0019 still names `scripts/check_compose.py` in its macOS Compose line; the script is gone. Reword it, or leave it as a record? Also `scripts/__pycache__` (untracked, gitignored) is a leftover: delete it?
+
+## 2026-11-03: PK6 (init, config, packages by concern, the 5-minute path)
+
+**Done** (18 commits on `feat/packaging`)
+- `nexahome init [DIR]` (default `~/nexahome`): copies the bundled stacks, writes `nexahome.toml` (`hello` enabled) and `.nexahome/manifest.json` (sha256 per file). Refuses a non-empty folder and anything inside a clone or instance; never overwrites; writes no `.env`; files 0644 and folders 0755 whatever the umask; a failed write removes only what that run made. `nexahome config list|get|set stacks`: strict reader (unknown key, wrong type, bad TOML, unknown stack, newer schema each end in one command), atomic write. Home resolution: `--home`, `$NEXAHOME_HOME`, nearest parent with `nexahome.toml` or `stacks/` plus a Makefile, else `~/nexahome` if it holds a `nexahome.toml`. In an instance `env` ends in the commands that start the stacks.
+- Packages by concern (owner request): `docker/` (all Docker CLI knowledge; a test keeps `"docker"` and the edge network name out of other modules), `instance/`, `stacks/`, `release/`; a test keeps them from importing `commands/`. Error-message pass: `check` with nothing to check now ends in a command; `status` names one for an unreadable stack; wording says "folder" or "instance".
+- CI (`tests` job, ubuntu py3.13): the wheel must equal the tracked stack files minus READMEs; an instance from the installed wheel (scratch `HOME`) is made, checked, refused a second `init` (exit 3), given `config set stacks`; the three docker commands `init` prints start the demo. Job names `secrets` and `checks` unchanged. Not yet run on GitHub.
+- Package version is now `0.2.0` (owner, from `0.1.0.dev0`); no tag exists.
+- Measured (laptop, medians of 15, back to back against `f1ed535`): no start-up change beyond 1 ms (`--version` 15.7 and 16.2 ms before, 16.3 and 16.2 after). Timed run, scratch `HOME`, Colima started and stopped: wheel in hand to a hello that answers 7.0 s (uv) and 8.9 s (venv and pip) with `busybox:1.37.0` already cached (pull time not included; Colima start 16 s not included).
+- Upgrade design rehearsed on a throwaway instance (scratchpad script, no repo code), 23 of 23 checks: three-way hash compare, edited plus changed upstream refused with the file named, staged tree plus two renames, rollback byte for byte, recovery after a crash between the renames. It found three rules the design needs: strip user-owned files from the kept `previous/` tree (a second copy of every `.env`), carry them back on rollback, delete `staging/` on recovery.
+
+**Doc changes and reasons**
+- `README.md`: two quick starts (runner path, fork path), `init` and `config` in the command list, how the folder is found. The runner path says the manual `docker compose` lines will be replaced by `nexahome up` and that overrides are not read by them (`-f` skips `compose.override.yaml`). A test keeps the lines equal to what `init` prints.
+- `CONTRIBUTING.md`: package map and the one-way dependency rule. `docs/project.md`: current status names `init` and `config` (no register row touched). `tests/test_docs.py`: `nexahome init` left the planned list; `nexahome up` joined it (PK7).
+- This log and `docs/roadmap.md`: PK6 done, Git list refreshed. No ADR edited, no row promoted.
+
+**Deviations** (details in the local packaging README): the wheel already carried `.env.example` (a doubt in the plan was false); doctor warns, not fails, outside `$HOME` (master 4.5 says fails); plain path instead of `importlib.resources` (26.5 ms import); manifest written now although ADR 0020 puts it at stage 3; two test files landed in the `stacks/ release/` commit; the personal-data hook blocked two commits on false positives (renamed). Not run: Linux container leg, cold-image timing, uv fetching Python 3.13.
+
+**Not verified:** every new CI step on GitHub; Python 3.13 on a runner; macOS and arm64 behaviour of the steps; a wheel from a published release; backup-first, a stateful image change and running containers during an upgrade swap; the hook with the package missing from `.venv`; the Mac mini, Linux hosts, Jetson, WSL2.
+
+**Next:** (1) read the CI run on the pull request into `dev`, then merge decisions (yours); (2) the audit session you asked for: full code package and `stacks/` audit, every doc checked against the repo, docs compacted with this log first (prompt handed over); (3) PK7 to PK10 wait for B2. **Open questions:** the first tag: ADR 0020 and the register say `v0.1.0`, the package is `0.2.0`; overrides: ADR 0020 and master 4.3 promise `compose.override.yaml`, the manual commands cannot read it; ADR 0020's manifest timing; doctor severity for a mount outside `$HOME`.
+
+**Pending:** superseded by the single list at the top of this log (2026-11-03, PK6).
 
 ## 2026-11-03: PK5 (hooks and `make check` use the package, old checks deleted, stacks bundled)
 
@@ -63,8 +85,6 @@ Last replaced 2026-11-03 (PK5). Older entries below end with a pointer here inst
 
 **Open questions**
 - Reword the ADR 0019 line that names the deleted script?
-- Delete `scripts/__pycache__`?
-
 **Pending:** superseded by the single list at the top of this log (2026-11-03, PK5).
 
 ## 2026-11-02: CI reshape (fast Linux set, platform set off the merge path)
