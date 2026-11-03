@@ -1,6 +1,5 @@
 """The one place that starts other programs."""
 
-import subprocess
 from collections.abc import Sequence
 from typing import NamedTuple, Protocol
 
@@ -29,6 +28,8 @@ class SubprocessRunner:
     """Runs argv lists without a shell. A missing program or a timeout is a result, not an exception."""
 
     def run(self, argv: Sequence[str], *, timeout: float) -> RunResult:
+        import subprocess
+
         try:
             done = subprocess.run(
                 list(argv),
