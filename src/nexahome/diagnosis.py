@@ -7,8 +7,7 @@ tests/test_doctor.py. A probe returns None when it does not apply, and SKIP when
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterator, Mapping
-from typing import TYPE_CHECKING
+from collections.abc import Callable, Mapping
 from pathlib import Path
 
 from nexahome import platform as host_platform
@@ -20,9 +19,6 @@ from nexahome.report import Check, Status
 from nexahome.stacks import envfile
 
 type Probe = Callable[[Context, Mapping[str, Check]], Check | None]
-
-if TYPE_CHECKING:
-    from concurrent.futures import Future
 
 
 def probe_platform(ctx: Context, prior: Mapping[str, Check]) -> Check:
@@ -99,26 +95,6 @@ PROBES: tuple[tuple[str, Probe], ...] = (
 )
 
 
-class _Prior(Mapping[str, Check]):
-    """The results of the other probes. Reading one waits until that probe has finished, so independent probes
-    (three docker calls) run side by side and a dependent one (compose needs docker-cli) still sees its input."""
-
-    def __init__(self, futures: "dict[str, Future[Check | None]]") -> None:
-        self._futures = futures
-
-    def __getitem__(self, probe_id: str) -> Check:
-        check = self._futures[probe_id].result()
-        if check is None:  # that probe did not apply
-            raise KeyError(probe_id)
-        return check
-
-    def __iter__(self) -> Iterator[str]:
-        return iter(self._futures)
-
-    def __len__(self) -> int:
-        return len(self._futures)
-
-
 def _run_probe(probe_id: str, probe: Probe, ctx: Context, prior: Mapping[str, Check]) -> Check | None:
     try:
         return probe(ctx, prior)
@@ -126,14 +102,13 @@ def _run_probe(probe_id: str, probe: Probe, ctx: Context, prior: Mapping[str, Ch
         return Check(probe_id, Status.FAIL, f"the probe raised {type(error).__name__}", "nexahome doctor --json")
 
 
-def run_probes(ctx: Context) -> list[Check]:
-    """Run every probe side by side and return the results in `PROBES` order, leaving out probes that have nothing to say."""
-    from concurrent.futures import ThreadPoolExecutor
+def _bound(probe_id: str, probe: Probe, ctx: Context) -> Callable[[Mapping[str, Check]], Check | None]:
+    return lambda prior: _run_probe(probe_id, probe, ctx, prior)
 
-    futures: "dict[str, Future[Check | None]]" = {}
-    prior = _Prior(futures)
-    with ThreadPoolExecutor(max_workers=len(PROBES)) as pool:  # one thread per probe: none waits for a free worker
-        for probe_id, probe in PROBES:
-            futures[probe_id] = pool.submit(_run_probe, probe_id, probe, ctx, prior)
-    results = (futures[probe_id].result() for probe_id, _ in PROBES)
-    return [check for check in results if check is not None]
+
+def run_probes(ctx: Context) -> list[Check]:
+    """Run every probe side by side and return the results in `PROBES` order, leaving out probes that have nothing to say.
+    A probe that reads `prior[...]` waits for that probe (see `nexahome.parallel.run_waiting`)."""
+    from nexahome.parallel import run_waiting
+
+    return run_waiting([(probe_id, _bound(probe_id, probe, ctx)) for probe_id, probe in PROBES])
