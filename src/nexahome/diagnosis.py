@@ -51,19 +51,19 @@ def probe_disk(ctx: Context, prior: Mapping[str, Check]) -> Check:
 
 
 def probe_mount(ctx: Context, prior: Mapping[str, Check]) -> Check | None:
-    """Warn when a Colima host keeps the checkout outside the home directory it mounts; no result elsewhere."""
+    """Warn when a Colima host keeps the NexaHome folder (clone or instance) outside the home directory it mounts; no result elsewhere."""
     checkout = ctx.checkout()
     if checkout is None or not host_platform.colima_mount_applies(ctx.host):
         return None
     if checkout.is_relative_to(ctx.host.home):
-        return Check("mount", Status.OK, "the checkout is under the home directory, which Colima mounts")
+        return Check("mount", Status.OK, "the NexaHome folder is under the home directory, which Colima mounts")
     import shlex  # only the warning branch quotes a path
 
     source = '"$PWD"' if checkout == ctx.cwd else shlex.quote(str(checkout))
     return Check(
         "mount",
         Status.WARN,
-        "the checkout is outside the home directory, which the Colima VM does not mount",
+        "the NexaHome folder is outside the home directory, which the Colima VM does not mount",
         f'mv {source} "$HOME/"',
     )
 

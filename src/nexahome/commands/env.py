@@ -1,6 +1,6 @@
 """nexahome env: prepare this checkout for `make up`: create each stack's .env, generate its secrets, run doctor.
 
-Writes only inside the checkout, never overwrites a .env, never prints a secret, and starts nothing.
+Writes only inside the NexaHome folder (an instance or a clone), never overwrites a .env, never prints a secret, and starts nothing.
 """
 
 from __future__ import annotations

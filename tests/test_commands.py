@@ -64,7 +64,7 @@ def test_check_without_docker_ends_in_an_install_command(make_checkout: MakeChec
 def test_check_with_no_stacks_has_nothing_to_check(make_context: MakeContext, tmp_path: Path) -> None:
     ctx = make_context(cwd=tmp_path / "empty")  # no stacks/ here
     assert cli.main(["check"], ctx) == ExitCode.NOT_READY
-    assert out(ctx) == "no stacks found; nothing to check\n"
+    assert err(ctx).startswith("FAIL  no stacks found in ") and err(ctx).endswith("; nothing to check\nNext: nexahome init\n")
 
 
 def test_check_takes_another_stacks_folder(make_checkout: MakeCheckout, make_context: MakeContext, tmp_path: Path) -> None:
