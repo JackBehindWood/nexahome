@@ -25,6 +25,7 @@ def build_parser(selected: "Sequence[Command]") -> "argparse.ArgumentParser":
 
     parser = argparse.ArgumentParser(prog="nexahome", description="Install, check and run NexaHome.")
     parser.add_argument("--version", action="version", version=f"nexahome {__version__}")
+    parser.add_argument("--home", metavar="DIR", help="the NexaHome folder to use (default: $NEXAHOME_HOME, the folder you are in, or ~/nexahome)")
     subparsers = parser.add_subparsers(dest="command", metavar="<command>")
     for command in selected:
         command.register(subparsers)
@@ -59,6 +60,8 @@ def main(argv: Sequence[str] | None = None, ctx: Context | None = None) -> int:
         from nexahome.context import Context
 
         ctx = Context.default()
+    if args.home:  # the same setting as $NEXAHOME_HOME, which wins over searching upwards
+        ctx.env = {**ctx.env, "NEXAHOME_HOME": args.home}
     if not args.command:
         parser.print_help(ctx.err)
         return ExitCode.USAGE

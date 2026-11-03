@@ -78,26 +78,23 @@ class Context:
         return cls(host=current(), runner=SubprocessRunner(), env=dict(os.environ), cwd=Path.cwd())
 
     def checkout(self) -> Path | None:
-        """The NexaHome checkout: $NEXAHOME_HOME if set, else the nearest parent of the working directory
-        that holds stacks/ and a Makefile. None when there is none."""
-        home = self.env.get("NEXAHOME_HOME")
-        start = (self.cwd / home) if home else self.cwd
-        for directory in (start, *start.parents):
-            if (directory / "stacks").is_dir() and (directory / "Makefile").is_file():
-                return directory
-            if home:
-                break  # an explicit setting is not searched upwards
-        return None
+        """The NexaHome instance (a clone or a folder made by `nexahome init`): see nexahome.instance.home.find.
+        --home sets NEXAHOME_HOME for the run. None when there is none."""
+        from nexahome.instance import home  # only commands that need the folder pay for the lookup
+
+        return home.find(self.cwd, self.env.get("NEXAHOME_HOME"), self.host.home)
 
     def require_checkout(self) -> Path:
         checkout = self.checkout()
         if checkout is None:
             if self.env.get("NEXAHOME_HOME"):
                 raise NexaHomeError(
-                    "NEXAHOME_HOME does not point at a NexaHome checkout (stacks/ and a Makefile)", 'ls "$NEXAHOME_HOME/stacks"'
+                    "NEXAHOME_HOME does not point at a NexaHome instance or clone (a folder with nexahome.toml, or with stacks/ and a Makefile)",
+                    'ls "$NEXAHOME_HOME"',
                 )
             raise NexaHomeError(
-                "not inside a NexaHome checkout (a folder that holds stacks/ and a Makefile)", "cd /path/to/nexahome"
+                "no NexaHome instance here: this folder is not inside one (nexahome.toml, or a clone with stacks/ and a Makefile) and ~/nexahome has none",
+                "nexahome init",
             )
         return checkout
 

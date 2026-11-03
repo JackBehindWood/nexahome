@@ -28,7 +28,7 @@ def test_an_explicit_home_is_not_searched_upwards(make_checkout: MakeCheckout, m
 def test_require_checkout_names_the_way_out(make_context: MakeContext, tmp_path: Path) -> None:
     with pytest.raises(NexaHomeError) as raised:
         make_context(cwd=tmp_path / "x").require_checkout()
-    assert raised.value.fix == "cd /path/to/nexahome"
+    assert raised.value.fix == "nexahome init"
 
 
 def test_display_is_relative_inside_the_working_directory_and_quoted(make_context: MakeContext, tmp_path: Path) -> None:

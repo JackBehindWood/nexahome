@@ -153,7 +153,7 @@ def test_env_reports_a_stopped_engine_through_doctor(make_checkout: MakeCheckout
 def test_commands_outside_a_checkout_say_so(command: str, make_context: MakeContext, tmp_path: Path) -> None:
     ctx = make_context(cwd=tmp_path)
     assert cli.main([command], ctx) == ExitCode.NOT_READY
-    assert err(ctx) == "FAIL  not inside a NexaHome checkout (a folder that holds stacks/ and a Makefile)\nNext: cd /path/to/nexahome\n"
+    assert err(ctx).startswith("FAIL  no NexaHome instance here") and err(ctx).endswith("\nNext: nexahome init\n")
 
 
 def test_nexahome_home_selects_the_checkout_from_anywhere(make_checkout: MakeCheckout, make_context: MakeContext, tmp_path: Path) -> None:
@@ -164,7 +164,7 @@ def test_nexahome_home_selects_the_checkout_from_anywhere(make_checkout: MakeChe
     assert cli.main(["stacks"], ctx) == ExitCode.OK and "demo" in out(ctx)
     wrong = make_context(cwd=checkout, env={"NEXAHOME_HOME": str(elsewhere)})
     assert cli.main(["stacks"], wrong) == ExitCode.NOT_READY
-    assert err(wrong).startswith("FAIL  NEXAHOME_HOME does not point at a NexaHome checkout") and 'Next: ls "$NEXAHOME_HOME/stacks"' in err(wrong)
+    assert err(wrong).startswith("FAIL  NEXAHOME_HOME does not point at a NexaHome instance or clone") and 'Next: ls "$NEXAHOME_HOME"' in err(wrong)
 
 
 # --- stacks ------------------------------------------------------------------------------------------------
