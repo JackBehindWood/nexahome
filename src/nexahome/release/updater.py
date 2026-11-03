@@ -12,10 +12,11 @@ import sys
 from pathlib import Path
 from typing import Any, NamedTuple
 
-from nexahome import __version__, versions
+from nexahome import __version__
+from nexahome.release import versions
 from nexahome.context import Context
 from nexahome.errors import ExitCode, NexaHomeError
-from nexahome.net import NetworkError
+from nexahome.release.net import NetworkError
 
 FEED_TIMEOUT, FEED_MAX = 15, 1_000_000
 WHEEL_TIMEOUT, WHEEL_MAX = 120, 50_000_000

@@ -1,6 +1,6 @@
 import pytest
 
-from nexahome import versions
+from nexahome.release import versions
 
 
 @pytest.mark.parametrize(

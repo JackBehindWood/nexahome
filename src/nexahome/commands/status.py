@@ -24,7 +24,7 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
     from nexahome import backup_info
     from nexahome.docker import compose, engine
     from nexahome import platform as host_platform
-    from nexahome import stacks as stack_catalogue
+    from nexahome.stacks import catalogue as stack_catalogue
     from nexahome.parallel import map_ordered
 
     checkout = ctx.require_checkout()

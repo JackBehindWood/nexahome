@@ -192,3 +192,12 @@ def test_init_output_passes_nexahome_check(make_context: MakeContext, tmp_path: 
     names = sorted(p.parent.name for p in (root / "stacks").glob("*/compose.yaml"))
     assert cli.main(["check"], ctx) == ExitCode.OK
     assert out(ctx) == "".join(f"stacks/{n}/compose.yaml: ok\n" for n in names)
+
+
+def test_the_commands_init_prints_are_the_ones_the_readme_gives(make_context: MakeContext, tmp_path: Path) -> None:
+    """PK6-18: one owner for the run commands (init, built from the docker package); the README repeats them verbatim."""
+    code, ctx = init(make_context, tmp_path / "made")
+    printed = [line.strip() for line in out(ctx).splitlines() if line.startswith("  docker ")]
+    assert code == ExitCode.OK and len(printed) == 3
+    readme = (REPO / "README.md").read_text()
+    assert [line for line in printed if line not in readme] == []

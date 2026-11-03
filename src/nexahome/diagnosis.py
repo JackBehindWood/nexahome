@@ -11,12 +11,12 @@ from collections.abc import Callable, Iterator, Mapping
 from typing import TYPE_CHECKING
 from pathlib import Path
 
-from nexahome import envfile
 from nexahome import platform as host_platform
 from nexahome.context import Context
 from nexahome.docker.probes import probe_compose, probe_docker_cli, probe_engine
 from nexahome.errors import NexaHomeError
 from nexahome.report import Check, Status
+from nexahome.stacks import envfile
 
 LOW_DISK_BYTES = 5 * 1024**3
 

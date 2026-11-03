@@ -4,7 +4,7 @@ import os
 from collections.abc import Mapping
 from pathlib import Path
 
-from nexahome import envfile
+from nexahome.stacks import envfile
 
 RECENT_SECONDS = 7 * 24 * 3600
 _UNITS = ("B", "K", "M", "G", "T")

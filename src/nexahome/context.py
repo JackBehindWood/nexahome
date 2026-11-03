@@ -18,7 +18,7 @@ from nexahome.platform import Host, current
 from nexahome.runner import Runner, SubprocessRunner
 
 if TYPE_CHECKING:
-    from nexahome.net import Downloader, Fetcher
+    from nexahome.release.net import Downloader, Fetcher
 
 
 def ask_on_terminal(question: str) -> bool | None:
@@ -38,13 +38,13 @@ def _disk_free(path: Path) -> int:
 
 
 def _fetch(url: str, *, timeout: float, max_bytes: int) -> bytes:
-    from nexahome.net import http_get  # the network code (urllib, ssl) is loaded only when a command fetches
+    from nexahome.release.net import http_get  # the network code (urllib, ssl) is loaded only when a command fetches
 
     return http_get(url, timeout=timeout, max_bytes=max_bytes)
 
 
 def _download(url: str, destination: Path, *, timeout: float, max_bytes: int) -> str:
-    from nexahome.net import http_download
+    from nexahome.release.net import http_download
 
     return http_download(url, destination, timeout=timeout, max_bytes=max_bytes)
 

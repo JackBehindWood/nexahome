@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from nexahome import envfile
+from nexahome.stacks import envfile
 
 
 def counter() -> Callable[[], str]:  # a predictable secret source

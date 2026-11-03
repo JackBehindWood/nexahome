@@ -37,8 +37,9 @@ def _require_ignored(ctx: Context, checkout: Path, env_path: Path) -> None:
 
 
 def run(args: argparse.Namespace, ctx: Context) -> int:
-    from nexahome import diagnosis, envfile
-    from nexahome import stacks as stack_catalogue
+    from nexahome import diagnosis
+    from nexahome.stacks import catalogue as stack_catalogue
+    from nexahome.stacks import envfile
     from nexahome.errors import NexaHomeError
     from nexahome.report import passed, render_text
 

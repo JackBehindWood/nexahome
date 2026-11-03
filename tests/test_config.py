@@ -7,7 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from nexahome import cli, stacks
+from nexahome import cli
+from nexahome.stacks import catalogue as stacks
 from nexahome.errors import ExitCode, NexaHomeError
 from nexahome.instance import config
 from nexahome.runner import RunResult

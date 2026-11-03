@@ -23,7 +23,7 @@ def register(subparsers: Subparsers) -> None:
 
 def run(args: argparse.Namespace, ctx: Context) -> int:
     from nexahome.docker import compose
-    from nexahome import stacks as stack_catalogue
+    from nexahome.stacks import catalogue as stack_catalogue
     from nexahome.parallel import map_ordered
 
     checkout = ctx.require_checkout()

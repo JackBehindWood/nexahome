@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from nexahome import stacks
+from nexahome.stacks import catalogue as stacks
 
 from conftest import MakeCheckout
 
