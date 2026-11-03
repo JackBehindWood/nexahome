@@ -7,7 +7,7 @@ name: nexahome-gatus
 services:
   gatus:
     build: .
-    image: nexahome/gatus:v5.37.0
+    image: nexahome/gatus:local  # not the upstream version: the Dockerfile owns that
     pull_policy: build
     user: "1001:1001"
     read_only: true
