@@ -59,6 +59,39 @@ def test_each_rule_names_its_reason() -> None:
     ]
 
 
+def reasons_for(line: str) -> list[str]:
+    return [f.split(": ", 1)[1] for f in scan_text("f", line)]
+
+
+@pytest.mark.parametrize(
+    ("line", "reason"),
+    [
+        ("mail " + "jo" + "@" + "example.org please", "email address"),
+        ("host " + "nas" + ".lan", "home network hostname"),
+        ("host " + "nas" + ".home.arpa", "home network hostname"),
+        ("path " + "C:" + "\\Users\\" + "alice", "Windows home directory path with a user name"),
+        ("path " + "C:" + "/Users/" + "alice", "Windows home directory path with a user name"),
+    ],
+)
+def test_p08_patterns_are_flagged(line: str, reason: str) -> None:
+    assert reason in reasons_for(line)  # a forward-slash Windows path also matches the Unix rule
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "Co-Authored-By: Claude <" + "noreply" + "@" + "anthropic.com>",
+        "ID+handle" + "@" + "users.noreply.github.com",
+        "uses: actions/checkout" + "@" + "v4.1.1",
+        "image: x/y" + "@" + "sha256:" + "a" * 64,
+        "mail " + "jo" + "@" + "example.org personal-data: ok",
+        "a decorator " + "@" + "cache and user" + "@" + "host",
+    ],
+)
+def test_p08_leaves_published_addresses_and_lookalikes_alone(line: str) -> None:
+    assert reasons_for(line) == []
+
+
 def test_denylist_ignores_comments_and_blank_lines(tmp_path: Path) -> None:
     path = tmp_path / "deny"
     path.write_text("# c\n\n Term One \n")
