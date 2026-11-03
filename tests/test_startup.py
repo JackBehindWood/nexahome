@@ -39,7 +39,8 @@ BUDGET: dict[str, tuple[list[str], set[str]]] = {
     "status": (["status"], HEAVY - ARGPARSE_COST - RUNNER | others("status")),
     "check": (["check"], HEAVY - ARGPARSE_COST - RUNNER - {"json", "shlex"} | others("check")),
     "env": (["env"], HEAVY - ARGPARSE_COST - RUNNER | others("env")),
-    "update": (["update"], HEAVY - ARGPARSE_COST - RUNNER - {"importlib.metadata", "json", "urllib"} | others("update")),
+    # `update` reads the package metadata (importlib.metadata); on 3.13 that pulls inspect, random and tempfile in with it
+    "update": (["update"], HEAVY - ARGPARSE_COST - RUNNER - {"importlib.metadata", "json", "urllib", "inspect", "random", "tempfile"} | others("update")),
 }
 
 

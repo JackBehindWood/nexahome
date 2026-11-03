@@ -43,6 +43,15 @@ exclude = ["stacks/**/README.md"]
 [tool.hatch.build.targets.sdist]
 include = ["/src", "/stacks", "/tests", "/LICENSE", "/pyproject.toml"]
 
+[dependency-groups]
+# Dev tools, pinned, installed into the gitignored .venv by `make setup` (ADR 0003). One source: Dependabot reads this table.
+dev = [
+    "pre-commit==4.7.0",
+    "pre-commit-hooks==6.0.0",
+    "detect-secrets==1.5.0",
+    "pytest==9.1.1",
+]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = ["-ra", "--strict-markers", "--strict-config"]
