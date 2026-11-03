@@ -90,8 +90,8 @@ hooks: ## Install the git pre-commit hook in this repo only (opt-in)
 unhooks: ## Remove that hook
 	$(BIN)/pre-commit uninstall
 
-check: ## Run all checks: hooks on every file plus the Compose policy
-	$(BIN)/pre-commit run --all-files
+check: ## Run all checks: hooks on every file (tracked or not, ignored ones excepted) plus the Compose policy
+	git ls-files -z -co --exclude-standard | xargs -0 $(BIN)/pre-commit run --files
 	$(BIN)/nexahome check
 
 test: ## Run the nexahome package tests (pytest)
