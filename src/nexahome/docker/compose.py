@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -70,4 +69,23 @@ def config_json(runner: Runner, compose: Path) -> RunResult:
     on a local `.env`. Needs the CLI, not a running engine."""
     env_example = compose.parent / ".env.example"
     argv = file_argv(compose, env_example if env_example.is_file() else None)
+    placeholders = _required_placeholders(compose, env_example)
+    if placeholders:
+        argv = ["env", *placeholders, *argv]
     return runner.run([*argv, "config", "--format", "json"], timeout=CONFIG_TIMEOUT)
+
+
+def _required_placeholders(compose: Path, env_example: Path) -> list[str]:
+    """`NAME=placeholder` for every `${NAME:?...}` the stack requires and its `.env.example` does not set, so `config`
+    can resolve a stack whose script supplies the value (the backup tool). Only the shape of the result is checked."""
+    import re
+
+    try:
+        text = compose.read_text()
+    except OSError:
+        return []  # `docker compose config` reports the unreadable file
+    if ":?" not in text:  # the common case costs one read and no pattern
+        return []
+    names = re.findall(r"\$\{([A-Za-z_][A-Za-z0-9_]*):\?", text)
+    given = set(re.findall(r"^([A-Za-z_][A-Za-z0-9_]*)=", env_example.read_text(), re.MULTILINE)) if env_example.is_file() else set()
+    return [f"{name}=/nexahome-check/{name}" for name in dict.fromkeys(names) if name not in given]

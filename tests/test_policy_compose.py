@@ -135,6 +135,16 @@ def test_an_override_file_is_part_of_what_is_checked_and_what_runs(tmp_path: Pat
     assert docker_compose.file_argv(stack)[:6] == ["docker", "compose", "-f", str(stack), "-f", str(override)]
 
 
+def test_a_required_variable_without_a_default_gets_a_placeholder_for_the_check(tmp_path: Path) -> None:
+    stack = make_stack(tmp_path, True)  # D-K: scripts/backup.sh sets these; `${VAR:?}` would stop `config` otherwise
+    stack.write_text("services:\n  a:\n    volumes:\n      - ${NEXAHOME_DIR:?set by a script}:/x\n      - ${DEFINED:?no}:/y\n")
+    (stack.parent / ".env.example").write_text("# NEXAHOME_DIR=/commented\nDEFINED=1\n")
+    argv = ("env", "NEXAHOME_DIR=/nexahome-check/NEXAHOME_DIR", *argv_for(stack, "--env-file", str(stack.parent / ".env.example")))
+    config = json.dumps({"name": "nexahome-demo", "services": {"app": service()}})
+    runner = FakeRunner({argv: RunResult(0, config)})
+    assert compose.check_stack(runner, stack).lines() == [f"{stack}: ok"] and runner.calls == [argv]
+
+
 def test_check_stack_reports_problems_with_the_original_line_format(tmp_path: Path) -> None:
     stack = make_stack(tmp_path, False)
     config = json.dumps({"name": "nexahome-demo", "services": {"app": service(privileged=True)}})
