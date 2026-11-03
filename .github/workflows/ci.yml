@@ -5,12 +5,57 @@ on:
     branches: [main, dev]
   pull_request:
     branches: [main, dev]
+  schedule:
+    - cron: "17 4 * * 1" # weekly; GitHub runs schedules on the default branch only
   workflow_dispatch:
 
 permissions:
   contents: read
 
+# A newer push cancels the older run of the same pull request; every other event runs to the end.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
+  # Decides what the rest runs (ADR 0019). A job-level `if` is used, never a workflow-level `paths`
+  # filter: a skipped job reports success, a workflow that does not start leaves a required check pending.
+  plan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.scope.outputs.code }}
+      platforms: ${{ steps.scope.outputs.platforms }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - id: scope
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.base_ref }}
+        run: |
+          set -eu
+          code=true
+          if [ "$EVENT" = pull_request ]; then
+            # The checkout is the merge commit; its first parent is the base, so this lists the pull request's files.
+            git diff --name-only HEAD^1 HEAD > "$RUNNER_TEMP/changed"
+            code=false
+            while IFS= read -r f; do
+              case "$f" in
+                docs/*|*.md|LICENSE) ;;
+                *) code=true ;;
+              esac
+            done < "$RUNNER_TEMP/changed"
+          fi
+          platforms=false
+          if [ "$EVENT" = schedule ] || [ "$EVENT" = workflow_dispatch ]; then platforms=true; fi
+          if [ "$EVENT" = pull_request ] && [ "$BASE" = main ] && [ "$code" = true ]; then platforms=true; fi
+          echo "code=$code platforms=$platforms"
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "platforms=$platforms" >> "$GITHUB_OUTPUT"
+
   secrets:
     runs-on: ubuntu-latest
     steps:
@@ -32,3 +77,218 @@ jobs:
       - run: make check
         env:
           SKIP: no-commit-to-branch
+
+  # Platform proof (ADR 0019). `secrets` and `checks` above are the required checks and stay as
+  # they are. `gate` below waits only for the Linux jobs, so a macOS runner queue cannot hold a merge;
+  # the macOS and arm64 jobs run on a pull request into `main`, weekly and by hand, and `platforms`
+  # reports them without gating.
+  portable:
+    name: portable (${{ matrix.name }})
+    needs: plan
+    if: needs.plan.outputs.code == 'true'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: ubuntu-amd64, os: ubuntu-24.04 }
+    steps: &portable_steps
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+      - name: Tool versions
+        run: |
+          uname -sm
+          make --version | head -n 1
+          python3 --version
+          for t in shasum sha256sum shellcheck docker; do command -v "$t" || echo "$t: not found"; done
+      - name: Shell syntax
+        run: for f in scripts/*.sh; do sh -n "$f" || exit 1; done
+      - name: ShellCheck (Linux runners ship it, macOS runners do not)
+        run: |
+          if ! command -v shellcheck >/dev/null && [ "$RUNNER_OS" = macOS ]; then brew install shellcheck; fi
+          command -v shellcheck >/dev/null || { echo "::error::shellcheck is not installed on this runner"; exit 1; }
+          shellcheck --version | sed -n 2p
+          shellcheck -s sh --severity=warning scripts/*.sh
+      - name: Docker CLI with Compose (macOS runners ship none; no engine is needed, see nexahome check)
+        if: runner.os == 'macOS'
+        run: |
+          docker compose version >/dev/null 2>&1 || {
+            brew install docker docker-compose
+            mkdir -p ~/.docker/cli-plugins
+            ln -sfn "$(brew --prefix)/opt/docker-compose/bin/docker-compose" ~/.docker/cli-plugins/docker-compose
+          }
+          docker compose version
+      - run: make setup
+      - run: make check
+        env:
+          SKIP: no-commit-to-branch
+
+  portable-platforms:
+    name: portable (${{ matrix.name }})
+    needs: plan
+    if: needs.plan.outputs.platforms == 'true'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: ubuntu-arm64, os: ubuntu-24.04-arm }
+          - { name: macos-arm64, os: macos-15 }
+    steps: *portable_steps
+
+  hello:
+    name: hello up and down (ubuntu-amd64)
+    needs: plan
+    if: needs.plan.outputs.code == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: make up STACK=hello
+      - name: Answers on loopback
+        run: |
+          curl -fsS http://127.0.0.1:8080/ >/dev/null
+          docker ps --filter name=hello --format '{{.Names}} {{.Status}}'
+      - name: Down
+        if: always()
+        run: make down STACK=hello
+
+  # The nexahome package (ADR 0018): unit tests on three platforms, 3.14 on two of them. The Linux runners
+  # have a Docker engine, so `nexahome doctor` runs there for real; hosted macOS has none (ADR 0019).
+  tests:
+    name: tests (${{ matrix.name }}, py${{ matrix.python }})
+    needs: plan
+    if: needs.plan.outputs.code == 'true'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: ubuntu-amd64, os: ubuntu-24.04, python: "3.13" }
+          - { name: ubuntu-amd64, os: ubuntu-24.04, python: "3.14" }
+    steps: &tests_steps
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: ${{ matrix.python }}
+      - run: make setup
+      - run: .venv/bin/pytest
+      - name: nexahome doctor (Linux runners have a Docker engine)
+        if: runner.os == 'Linux'
+        run: .venv/bin/nexahome doctor
+      - name: The wheel holds the package and exactly the tracked stack files
+        if: matrix.name == 'ubuntu-amd64' && matrix.python == '3.13'
+        run: |
+          python -m pip wheel . --no-deps -w "$RUNNER_TEMP/wheel"
+          python - <<'EOF'
+          import glob, os, subprocess, zipfile
+          names = zipfile.ZipFile(glob.glob(os.path.join(os.environ["RUNNER_TEMP"], "wheel", "*.whl"))[0]).namelist()
+          print(*names, sep="\n")
+          stray = [n for n in names if not n.startswith(("nexahome/", "nexahome-"))]
+          assert not stray, f"files outside the package: {stray}"
+          # PK6-5: every tracked file under stacks/ ships (compose files, .env.example, Caddyfile, www/, config/,
+          # Dockerfile) except the READMEs; nothing else (no .env, data directory or README) comes along.
+          tracked = subprocess.check_output(["git", "ls-files", "stacks"], text=True).split()
+          expected = {"nexahome/_stacks/" + p.removeprefix("stacks/") for p in tracked if not p.endswith("README.md")}
+          shipped = {n for n in names if n.startswith("nexahome/_stacks/")}
+          assert shipped == expected, f"missing: {sorted(expected - shipped)}; unexpected: {sorted(shipped - expected)}"
+          EOF
+      - name: A fresh instance from the installed wheel passes nexahome check and takes a setting
+        if: matrix.name == 'ubuntu-amd64' && matrix.python == '3.13'
+        run: |
+          python -m venv "$RUNNER_TEMP/roundtrip"
+          "$RUNNER_TEMP"/roundtrip/bin/pip install --quiet "$RUNNER_TEMP"/wheel/*.whl
+          export PATH="$RUNNER_TEMP/roundtrip/bin:$PATH"
+          mkdir "$RUNNER_TEMP/user"
+          cd "$RUNNER_TEMP"  # outside the checkout, with a scratch HOME: nothing of the repository is in reach
+          HOME="$RUNNER_TEMP/user" nexahome init | tee "$RUNNER_TEMP/init.out"
+          cd "$RUNNER_TEMP/user/nexahome"
+          test -f nexahome.toml && test -f .nexahome/manifest.json
+          test -z "$(find . -name .env -o -name README.md -o -name data)"
+          nexahome check
+          code=0; HOME="$RUNNER_TEMP/user" nexahome init || code=$?
+          [ "$code" = 3 ] || { echo "::error::a second init must refuse with exit 3, got $code"; exit 1; }
+          nexahome config set stacks hello actual
+          [ "$(nexahome config get stacks)" = "hello actual" ]
+          nexahome check
+      - name: The instance starts the demo with the commands init prints (Linux runners have a Docker engine)
+        if: matrix.name == 'ubuntu-amd64' && matrix.python == '3.13'
+        run: |
+          mapfile -t cmds < <(sed -n 's/^  \(docker .*\)$/\1/p' "$RUNNER_TEMP/init.out")
+          [ "${#cmds[@]}" = 3 ] || { echo "::error::init should print three docker commands, printed ${#cmds[@]}"; exit 1; }
+          cd "$RUNNER_TEMP/user/nexahome"
+          trap 'eval "${cmds[2]}"' EXIT  # always stop the demo again
+          eval "${cmds[0]}"
+          eval "${cmds[1]}"
+          curl --fail --silent --show-error http://127.0.0.1:8080/ > /dev/null
+
+  tests-platforms:
+    name: tests (${{ matrix.name }}, py${{ matrix.python }})
+    needs: plan
+    if: needs.plan.outputs.platforms == 'true'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: ubuntu-arm64, os: ubuntu-24.04-arm, python: "3.13" }
+          - { name: macos-arm64, os: macos-15, python: "3.13" }
+          - { name: macos-arm64, os: macos-15, python: "3.14" }
+    steps: *tests_steps
+
+  # The one job that says whether the Linux jobs passed; never waits for a platform job. A skipped job
+  # reports success, so `plan` must have succeeded: otherwise a failed `plan` would skip everything.
+  gate:
+    name: gate
+    if: always()
+    needs: [plan, secrets, checks, portable, hello, tests]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Every job that ran succeeded
+        env:
+          PLAN: ${{ needs.plan.result }}
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "plan: $PLAN; results: $RESULTS"
+          [ "$PLAN" = success ] || { echo "::error::plan did not succeed"; exit 1; }
+          for r in $RESULTS; do
+            case "$r" in
+              success|skipped) ;;
+              *) echo "::error::a job did not succeed ($r)"; exit 1 ;;
+            esac
+          done
+
+  # Informational, not a required check: what the macOS and arm64 jobs did.
+  platforms:
+    name: platforms
+    if: always() && needs.plan.outputs.platforms == 'true'
+    needs: [plan, portable-platforms, tests-platforms]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Platform results
+        env:
+          PORTABLE: ${{ needs.portable-platforms.result }}
+          TESTS: ${{ needs.tests-platforms.result }}
+        run: |
+          {
+            echo "| job | result |"
+            echo "| :-- | :-- |"
+            echo "| portable (ubuntu-arm64, macos-arm64) | $PORTABLE |"
+            echo "| tests (ubuntu-arm64, macos-arm64) | $TESTS |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "portable: $PORTABLE; tests: $TESTS"
+          [ "$PORTABLE" = success ] && [ "$TESTS" = success ] || { echo "::error::a platform job did not succeed"; exit 1; }

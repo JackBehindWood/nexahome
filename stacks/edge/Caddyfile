@@ -1,0 +1,57 @@
+# Local hostnames for NexaHome apps. No TLS and no admin API: plain http on a loopback port.
+# Adding an app = one alias in compose.yaml + one block here (docs/runbooks/add-a-stack.md).
+{
+	admin off
+	auto_https off
+}
+
+(hardening) {
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy no-referrer
+		X-Frame-Options DENY
+		-Server
+	}
+}
+
+# Anything not matched below, including a foreign Host header (DNS rebinding), gets 404.
+:{$EDGE_PORT} {
+	import hardening
+	handle /health {
+		respond "ok" 200
+	}
+	handle {
+		respond "not found" 404
+	}
+}
+
+# The address you type first: send bare localhost to the portal. Only this exact Host; others still get 404.
+http://localhost:{$EDGE_PORT} {
+	import hardening
+	redir http://home.{$NEXAHOME_DOMAIN}:{$EDGE_PORT}/ 302
+}
+
+http://id.{$NEXAHOME_DOMAIN}:{$EDGE_PORT} {
+	import hardening
+	reverse_proxy identity:1411
+}
+
+http://actual.{$NEXAHOME_DOMAIN}:{$EDGE_PORT} {
+	import hardening
+	reverse_proxy actual:5006
+}
+
+http://home.{$NEXAHOME_DOMAIN}:{$EDGE_PORT} {
+	import hardening
+	reverse_proxy portal:3000
+}
+
+http://hello.{$NEXAHOME_DOMAIN}:{$EDGE_PORT} {
+	import hardening
+	reverse_proxy hello:8080
+}
+
+http://gatus.{$NEXAHOME_DOMAIN}:{$EDGE_PORT} {
+	import hardening
+	reverse_proxy gatus:8080
+}

@@ -10,6 +10,9 @@ id_*
 secrets/
 .personal-denylist
 
+# Local per-machine settings and secrets (backup password)
+.config/
+
 # Persistent and local data
 data/
 *.sqlite
@@ -28,6 +31,10 @@ CLAUDE.local.md
 # Tooling
 .venv/
 __pycache__/
+.pytest_cache/
+*.egg-info/
+dist/
+build/
 
 # Editor config: local only, never committed
 .vscode/

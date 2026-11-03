@@ -1,0 +1,41 @@
+name: nexahome-portal
+
+# Homepage: open, read-only status board (ADR 0012). Stateless; reached only through the edge at
+# home.<NEXAHOME_DOMAIN>:<EDGE_PORT>, so it publishes no port. No Docker socket.
+services:
+  portal:
+    image: ghcr.io/gethomepage/homepage:v2.6.0
+    user: "1001:1001"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+    mem_limit: 256m  # about 2.5x idle (96 MiB anon); startup peak checked, no OOM
+    pids_limit: 128
+    environment:
+      HOMEPAGE_ALLOWED_HOSTS: home.${NEXAHOME_DOMAIN:-nexahome.localhost}:${EDGE_PORT:-8088}
+      # Substituted into config/*.yaml as {{HOMEPAGE_VAR_...}}, so no hostname is hardcoded there.
+      HOMEPAGE_VAR_DOMAIN: ${NEXAHOME_DOMAIN:-nexahome.localhost}
+      HOMEPAGE_VAR_PORT: ${EDGE_PORT:-8088}
+      NEXT_TELEMETRY_DISABLED: "1"
+    networks:
+      - edge
+    volumes:
+      - ./config:/app/config:ro
+    tmpfs:
+      - /app/config/logs:uid=1001,gid=1001
+      - /app/.next/cache:uid=1001,gid=1001
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/api/healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: "3"}
+
+networks:
+  edge:
+    external: true
+    name: nexahome-edge

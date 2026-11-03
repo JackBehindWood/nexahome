@@ -11,6 +11,8 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:${HELLO_PORT:-8080}:8080"
+    networks:
+      - edge
     volumes:
       - ./www:/www:ro
     healthcheck:
@@ -19,3 +21,8 @@ services:
       timeout: 3s
       retries: 3
       start_period: 2s
+
+networks:
+  edge:
+    external: true
+    name: nexahome-edge
