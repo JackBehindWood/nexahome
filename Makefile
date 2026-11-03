@@ -92,7 +92,7 @@ unhooks: ## Remove that hook
 
 check: ## Run all checks: hooks on every file plus the Compose policy
 	$(BIN)/pre-commit run --all-files
-	$(BIN)/python scripts/check_compose.py
+	$(BIN)/nexahome check
 
 test: ## Run the nexahome package tests (pytest)
 	$(BIN)/pytest

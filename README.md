@@ -53,7 +53,7 @@ Exit codes, the same for every command:
 | 130 | interrupted (Ctrl-C) |
 | 141 | the reader went away, for example `nexahome stacks \| head` |
 
-`make check` still runs the original scripts, which exit 0 or 1; `nexahome check` exits 3 where they would exit 0 or 1 for "no stacks" or "Docker CLI missing" (the hooks switch to it in PK5).
+`make check` runs `nexahome check` for the Compose policy. The script it replaced exited 0 for "no stacks" and 1 for "Docker CLI missing"; both now exit 3, with a message that ends in the fixing command.
 
 ## Your data stays yours
 

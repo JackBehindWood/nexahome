@@ -40,6 +40,6 @@ repos:
         always_run: true
       - id: personal-data
         name: no personal data
-        entry: .venv/bin/python scripts/check_personal_data.py
+        entry: .venv/bin/python -m nexahome.policy.personal_data
         language: system
         types: [text]

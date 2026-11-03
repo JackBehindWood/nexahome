@@ -1,6 +1,6 @@
 # Principles, constraints and security
 
-Version 0.1 · Last reviewed 2026-11-02
+Version 0.1 · Last reviewed 2026-11-03
 
 Rules every change must follow. Decisions and their status are in the [register](project.md#decision-register).
 
@@ -15,11 +15,11 @@ Each principle has a check you can run or read.
 | Portability | Same files on macOS and Linux; platform-specific parts are isolated and explained | No hardcoded paths, hostnames, IPs or UIDs; paths come from environment variables |
 | Simplicity | Prefer the simplest design that works today; Docker Compose only | No Kubernetes, custom orchestrator or "for later" abstraction without an ADR |
 | Frugality | Affordable, energy efficient, low maintenance. Open-source software first; no paid subscriptions; no always-on workload unless it needs to be always on; complexity only when justified | New services state their RAM and disk need and whether they must run 24/7; nothing runs that is not used |
-| Reliability | Every service has a health check, a restart policy and a pinned image; data survives container replacement | `scripts/check_compose.py`; backups count only after a tested restore |
+| Reliability | Every service has a health check, a restart policy and a pinned image; data survives container replacement | `nexahome check`; backups count only after a tested restore |
 
 ## Compose policy
 
-Enforced by `make check` (`scripts/check_compose.py`) unless marked review.
+Enforced by `make check` (`nexahome check`) unless marked review.
 
 - Image pinned to an exact tag; never `latest`; multi-arch (arm64 and amd64), no amd64-only images (review).
 - Health check and restart policy on every service. Exception: a one-shot job started by a script (the backup) carries the label `nexahome.oneshot: "true"` and is exempt from these two rules only; the image pin, port, privilege and network rules still apply ([ADR 0008](adr/0008-backup-tool.md)).
@@ -72,4 +72,4 @@ Rules evaluate deny, then ask, then allow; the first match wins. Limits: rules m
 
 Preferences, not mandates; evaluate against requirements. Git, Markdown and ADRs, YAML and `.env` files, SSH keys for remote access, REST and MQTT as protocols. Not selected until a requirement appears: NAS operating system, orchestration platform, identity provider, configuration management (not before a second host).
 
-Changelog: 0.1 (2026-11-02): the nexahome command list names `env`, not `setup` (CI redesign session); 0.1 (2026-11-02): run-path line reworded for the nexahome package and the performance rule added, owner's yes (PK4); 0.1 (2026-11-02): language rule points at ADR 0018 (PK2 reword B3); 0.1 (2026-11-02): `NEXAHOME_DATA_DIR` claim removed, nothing reads it (PK2); 0.1 (2026-10-23): `make smoke`; 0.1 (2026-10-23): `make open` platform note; 0.1 (2026-10-22): `cap_add`, socket and external-network rules enforced; `GENERATE` placeholder; 0.1 (2026-10-21): version renamed from 1.0 (pre-release project); 0.1 (2026-10-21): one-shot job exception; 0.1 (2026-10-21): volume label, project name and placeholder rules, Makefile conventions; 0.1 (2026-10-20): frugality expanded; reorganised into principles, Compose policy, tooling, security and guardrails; frugality and tooling policy added; Compose policy moved here from local files; VPN and SSH method preferences removed (open in the register).
+Changelog: 0.1 (2026-11-03): Compose policy is run by `nexahome check` (PK5); 0.1 (2026-11-02): the nexahome command list names `env`, not `setup` (CI redesign session); 0.1 (2026-11-02): run-path line reworded for the nexahome package and the performance rule added, owner's yes (PK4); 0.1 (2026-11-02): language rule points at ADR 0018 (PK2 reword B3); 0.1 (2026-11-02): `NEXAHOME_DATA_DIR` claim removed, nothing reads it (PK2); 0.1 (2026-10-23): `make smoke`; 0.1 (2026-10-23): `make open` platform note; 0.1 (2026-10-22): `cap_add`, socket and external-network rules enforced; `GENERATE` placeholder; 0.1 (2026-10-21): version renamed from 1.0 (pre-release project); 0.1 (2026-10-21): one-shot job exception; 0.1 (2026-10-21): volume label, project name and placeholder rules, Makefile conventions; 0.1 (2026-10-20): frugality expanded; reorganised into principles, Compose policy, tooling, security and guardrails; frugality and tooling policy added; Compose policy moved here from local files; VPN and SSH method preferences removed (open in the register).
