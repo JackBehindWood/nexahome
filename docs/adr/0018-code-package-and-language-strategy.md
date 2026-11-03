@@ -1,6 +1,6 @@
 # 0018. Code package and language strategy
 
-* **Status:** Proposed (design only; no code exists, so nothing here is proven)
+* **Status:** Proposed (stages 1 and 2 are built and tested, stage 3 partly (manifest, `update`); stage 4 is not started; the design as a whole is not decided)
 * **Date:** 2026-11-02
 
 ## Context
@@ -23,12 +23,12 @@ Requirements and how each is verified:
 1. `nexahome doctor` and the test harness (fake `docker`). Additive; also useful alone.
 2. Bundled stacks and `nexahome init`; the two Python checks move into the package ([ADR 0020](0020-instance-install-and-release-model.md)).
 3. `upgrade` and the release pipeline.
-4. Run-path ports (`up`, `backup`, `smoke`, `deploy`). A test, not a ban: while the mini is in the vendor's return window, new code may be added beside an old script that stays untouched, with golden tests (read-only logic such as `smoke` parsing is the example). Switching a caller (Makefile, hook, CI) to the package, and porting commands that change data or hosts (`up`, `backup`, `restore`, `deploy`), wait until Track B step B2 has closed, because B2 tests ADRs 0014 to 0017 on that run path. Each old script stays until golden tests pass and is deleted in its own commit.
+4. Run-path ports (`up`, `backup`, `smoke`, `deploy`). A test, not a ban: while the mini is in the vendor's return window, new code may be added beside an old script that stays untouched, with golden tests (read-only logic such as `smoke` parsing is the example). Switching a caller (Makefile, hook, CI) to the package, and porting commands that change data or hosts (`up`, `backup`, `restore`, `deploy`), wait until Track B step B2 has closed, because B2 tests ADRs 0014 to 0017 on that run path. (Hooks and CI were released to call the package on 2026-11-03 at the owner's request; the run-path scripts are untouched.) Each old script stays until golden tests pass and is deleted in its own commit.
 
 The Makefile stays as one-line shims, so documented `make` commands keep working. This amends by reference the Confirmed run-path rule in ADR 0007 ("Make and POSIX shell; Python for checks only") and the register row "no `pyproject.toml` until Python code needs it" (Python code now needs it, from stage 1). Neither is edited until the owner says yes.
 
 ## Consequences
-Easier: tested logic, one install path, the same code on a laptop, the mini and CI, errors that end in a command. Harder: the first Python package and build step in the repository; a solo maintainer carries the package; Python 3.13 is newer than Ubuntu 24.04's 3.12, so non-uv users must supply it and the docs lead with uv. **Unverified:** that `uv tool install <wheel URL>` fetches Python 3.13 by itself (tested in stage 1); `make setup` on the macOS system Python 3.9.6; hatchling `force-include` for a directory tree.
+Easier: tested logic, one install path, the same code on a laptop, the mini and CI, errors that end in a command. Harder: the first Python package and build step in the repository; a solo maintainer carries the package; Python 3.13 is newer than Ubuntu 24.04's 3.12, so non-uv users must supply it and the docs lead with uv. **Unverified:** that `uv tool install <wheel URL>` fetches Python 3.13 by itself (tested in stage 1); `make setup` on the macOS system Python 3.9.6. Hatchling `force-include` was tried and replaced by `include` plus `sources`, because it shipped a local `.env` and the stack READMEs.
 
 Failure modes: wrong Python → pip refuses the wheel before `doctor` can run (`make setup` names the fix; `doctor` only prints the interpreter version); Docker missing → stack commands stop with the start hint, `check` and `--version` still work; a port changes behaviour → old script kept until golden parity. Evolution: the CLI contract is the same on laptop, mini, Linux host and NAS; only environment variables change.
 
@@ -37,7 +37,7 @@ Failure modes: wrong Python → pip refuses the wheel before `doctor` can run (`
 | :-- | :-- |
 | Keep shell and scripts, add tests with bats | Rejected: another tool, still no portable parsing or exit-code contract |
 | click or typer | Rejected: runtime dependency |
-| Go single binary | Rejected: owner does not know Go; maintenance risk |
+| Go single binary (for this package) | Rejected: owner does not know Go; maintenance risk. Languages for application stacks are a separate question, drafted for a later ADR |
 | C++ helper | Not built. Trigger: a measured need Python misses; then a separate executable with a JSON contract, never an in-process extension |
 | Python floor 3.11 or 3.12 | Not taken: owner chose 3.13; lowering later breaks nobody |
 | ruff or a type checker now | Not proposed; added when a lint need shows up |

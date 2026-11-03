@@ -4,17 +4,21 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
 ## Pending owner actions (the one current list)
 
-Last replaced 2026-11-03 (PK6c). Older entries end with a pointer here instead of their own list.
+Last replaced 2026-11-03 (PK6e). Older entries end with a pointer here instead of their own list.
 
 **Decide**
-- Other Proposed register rows (documentation conventions, repository layout, task runner, security baseline, roles, three Packaging rows); review ADRs 0014 to 0020, the SSH runbook and the packaging design. Proposed ADR 0018, 0019 and 0020 still carry present-tense claims the code now contradicts (audit S-10): a wording batch for the ADR-update session.
+- Other Proposed register rows (documentation conventions, repository layout, task runner, security baseline, roles, three Packaging rows); review ADRs 0014 to 0020, the SSH runbook and the packaging design. The present-tense wording in Proposed ADRs 0018 to 0020 (audit S-10) was corrected in PK6d; those edits are uncommitted.
+- The app-stack ADR draft (local, `.claude/tmp/`): Go for app stacks, template layout, sign-in for the first app, which profile after Python, where a runner's own stacks live, and whether it becomes `docs/adr/0022-...` as Proposed.
+- The local packaging-plan cleanup is proposed side by side (`.claude/tmp/packaging-cleanup/`), not yet applied: your yes replaces the live plan files.
 - Rewords that touch Confirmed items: B1, B2 (language rule in the register and ADR 0007), C1, C2 (ADR 0007), D1 (one register row), and audit S-16 and S-25 (stale cross-status wording in ADR 0007 to 0009).
 - GitHub: Dependabot alerts and security updates are disabled for the repository (your action, Settings, Code security); the account setting "Block command line pushes that expose my email"; optional SSH-signed commits.
+- graphify (PK6e): the global skill was auto-refreshed to 0.9.101 (old copy `~/.claude/skills/graphify/SKILL.md.bak`): keep or revert; commit `.gitignore` (`graphify-out/`) and `.graphifyignore` or keep the second one local; the document pass (Gemini key is set, free tier unknown, nothing sent) and question Q1 wait for a later session; rebuild with `rm -rf graphify-out && GRAPHIFY_FORCE=1 graphify update .` (the agent's attempt was denied, so `graphify-out/` and its cache are still the first build).
 - Open choices: digest pinning; paid tier versus the open-source rule; keep `hello` on the edge and in the portal; delete the root `.env.example` (it holds no setting, audit S-23); the first tag number (the package is 0.2.0, the plan said `v0.1.0`, so `update` would never offer it).
 
 **Git**
 - Pull requests 23 and 24 are merged (2026-11-03); `main` requires `checks`, `secrets` and `gate`, branches up to date. `platforms` is never required.
-- Dependabot pull requests (all into `main`): 26, 29 and 30 have every job green; 25, 27 and 28 have the required jobs green and a red `platforms` because the macOS leg was abandoned with no step run (the `platforms` job now treats that as "did not run", in PK6c). 28 (pocket-id) stays held. Merging and pushing are your yes; the PK6c commits on `feat/packaging` are not pushed.
+- Dependabot pull requests (all into `main`): 26, 29 and 30 have every job green; 25, 27 and 28 have the required jobs green and a red `platforms` because the macOS leg was abandoned with no step run (the `platforms` job now treats that as "did not run", in PK6c). 28 (pocket-id) stays held. 30 edits only the deleted `requirements-dev.txt` and will conflict once this branch reaches `main`; 29 edits `pyproject.toml`, which this branch also changed, so it may conflict (not verified). Merging and pushing are your yes; the 19 PK6c commits on `feat/packaging` are not pushed, and the PK6d edits (three ADRs, this log, the roadmap) are uncommitted.
+- `src/nexahome/runner.py` is modified in the working tree (a lazy `subprocess` import) by something other than the PK6d session; tests and `make check` pass with it. Yours to keep, commit or revert.
 
 **Security hygiene**
 - Keep `ENCRYPTION_KEY` and the restic password in a password manager (the repository is on the same disk: a drill, not protection); keep the ntfy topic secret.
@@ -27,6 +31,63 @@ Last replaced 2026-11-03 (PK6c). Older entries end with a pointer here instead o
 - `scripts/__pycache__` (untracked, gitignored) is a leftover: delete it (your yes).
 - Dependabot parsing is shown for `portal`, `identity`, `gatus` and `pip`; not yet for `github-actions`, `hello`, `actual`, `backup`, `edge`, `_template` (no newer tag is also a reason); the `dev` and `check` dependency groups are unproven until a Dependabot pull request appears after a push.
 - Audit rows left for PK7 or later: S-21 (two `.env` creators until `nexahome up`), S-26 (backup job mounts every stack's `.env`), S-30 (deploy checkout and instance share a folder name), the package rows P-07 (trust model of `update`), P-11, P-12, P-14, P-16, P-18 to P-22, P-25 to P-27.
+
+## 2026-11-03: PK6e (graphify trial, code pass only)
+
+**Done**
+- Entry state checked read-only. Differences from the prompt: graphify 0.9.46 was already installed (`uv tool`, global), so there was no install; `origin/feat/packaging` exists at the base commit 2605a93 (no PK6 commit pushed); the session log was 182 lines in the working tree (141 committed); `GEMINI_API_KEY` is set in the shell, so a document pass would have sent text to Gemini (not run).
+- Owner approved an upgrade: 0.9.46 to 0.9.101 (`uv tool upgrade graphifyy`). Side effect: the first graphify run refreshed the global skill file (old copy kept as `.bak`); `~/.claude/CLAUDE.md` unchanged. A stray `src/graphify-out/` made by a read-only measurement was deleted.
+- Code-only build, no model, 0 tokens: scratch copy first (99 files, 1,234 nodes, about 3 s), then the repo (142 files, 1,640 nodes, 3,292 edges, 113 communities, about 3 s); `graphify-out/` is gitignored; no `.claude/` or `.env` file is in the graph.
+- Verdict: **not yet.** Q3 (what changes if `defaults.py` changes): 28 importers in 0.29 s, but it misses the function-level imports the repo uses on purpose (`cli.py`, ADR 0021) and a test string reference; grep found them in 0.03 s. Q2 (requirement IDs no test verifies): the graph has no ID nodes, a query returned about 6k tokens of noise; one `comm` line gave 19 IDs. Q1 (decision to code) needs documents: not run.
+- Cost: 0 tokens, about 3 s per build, 159 MB of tool, 5 MB output. Removal: `uv tool uninstall graphifyy`, `graphify uninstall --purge`, delete `graphify-out/`.
+
+**Doc changes and reasons**
+- `.gitignore`: `graphify-out/` added (generated output must not be tracked; owner asked). New `.graphifyignore` (sensitive and local-only paths repeated so a `.gitignore` change cannot expose them; owner asked). Both are staged, not committed.
+- Roadmap Next row, Done list and changelog; this entry and the Pending list. No ADR, register row or label changed in this session.
+
+**Verified:** `make check` exit 0; `tests/test_docs.py` 59 passed; no `.env`, key, `data/` or `.claude/` staged. **Not verified:** the document pass, Q1, whether the Gemini key is free tier, token estimates, behaviour on Linux or the Mac mini, CI on any of this.
+
+**Next:** your decisions (cleanup proposal, Dependabot order, push and pull request into `dev`, first tag, `scripts/__pycache__` and root `.env.example`, ADR 0022 draft, S-16 and S-25, commits, `runner.py` (it also dropped a blank line before `class RunResult`), ruff or a type checker). PK7 to PK10 after B2. A later graphify session only if Q1 is worth a probe.
+
+**Open questions:** keep or revert the refreshed skill; track `.graphifyignore`; whether to allow a Gemini document pass.
+
+## 2026-11-03: PK6d (app-stack ADR draft, packaging-plan cleanup)
+
+**Done** (docs and local files only; no code written)
+- Entry state checked read-only. Differences from the prompt: the PK6c session-end entry was uncommitted; the Dependabot pull requests all target `main` (30 is clean today and conflicts only after the chain reaches `main`; 29 may conflict on `pyproject.toml`); the local master plan has no sections 3, 5 or 9.
+- A Proposed ADR draft for own images and application stacks, written to the gitignored `.claude/tmp/`, not to `docs/adr/`: adopt before build, a language-neutral contract (AS-1 to AS-13), runtime profiles (FastAPI and Streamlit first; Node, Go, Rust, C++, static, worker later; accelerators not covered), failure modes, evolution per hardware hop, a not-built list. Finding: a stack built with `build: .` would put its `.env` in the build context and `nexahome check` accepts it (scratch run, Docker CLI only), so the draft requires a `./app` context. Nothing promoted.
+- A side-by-side cleanup of the local packaging plan: `audit.md` 389 to 108 lines (open rows, fixed rows with commits, decisions), README 127 to 92, cards 75 to 37, master and PK9 card extended for `nexahome clean`. Originals archived; live plan files not yet replaced.
+- A plan for `nexahome clean [--all]` (dry run by default, refuses clones, `$HOME`, running containers; never touches backups or Docker volumes), recorded as PK-I5 and PK-I6 in the local plan and built in PK9. `~/.nexahome` does not exist; the owner meant `~/nexahome` and `.nexahome/`.
+
+**Doc changes and reasons** (owner: "you are allowed to edit them if needed"; all Proposed ADRs, labels unchanged, uncommitted)
+- ADR 0018: status line (stages 1 and 2 built, stage 3 partly, stage 4 not started), a sentence that hooks and CI were released on 2026-11-03, `force-include` replaced by `include` plus `sources`, and the "Go single binary" row now says it concerns the package (audit S-10; the code contradicted "no code exists").
+- ADR 0019: the `tests` job description (wheel check, instance round trip, demo start) and the deleted macOS fallback sentence (`ci.yml` has no fallback).
+- ADR 0020: status line, home resolution (`~/nexahome` only when it holds `nexahome.toml`), the manifest is written by `init`, `force-include` note.
+- No Confirmed ADR, register row or label was changed. This log and the roadmap Next row and Done list were updated for the session.
+
+**Verified:** `make check` exit 0; 435 tests pass on Python 3.14 (59 in `tests/test_docs.py`); nothing staged; no `.env`, key, `data/` or `.claude/` tracked; the draft's links resolve and its personal-data scan is clean. **Not verified:** anything on an engine (RAM, image size, health command, a build), CI on any of this, the Compose `pull_policy: build` wording against the official spec, Streamlit and Pocket ID group claims, Dependabot support for Conan and CMake, buildpacks on arm64, `docker init` under Colima, the #29 conflict, hardware.
+
+**Next:** PK6e (graphify; ask before installing). Then your decisions below, and PK7 to PK10 after B2 (PK9 now carries `clean`).
+**Open questions:** Go for app stacks (the draft recommends: owner-written Go is covered by "no Go"); template layout and sign-in for the first app; apply the cleanup proposal; which Confirmed-ADR edits to tick (S-16, S-25); first tag number; delete `scripts/__pycache__` and the root `.env.example`.
+**Pending:** the list at the top.
+
+## 2026-11-03: PK6c (audit fixes, docs compaction)
+
+**Done** (19 commits on `feat/packaging`, `644839f` to `e92a46c`, not pushed; the prompt's rows were placeholders, so the audit's own recommendations were applied)
+- Package: P-01, P-03, P-04, P-05, P-06, P-08, P-09, P-10, P-13, P-15, P-17, P-23, P-28, P-29, P-30 (two assertions). The Compose policy now enforces the hardening keys and reads `compose.override.yaml` (P-02, D-A, D-F); `check` supplies placeholders for required variables (D-K); `defaults.py` holds the shared limits and names (D1); `Context.checkout()` became `instance()` (D-C).
+- Stacks and CI: template limits and Dependabot entry, gatus image name `nexahome/gatus:local` (D-G); `make check` covers untracked files (D-D); a deploy checkout installs the package, with a CI rehearsal step (D-E); `platforms` fails only on a failed leg (D-H).
+- Tooling (D3, changed at the owner's request): `pyproject.toml` has a `check` group (pre-commit, pre-commit-hooks, detect-secrets) installed by `make setup`, and a `dev` group (pytest) installed only by `setup.sh --dev` or `make setup-dev`; `requirements-dev.txt` removed.
+- Verified locally: `make check` green, 435 tests on Python 3.14.7 and 3.13.3, `tests/test_docs.py` 59 passed, start-up unchanged against `2605a93` (`--version` 28.7 ms both; the personal-data hook about 0.7 ms slower).
+
+**Doc changes and reasons**
+- Confirmed text, on the owner's per-item yes, no label changed: `docs/project.md` required checks now name `gate` and the health row names the opt-in ntfy notifier (both stale against GitHub and the stack); `docs/constraints.md` lists the enforced policy keys, all eight commands and the personal-data patterns; ADR 0003 and `constraints.md` name the `check` and `dev` groups.
+- Proposed text, wording only: ADR 0019 (`gate` required since 2026-11-02, `nexahome check`), ADR 0014, ADR 0018 and register row 92 (plan wording instead of order and price detail), ADR 0018 line 20 (dependency group).
+- Other: `docs/observability.md` (seven stacks, Gatus, ntfy), README (override and update notes), stack READMEs and comments (S-17 to S-19), `docs/project.md` package status, CONTRIBUTING (setup flow). This log compacted from 868 to 141 lines (older entries summarised, text in git history), Pending refreshed once, local-only actions moved to a gitignored note; roadmap Next row, Done list and stale status lines tidied. Your uncommitted session-end edits were kept and committed with the compaction.
+
+**Next:** PK6d (app-stack ADR draft, doc only), then PK6e (graphify, ask before installing). Your decisions: merging Dependabot 26, 29, 30 (30 will conflict on the removed `requirements-dev.txt` and needs a Dependabot reopen), 25 and 27 after review, 28 held; a push of `feat/packaging`.
+**Open questions:** first tag number (package 0.2.0, plan said `v0.1.0`); delete the root `.env.example` (S-23); delete `scripts/__pycache__`; the Proposed ADR wording batch (S-10); Go for app stacks.
+**Not verified:** CI on any of this (including the deploy rehearsal step and the `platforms` change); `setup.sh --dev` end to end (the scratch rehearsal was refused; only `sh -n`, `make -n` and the earlier uv and pip rehearsals); Dependabot reading the dependency groups and the `_template` entry; macOS CI legs; engine, `make smoke` and all hardware.
+**Pending:** the list at the top.
 
 ## 2026-11-03: audit planning and Step 0 (between PK6 and PK7)
 
