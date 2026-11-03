@@ -114,7 +114,7 @@ jobs:
           command -v shellcheck >/dev/null || { echo "::error::shellcheck is not installed on this runner"; exit 1; }
           shellcheck --version | sed -n 2p
           shellcheck -s sh --severity=warning scripts/*.sh
-      - name: Docker CLI with Compose (macOS runners ship none; no engine is needed, see scripts/check_compose.py)
+      - name: Docker CLI with Compose (macOS runners ship none; no engine is needed, see nexahome check)
         if: runner.os == 'macOS'
         run: |
           docker compose version >/dev/null 2>&1 || {
@@ -187,17 +187,30 @@ jobs:
       - name: nexahome doctor (Linux runners have a Docker engine)
         if: runner.os == 'Linux'
         run: .venv/bin/nexahome doctor
-      - name: The wheel holds only the package
+      - name: The wheel holds the package and the stacks, nothing else
         if: matrix.name == 'ubuntu-amd64' && matrix.python == '3.13'
         run: |
           python -m pip wheel . --no-deps -w "$RUNNER_TEMP/wheel"
           python - <<'EOF'
-          import glob, os, zipfile
+          import glob, os, pathlib, zipfile
           names = zipfile.ZipFile(glob.glob(os.path.join(os.environ["RUNNER_TEMP"], "wheel", "*.whl"))[0]).namelist()
           print(*names, sep="\n")
           stray = [n for n in names if not n.startswith(("nexahome/", "nexahome-"))]
           assert not stray, f"files outside the package: {stray}"
+          # PK5-3: every stack ships its compose.yaml; no .env, data directory or README comes along.
+          for compose in sorted(pathlib.Path("stacks").glob("*/compose.yaml")):
+              assert f"nexahome/_stacks/{compose.parent.name}/compose.yaml" in names, f"{compose} is not in the wheel"
+          leaks = [n for n in names if "/_stacks/" in n and (n.endswith("/.env") or "/data/" in n or n.endswith("README.md"))]
+          assert not leaks, f"files that must not ship: {leaks}"
           EOF
+      - name: The installed stacks pass nexahome check
+        if: matrix.name == 'ubuntu-amd64' && matrix.python == '3.13'
+        run: |
+          python -m venv "$RUNNER_TEMP/roundtrip"
+          "$RUNNER_TEMP"/roundtrip/bin/pip install --quiet "$RUNNER_TEMP"/wheel/*.whl
+          stacks=$("$RUNNER_TEMP"/roundtrip/bin/python -c 'import nexahome, pathlib; print(pathlib.Path(nexahome.__file__).parent / "_stacks")')
+          cd "$RUNNER_TEMP"
+          "$RUNNER_TEMP"/roundtrip/bin/nexahome check --stacks "$stacks"
 
   tests-platforms:
     name: tests (${{ matrix.name }}, py${{ matrix.python }})
