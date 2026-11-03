@@ -1,0 +1,17 @@
+# What graphify must never read. It already honours .gitignore; this repeats the
+# sensitive and local-only paths so a change to .gitignore cannot expose them.
+.claude/
+.vscode/
+.config/
+data/
+secrets/
+.venv/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+id_*
+*.kdbx
+graphify-out/
