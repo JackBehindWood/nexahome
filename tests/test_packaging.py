@@ -79,3 +79,16 @@ def test_heavy_modules_are_imported_inside_functions() -> None:
             names = [a.name for a in node.names] if isinstance(node, ast.Import) else [node.module or ""] if isinstance(node, ast.ImportFrom) and node.level == 0 else []
             found += [f"{relative}: {n}" for n in names if n.split(".")[0] in HEAVY_AT_TOP and (relative, n.split(".")[0]) not in ALLOWED_AT_TOP]
     assert found == []
+
+
+def test_docker_knowledge_lives_in_the_docker_package() -> None:
+    """PK6-16: the program name and the shared network are named once, in nexahome/docker/; elsewhere they are imported."""
+    found = []
+    for path in SOURCES:
+        relative = path.relative_to(PACKAGE).as_posix()
+        if relative.startswith("docker/"):
+            continue
+        for node in ast.walk(ast.parse(path.read_text())):
+            if isinstance(node, ast.Constant) and node.value in ("docker", "nexahome-edge"):
+                found.append(f"{relative}:{node.lineno} {node.value!r}")
+    assert found == []

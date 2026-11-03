@@ -22,14 +22,14 @@ def register(subparsers: Subparsers) -> None:
 
 
 def run(args: argparse.Namespace, ctx: Context) -> int:
-    from nexahome import docker
+    from nexahome.docker import compose
     from nexahome import stacks as stack_catalogue
     from nexahome.parallel import map_ordered
 
     checkout = ctx.require_checkout()
     enabled = set(stack_catalogue.enabled(checkout))
     names = stack_catalogue.all_stacks(checkout)
-    states = map_ordered(lambda name: docker.stack_state(ctx, stack_catalogue.compose_file(checkout, name)), names)
+    states = map_ordered(lambda name: compose.stack_state(ctx, stack_catalogue.compose_file(checkout, name)), names)
     rows = [{"name": name, "enabled": name in enabled, "state": state} for name, state in zip(names, states, strict=True)]
     if args.json:
         import json

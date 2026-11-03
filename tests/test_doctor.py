@@ -7,6 +7,7 @@ import pytest
 
 from nexahome import cli
 from nexahome import diagnosis
+from nexahome.docker import probes as docker_probes
 from nexahome.errors import ExitCode
 from nexahome.report import Check, Status
 from nexahome.runner import RunResult, SubprocessRunner
@@ -170,7 +171,7 @@ def test_end_to_end_stuck_engine_times_out(
     monkeypatch: pytest.MonkeyPatch, fake_docker: Callable[..., FakeDocker], make_context: MakeContext
 ) -> None:
     fake_docker(SHIM_HEALTHY, hang="info --format {{.ServerVersion}}")
-    monkeypatch.setattr(diagnosis, "ENGINE_TIMEOUT", 0.5)
+    monkeypatch.setattr(docker_probes, "PROBE_TIMEOUT", 0.5)
     ctx = make_context(runner=SubprocessRunner())
     assert cli.main(["doctor"], ctx) == ExitCode.NOT_READY
     assert "did not answer" in ctx.out.getvalue()  # type: ignore[attr-defined]
