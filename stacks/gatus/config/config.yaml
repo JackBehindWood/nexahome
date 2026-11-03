@@ -1,4 +1,4 @@
-# Targets (docs/runbooks/add-a-stack.md, step 4): one entry per named URL, through the edge like a
+# Targets (docs/runbooks/add-a-stack.md, step 5): one entry per named URL, through the edge like a
 # browser. Hostnames come from NEXAHOME_DOMAIN and EDGE_PORT. Gatus itself is not listed.
 storage:
   type: sqlite

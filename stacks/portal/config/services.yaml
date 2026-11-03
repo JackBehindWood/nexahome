@@ -8,7 +8,7 @@
         siteMonitor: http://id.{{HOMEPAGE_VAR_DOMAIN}}:{{HOMEPAGE_VAR_PORT}}/
     - Health:
         href: http://gatus.{{HOMEPAGE_VAR_DOMAIN}}:{{HOMEPAGE_VAR_PORT}}/
-        description: Up/down history of every stack
+        description: Up/down history of every named URL
         siteMonitor: http://gatus.{{HOMEPAGE_VAR_DOMAIN}}:{{HOMEPAGE_VAR_PORT}}/
 
 - Apps:

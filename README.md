@@ -33,7 +33,7 @@ nexahome env                              # creates each .env, generates secrets
 docker compose -f stacks/actual/compose.yaml up -d --wait
 ```
 
-The `docker compose` lines are the manual form of `make up` and `make down`, which need a clone; a `nexahome up` will replace them. Backup, restore, smoke checks and deploy are also still Makefile targets, so they need a clone for now. The stacks in `~/nexahome/stacks` belong to the package: do not edit them. Your changes go in each stack's `.env` (a `compose.override.yaml` is not read by the manual commands above, because they name the file with `-f`; it arrives with `nexahome up`). Anything that edits the three files that list every named app (the edge `Caddyfile`, the portal `services.yaml`, the Gatus targets) means forking the repository, the second way in.
+The `docker compose` lines are a manual form of `make up` and `make down` (which need a clone) without its `.env` handling; a `nexahome up` will replace them. Backup, restore, smoke checks and deploy are also still Makefile targets, so they need a clone for now. The stacks in `~/nexahome/stacks` belong to the package: do not edit them. Your changes go in each stack's `.env` (a `compose.override.yaml` is read by the manual commands above only if you add `-f stacks/<name>/compose.override.yaml` after the first `-f`, because they name the file with `-f`; `nexahome check` reads it for you). Anything that edits the three files that list every named app (the edge `Caddyfile`, the portal `services.yaml`, the Gatus targets) means forking the repository, the second way in.
 
 ### Fork it, contribute, or run the full tooling (clone)
 
@@ -73,7 +73,7 @@ nexahome check              # the Compose policy over the stacks
 nexahome update --available # is a newer release out? (there is none yet)
 ```
 
-`make setup` prepares the tool itself (the virtual environment); `nexahome env` prepares the stacks (their `.env` files). `nexahome --help` lists every command and `nexahome <command> --help` its options. Without activating the environment, call `.venv/bin/nexahome`. Which folder it works on: `--home DIR` (given before the command), else `$NEXAHOME_HOME`, else the nearest folder above you that holds `nexahome.toml` (or, in a clone, `stacks/` and a Makefile), else `~/nexahome` when that holds a `nexahome.toml`. `doctor`, `stacks` and `update --available` also take `--json` for scripts (schema 1, described in `src/nexahome/report.py`). It is not on PyPI and has no release yet; `make test` runs its tests ([CONTRIBUTING](CONTRIBUTING.md#the-nexahome-package)).
+`make setup` prepares the tool itself (the virtual environment); `nexahome env` prepares the stacks (their `.env` files). `nexahome update` needs `NEXAHOME_UPDATE_URL` until the first release. `nexahome --help` lists every command and `nexahome <command> --help` its options. Without activating the environment, call `.venv/bin/nexahome`. Which folder it works on: `--home DIR` (given before the command), else `$NEXAHOME_HOME`, else the nearest folder above you that holds `nexahome.toml` (or, in a clone, `stacks/` and a Makefile), else `~/nexahome` when that holds a `nexahome.toml`. `doctor`, `stacks` and `update --available` also take `--json` for scripts (schema 1, described in `src/nexahome/report.py`). It is not on PyPI and has no release yet; `make test` runs its tests ([CONTRIBUTING](CONTRIBUTING.md#the-nexahome-package)).
 
 Exit codes, the same for every command:
 
