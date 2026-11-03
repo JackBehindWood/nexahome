@@ -1,4 +1,4 @@
-"""Golden parity (PK-C3): the port gives the same answers as scripts/check_compose.py."""
+"""The Compose policy rules (ported from scripts/check_compose.py, PK5; parity was proven before it was deleted)."""
 
 import json
 from collections.abc import Mapping
@@ -10,7 +10,7 @@ import pytest
 from nexahome.policy import compose
 from nexahome.runner import RunResult, SubprocessRunner
 
-from conftest import REPO, FakeRunner, has_compose, load_script
+from conftest import REPO, FakeRunner, has_compose
 
 GOOD: dict[str, Any] = {
     "image": "example/app:1.2.3",
@@ -61,16 +61,14 @@ PROJECTS: list[tuple[str, str, dict[str, Any], str]] = [
 
 
 @pytest.mark.parametrize(("name", "svc", "expected"), SERVICES, ids=[s[0] for s in SERVICES])
-def test_service_rules_match_the_original(name: str, svc: Mapping[str, Any], expected: str) -> None:
+def test_service_rules(name: str, svc: Mapping[str, Any], expected: str) -> None:
     got = compose.check_service("app", svc)
-    assert got == load_script("check_compose").check_service("app", svc)
     assert (expected in " ".join(got)) if expected else got == []
 
 
 @pytest.mark.parametrize(("name", "directory", "config", "expected"), PROJECTS, ids=[p[0] for p in PROJECTS])
-def test_project_rules_match_the_original(name: str, directory: str, config: Mapping[str, Any], expected: str) -> None:
+def test_project_rules(name: str, directory: str, config: Mapping[str, Any], expected: str) -> None:
     got = compose.check_project(directory, config)
-    assert got == load_script("check_compose").check_project(directory, config)
     assert (expected in " ".join(got)) if expected else got == []
 
 
@@ -117,15 +115,12 @@ def test_check_stack_errors_when_docker_is_missing_or_compose_fails(tmp_path: Pa
 
 
 @pytest.mark.skipif(not has_compose(), reason="needs the Docker CLI with the Compose plugin (no engine)")
-def test_the_real_stacks_give_the_same_output_as_the_original(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_the_real_stacks_pass_the_policy(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(REPO)
-    code = load_script("check_compose").main()
-    original = capsys.readouterr().out.splitlines()
     results = compose.check_stacks(SubprocessRunner())
-    assert [line for r in results for line in r.lines()] == original
-    assert (code == 0) == all(not r.problems and r.error is None for r in results)
+    names = sorted(p.parent.name for p in (REPO / "stacks").glob("*/compose.yaml"))
+    assert [line for r in results for line in r.lines()] == [f"stacks/{n}/compose.yaml: ok" for n in names]
+    assert all(not r.problems and r.error is None for r in results)
 
 
 def test_check_stack_reports_json_it_cannot_read(tmp_path: Path) -> None:

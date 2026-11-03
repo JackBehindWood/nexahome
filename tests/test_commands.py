@@ -10,7 +10,7 @@ from nexahome import cli
 from nexahome.errors import ExitCode
 from nexahome.runner import RunResult, SubprocessRunner
 
-from conftest import DOCKER_HEALTHY, REPO, FakeRunner, MakeCheckout, MakeContext, MakeHost, has_compose, load_script
+from conftest import DOCKER_HEALTHY, REPO, FakeRunner, MakeCheckout, MakeContext, MakeHost, has_compose
 
 INFO = ("docker", "info", "--format", "{{.ServerVersion}}")
 
@@ -75,14 +75,11 @@ def test_check_takes_another_stacks_folder(make_checkout: MakeCheckout, make_con
 
 
 @pytest.mark.skipif(not has_compose(), reason="needs the Docker CLI with the Compose plugin (no engine)")
-def test_check_matches_the_original_script_on_the_real_stacks(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str], make_context: MakeContext
-) -> None:
-    monkeypatch.chdir(REPO)
-    code = load_script("check_compose").main()
-    original = capsys.readouterr().out
+def test_check_passes_on_the_real_stacks(make_context: MakeContext) -> None:
     ctx = make_context(cwd=REPO, runner=SubprocessRunner())
-    assert (cli.main(["check"], ctx), out(ctx)) == (code, original)
+    names = sorted(p.parent.name for p in (REPO / "stacks").glob("*/compose.yaml"))
+    assert cli.main(["check"], ctx) == ExitCode.OK
+    assert out(ctx) == "".join(f"stacks/{n}/compose.yaml: ok\n" for n in names)
 
 
 # --- env ---------------------------------------------------------------------------------------------------
