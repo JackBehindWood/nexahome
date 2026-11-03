@@ -4,21 +4,20 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
 ## Pending owner actions (the one current list)
 
-Last replaced 2026-11-03 (PK6e). Older entries end with a pointer here instead of their own list.
+Last replaced 2026-11-03 (owner decisions after PK6e). Older entries end with a pointer here instead of their own list.
 
 **Decide**
-- Other Proposed register rows (documentation conventions, repository layout, task runner, security baseline, roles, three Packaging rows); review ADRs 0014 to 0020, the SSH runbook and the packaging design. The present-tense wording in Proposed ADRs 0018 to 0020 (audit S-10) was corrected in PK6d; those edits are uncommitted.
+- Other Proposed register rows (documentation conventions, repository layout, task runner, security baseline, roles, three Packaging rows); review ADRs 0014 to 0020, the SSH runbook and the packaging design. The present-tense wording in Proposed ADRs 0018 to 0020 (audit S-10) was corrected in PK6d.
 - The app-stack ADR draft (local, `.claude/tmp/`): Go for app stacks, template layout, sign-in for the first app, which profile after Python, where a runner's own stacks live, and whether it becomes `docs/adr/0022-...` as Proposed.
 - The local packaging-plan cleanup is proposed side by side (`.claude/tmp/packaging-cleanup/`), not yet applied: your yes replaces the live plan files.
-- Rewords that touch Confirmed items: B1, B2 (language rule in the register and ADR 0007), C1, C2 (ADR 0007), D1 (one register row), and audit S-16 and S-25 (stale cross-status wording in ADR 0007 to 0009).
+- Rewords that touch Confirmed items: B1, B2 (language rule in the register and ADR 0007), C1, C2 (ADR 0007), D1 (one register row), and audit S-16 (stale cross-status wording in ADR 0007; S-25 was fixed 2026-11-03).
 - GitHub: Dependabot alerts and security updates are disabled for the repository (your action, Settings, Code security); the account setting "Block command line pushes that expose my email"; optional SSH-signed commits.
 - graphify (PK6e): the global skill was auto-refreshed to 0.9.101 (old copy `~/.claude/skills/graphify/SKILL.md.bak`): keep or revert; commit `.gitignore` (`graphify-out/`) and `.graphifyignore` or keep the second one local; the document pass (Gemini key is set, free tier unknown, nothing sent) and question Q1 wait for a later session; rebuild with `rm -rf graphify-out && GRAPHIFY_FORCE=1 graphify update .` (the agent's attempt was denied, so `graphify-out/` and its cache are still the first build).
-- Open choices: digest pinning; paid tier versus the open-source rule; keep `hello` on the edge and in the portal; delete the root `.env.example` (it holds no setting, audit S-23); the first tag number (the package is 0.2.0, the plan said `v0.1.0`, so `update` would never offer it).
+- Open choices: digest pinning; paid tier versus the open-source rule; keep `hello` on the edge and in the portal; the first tag is decided as v0.2.0 (the package version), but ADR 0020 and the register row still say `v0.1.0` and wait for the register batch; ruff or a type checker (never asked).
 
 **Git**
 - Pull requests 23 and 24 are merged (2026-11-03); `main` requires `checks`, `secrets` and `gate`, branches up to date. `platforms` is never required.
-- Dependabot pull requests (all into `main`): 26, 29 and 30 have every job green; 25, 27 and 28 have the required jobs green and a red `platforms` because the macOS leg was abandoned with no step run (the `platforms` job now treats that as "did not run", in PK6c). 28 (pocket-id) stays held. 30 edits only the deleted `requirements-dev.txt` and will conflict once this branch reaches `main`; 29 edits `pyproject.toml`, which this branch also changed, so it may conflict (not verified). Merging and pushing are your yes; the 19 PK6c commits on `feat/packaging` are not pushed, and the PK6d edits (three ADRs, this log, the roadmap) are uncommitted.
-- `src/nexahome/runner.py` is modified in the working tree (a lazy `subprocess` import) by something other than the PK6d session; tests and `make check` pass with it. Yours to keep, commit or revert.
+- Dependabot pull requests (all into `main`): 26, 29 and 30 have every job green; 25, 27 and 28 have the required jobs green and a red `platforms` because the macOS leg was abandoned with no step run (the `platforms` job now treats that as "did not run", in PK6c). 28 (pocket-id) stays held. 30 edits only the deleted `requirements-dev.txt` and will conflict once this branch reaches `main`; 29 edits `pyproject.toml`, which this branch also changed, so it may conflict (not verified). Merging and pushing are your yes; the PK6c to PK6e commits on `feat/packaging` are not pushed.
 
 **Security hygiene**
 - Keep `ENCRYPTION_KEY` and the restic password in a password manager (the repository is on the same disk: a drill, not protection); keep the ntfy topic secret.
@@ -28,9 +27,21 @@ Last replaced 2026-11-03 (PK6e). Older entries end with a pointer here instead o
 
 **Open work**
 - Diagnose the Pocket ID self-restart; optional admin-only sign-in for the health view.
-- `scripts/__pycache__` (untracked, gitignored) is a leftover: delete it (your yes).
 - Dependabot parsing is shown for `portal`, `identity`, `gatus` and `pip`; not yet for `github-actions`, `hello`, `actual`, `backup`, `edge`, `_template` (no newer tag is also a reason); the `dev` and `check` dependency groups are unproven until a Dependabot pull request appears after a push.
 - Audit rows left for PK7 or later: S-21 (two `.env` creators until `nexahome up`), S-26 (backup job mounts every stack's `.env`), S-30 (deploy checkout and instance share a folder name), the package rows P-07 (trust model of `update`), P-11, P-12, P-14, P-16, P-18 to P-22, P-25 to P-27.
+
+## 2026-11-03: owner decisions after PK6e
+
+**Done** (owner answers; all committed on `feat/packaging`, nothing pushed)
+- Packaging-plan cleanup applied over the live local plan files (archives in `.claude/tmp/*-full.md`, `post-track-b-full.md` added).
+- Commits: PK6d ADR wording, log and roadmap; graphify ignore files; lazy `subprocess` import in `runner.py` (blank line restored, 435 tests pass).
+- Deleted `scripts/__pycache__` and the root `.env.example` (audit S-23; nothing reads it: stacks use their own, the Makefile and `nexahome` look under `stacks/<name>/`).
+
+**Doc changes and reasons**
+- ADR 0008 line 7: "register row Backup tool is Open" now says Confirmed (the register has said so since the drill; audit S-25). ADR 0009 line 12: ADR 0010 "Proposed" now "Confirmed 2026-11-02" (decided that day; audit S-25). Owner approved S-25; the Confirmed labels and decisions are unchanged.
+- First tag decided as v0.2.0; the matching wording in ADR 0020 and the register row waits for the register batch with S-16 (owner: batch later).
+
+**Open:** the other register rewords (B1, B2, C1, C2, D1, S-16); Dependabot merges and the push (owner chose "push only" when asked; not run yet); ADR 0022 draft; ruff or a type checker.
 
 ## 2026-11-03: PK6e (graphify trial, code pass only)
 
