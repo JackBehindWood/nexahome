@@ -4,20 +4,19 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
 ## Pending owner actions (the one current list)
 
-Last replaced 2026-11-03 (owner decisions after PK6e). Older entries end with a pointer here instead of their own list.
+Last replaced 2026-11-03 (end of PK6f). Older entries end with a pointer here instead of their own list.
 
 **Decide**
-- Other Proposed register rows (documentation conventions, repository layout, task runner, security baseline, roles, three Packaging rows); review ADRs 0014 to 0020, the SSH runbook and the packaging design. The present-tense wording in Proposed ADRs 0018 to 0020 (audit S-10) was corrected in PK6d.
-- The app-stack ADR draft (local, `.claude/tmp/`): Go for app stacks, template layout, sign-in for the first app, which profile after Python, where a runner's own stacks live, and whether it becomes `docs/adr/0022-...` as Proposed.
-- The local packaging-plan cleanup is proposed side by side (`.claude/tmp/packaging-cleanup/`), not yet applied: your yes replaces the live plan files.
-- Rewords that touch Confirmed items: B1, B2 (language rule in the register and ADR 0007), C1, C2 (ADR 0007), D1 (one register row), and audit S-16 (stale cross-status wording in ADR 0007; S-25 was fixed 2026-11-03).
+- Other Proposed register rows (documentation conventions, repository layout, task runner, security baseline, roles, three Packaging rows); review ADRs 0014 to 0020, the SSH runbook and the packaging design. None promoted in PK6f.
+- The app-stack ADR draft (local, `.claude/tmp/`): your five answers are recorded in it; it becomes `docs/adr/0022-...` as Proposed once the first app is specified.
 - GitHub: Dependabot alerts and security updates are disabled for the repository (your action, Settings, Code security); the account setting "Block command line pushes that expose my email"; optional SSH-signed commits.
-- graphify (PK6e): the global skill was auto-refreshed to 0.9.101 (old copy `~/.claude/skills/graphify/SKILL.md.bak`): keep or revert; commit `.gitignore` (`graphify-out/`) and `.graphifyignore` or keep the second one local; the document pass (Gemini key is set, free tier unknown, nothing sent) and question Q1 wait for a later session; rebuild with `rm -rf graphify-out && GRAPHIFY_FORCE=1 graphify update .` (the agent's attempt was denied, so `graphify-out/` and its cache are still the first build).
-- Open choices: digest pinning; paid tier versus the open-source rule; keep `hello` on the edge and in the portal; the first tag is decided as v0.2.0 (the package version), but ADR 0020 and the register row still say `v0.1.0` and wait for the register batch; ruff or a type checker (never asked).
+- Open choices: digest pinning; paid tier versus the open-source rule; keep `hello` on the edge and in the portal; ruff or a type checker (answered: not now; revisit if a lint or typing bug slips through).
+- Local `CLAUDE.md` still names `requirements-dev.txt` and CONTRIBUTING for the performance checklist (now `docs/codebase.md`): edit by hand.
 
 **Git**
-- Pull requests 23 and 24 are merged (2026-11-03); `main` requires `checks`, `secrets` and `gate`, branches up to date. `platforms` is never required.
-- Dependabot pull requests (all into `main`): 26, 29 and 30 have every job green; 25, 27 and 28 have the required jobs green and a red `platforms` because the macOS leg was abandoned with no step run (the `platforms` job now treats that as "did not run", in PK6c). 28 (pocket-id) stays held. 30 edits only the deleted `requirements-dev.txt` and will conflict once this branch reaches `main`; 29 edits `pyproject.toml`, which this branch also changed, so it may conflict (not verified). Merging and pushing are your yes; the PK6c to PK6e commits on `feat/packaging` are not pushed.
+- Pull request 31 (`feat/packaging` into `dev`) is merged (2026-11-03, CI green on `b101a0f`). Next: `dev` into `main` by pull request (your yes).
+- Dependabot (into `main`): 26 merged. 29 and 30 are green but wait until this branch reaches `main` (30 will conflict on the deleted `requirements-dev.txt`; 29 may on `pyproject.toml`; not verified). 25 and 27 await review (red `platforms` is the abandoned macOS leg); 28 (pocket-id) held.
+- Optional: `nexahome init` smoke passed in a throwaway folder (init and check exit 0; doctor 3 only because no container runtime ran).
 
 **Security hygiene**
 - Keep `ENCRYPTION_KEY` and the restic password in a password manager (the repository is on the same disk: a drill, not protection); keep the ntfy topic secret.
@@ -29,6 +28,10 @@ Last replaced 2026-11-03 (owner decisions after PK6e). Older entries end with a 
 - Diagnose the Pocket ID self-restart; optional admin-only sign-in for the health view.
 - Dependabot parsing is shown for `portal`, `identity`, `gatus` and `pip`; not yet for `github-actions`, `hello`, `actual`, `backup`, `edge`, `_template` (no newer tag is also a reason); the `dev` and `check` dependency groups are unproven until a Dependabot pull request appears after a push.
 - Audit rows left for PK7 or later: S-21 (two `.env` creators until `nexahome up`), S-26 (backup job mounts every stack's `.env`), S-30 (deploy checkout and instance share a folder name), the package rows P-07 (trust model of `update`), P-11, P-12, P-14, P-16, P-18 to P-22, P-25 to P-27.
+
+## 2026-11-03: PK6f session end
+
+**Next:** `dev` into `main` by pull request on your yes, then PK7 after B2 (Mac mini) or earlier packaging work you choose; a possible small card to port the Makefile `.env` block (S-21). **Open questions:** the Pending list above. **Verified at the end:** `make check` exit 0; 442 tests pass (3.14 locally; CI also ran 3.13 on Linux, green); `tests/test_docs.py` 61 passed; nothing staged; tree clean after commits `7524289` and `b101a0f`, pushed. **Not verified:** CI on macOS and arm64 (skipped on a pull request into `dev`), Dependabot 29 and 30 conflicts against `main`, anything on hardware, the unexplained single 300 s timeout of the first full test run (reruns took 5 s).
 
 ## 2026-11-03: PK6f (decisions batch and pull request)
 
