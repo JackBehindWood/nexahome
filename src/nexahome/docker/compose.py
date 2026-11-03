@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from nexahome.docker import EDGE_NETWORK
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -17,8 +16,13 @@ CONFIG_TIMEOUT = 60  # seconds per stack: `config` reads and interpolates every 
 
 
 def file_argv(compose: Path, env_example: Path | None = None) -> list[str]:
-    """`docker compose -f FILE`, plus `--env-file` when the stack's `.env.example` should supply the variables."""
+    """`docker compose -f FILE`, then the stack's `compose.override.yaml` when it exists (`docker compose` run in the stack
+    folder reads it, so a check that skipped it would approve what does not run), plus `--env-file` when the stack's
+    `.env.example` should supply the variables."""
     argv = ["docker", "compose", "-f", str(compose)]
+    override = compose.with_name("compose.override.yaml")
+    if override.is_file():
+        argv += ["-f", str(override)]
     if env_example is not None:
         argv += ["--env-file", str(env_example)]
     return argv
@@ -43,6 +47,7 @@ def ps(ctx: Context, compose: Path) -> RunResult:
 
 def network_command() -> str:
     """Create the shared network unless it exists, as `make up` does."""
+    from nexahome.docker import EDGE_NETWORK
     return f"docker network inspect {EDGE_NETWORK} >/dev/null 2>&1 || docker network create {EDGE_NETWORK}"
 
 
