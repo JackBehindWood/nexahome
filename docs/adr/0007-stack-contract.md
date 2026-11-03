@@ -10,8 +10,8 @@ Backups, upgrades and tooling must treat every stack the same, without knowing s
 - A stack is a copy of `stacks/_template/`: `compose.yaml`, `.env.example`, README with measured RAM and disk, 24/7 need, what is backed up and how to verify a restore.
 - Every named volume carries the label `nexahome.backup` with `"true"` or `"false"`. Backup tools find data by label.
 - The Compose project name is `nexahome-<directory>`. Both rules are enforced by `make check`.
-- `make up` creates `.env` from `.env.example` when absent and stops while a value is `CHANGE_ME`. `up`, `down` and `ps` without `STACK` act on every stack except `_template` and `backup`.
-- Run-path code is Make and POSIX shell; Python is for checks only. Trigger: when a second Python consumer appears (S2 `make status`, S3 `make upgrade`), extract a stdlib-only `scripts/stacks.py`.
+- `make up` creates `.env` from `.env.example` when absent and stops while a value is `CHANGE_ME`. `up`, `down` and `ps` without `STACK` act on the stacks listed in `.config/stacks` when that file exists ([ADR 0017](0017-deploy-flow.md)), otherwise on every stack except `_template` and `backup`.
+- Run-path code is Make and POSIX shell; Python is for checks only. Trigger: when a second Python consumer appears (S2 `make status`; `make upgrade` was cut), extract a stdlib-only `scripts/stacks.py`. If [ADR 0018](0018-code-package-and-language-strategy.md) is decided, it supersedes this line in part.
 
 ## Consequences
 Adding a stack is a copy and `make check`. Backup scripts need no stack list. Removing a volume label breaks the check, not a backup.

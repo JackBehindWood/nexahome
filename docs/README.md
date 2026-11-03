@@ -1,6 +1,6 @@
 # Documentation
 
-Version 0.1 · Last reviewed 2026-11-02
+Version 0.1 · Last reviewed 2026-11-03
 
 Each fact lives in exactly one document; every other document links to it.
 
@@ -9,7 +9,7 @@ Each fact lives in exactly one document; every other document links to it.
 Roles follow [ADR 0006](adr/0006-concerns-and-audiences.md), decided (see the register in [project.md](project.md)).
 
 - **Run a stack:** the root [README](../README.md), which also lists the `nexahome` command. Nothing in `docs/` is required.
-- **Change or contribute:** [CONTRIBUTING.md](../CONTRIBUTING.md) (it also says how to extend the `nexahome` package), then [constraints](constraints.md). To add a stack: [runbook](runbooks/add-a-stack.md).
+- **Change or contribute:** [CONTRIBUTING.md](../CONTRIBUTING.md), the [codebase guide](codebase.md) (layout, how to extend the `nexahome` package, keeping it fast), then [constraints](constraints.md). To add a stack: [runbook](runbooks/add-a-stack.md).
 - **Understand the design:** [project](project.md), then [architecture](architecture.md).
 
 ## Index and ownership
@@ -17,6 +17,7 @@ Roles follow [ADR 0006](adr/0006-concerns-and-audiences.md), decided (see the re
 | Document | Purpose | Audience | Owns |
 | :--- | :--- | :--- | :--- |
 | [project.md](project.md) | What NexaHome is and what it is not | All | Vision, scope, non-goals, audience, users, decision register, open questions |
+| [codebase.md](codebase.md) | How the `nexahome` code is laid out, extended and kept fast | Developers | Package layout, extension checklists, performance checklist |
 | [constraints.md](constraints.md) | Rules every change must follow | Developers | Principles, frugality, Compose policy, tooling policy, security rules, agent guardrails |
 | [architecture.md](architecture.md) | How the system is shaped and why | Developers, operators | Layers, hosts, failure domains, trust zones, data and backup model, secrets and identity, remote access, migration paths |
 | [observability.md](observability.md) | How we see what is running | Operators | Monitoring approach, decoupling rule, tool shortlist, inventory template |
@@ -39,4 +40,4 @@ Other owners: how to contribute is in [CONTRIBUTING.md](../CONTRIBUTING.md), ent
 - Nothing personal: no names, hostnames, IP addresses, emails or home paths.
 - The documentation set is versioned as a whole: version 0.1 is the first complete, consistent set (1.0 is reserved for the first release tag). Per-document history is the changelog line and git.
 
-Changelog: 0.1 (2026-11-02): the `nexahome` command and package guide linked from the role list (PK4); 0.1 (2026-11-02): session log exempt from the label rule (PK2); 0.1 (2026-11-02): SSH runbook listed; 0.1 (2026-10-21): documentation version is 0.x until the first release tag; version renamed from 1.0; 0.1 (2026-10-21): restore runbook listed; 0.1 (2026-10-21): runbooks row, start-here block and audience column; 0.1 (2026-10-20): initial index and conventions.
+Changelog: 0.1 (2026-11-03): codebase guide added and linked, moved out of CONTRIBUTING (PK6f); 0.1 (2026-11-02): the `nexahome` command and package guide linked from the role list (PK4); 0.1 (2026-11-02): session log exempt from the label rule (PK2); 0.1 (2026-11-02): SSH runbook listed; 0.1 (2026-10-21): documentation version is 0.x until the first release tag; version renamed from 1.0; 0.1 (2026-10-21): restore runbook listed; 0.1 (2026-10-21): runbooks row, start-here block and audience column; 0.1 (2026-10-20): initial index and conventions.

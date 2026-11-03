@@ -30,6 +30,23 @@ Last replaced 2026-11-03 (owner decisions after PK6e). Older entries end with a 
 - Dependabot parsing is shown for `portal`, `identity`, `gatus` and `pip`; not yet for `github-actions`, `hello`, `actual`, `backup`, `edge`, `_template` (no newer tag is also a reason); the `dev` and `check` dependency groups are unproven until a Dependabot pull request appears after a push.
 - Audit rows left for PK7 or later: S-21 (two `.env` creators until `nexahome up`), S-26 (backup job mounts every stack's `.env`), S-30 (deploy checkout and instance share a folder name), the package rows P-07 (trust model of `update`), P-11, P-12, P-14, P-16, P-18 to P-22, P-25 to P-27.
 
+## 2026-11-03: PK6f (decisions batch and pull request)
+
+**Done**
+- Pull request 31 opened `feat/packaging` into `dev` (not merged). CI on the 24 commits: `checks`, `secrets`, `plan`, `gate`, `hello up and down`, `portable (ubuntu-amd64)`, `tests` on Python 3.13 and 3.14 all passed; `platforms` and the macOS and arm64 legs were skipped on a pull request into `dev` by design.
+- Dependabot: pull request 26 (busybox) merged into `main` with the owner's yes; 29, 30, 25, 27 and 28 stay open (29 and 30 wait until this branch reaches `main`; 30 will conflict on the deleted `requirements-dev.txt`).
+- Owner answers: ADR 0022 draft recommendations accepted (kept local, copied to `docs/adr/` as Proposed only after the first app is specified); ruff not now (trigger: a lint or typing bug that slips through; a type checker waits for the same trigger); graphify leftovers dropped.
+- `nexahome init` smoke in a throwaway folder outside the clone (removed afterwards): `init` exit 0, `check` exit 0, `doctor` exit 3 only because no container runtime was running (Colima not started, not started by this session).
+- Code, at the owner's request after the doc work: `nexahome.parallel.run_waiting` (tasks that may wait for earlier ones; a `Mapping` of results, replacing `diagnosis._Prior` and its hand-rolled thread pool). `doctor` timing unchanged (median of 15: 137 ms before and after); 442 tests pass; `make check` exit 0. Uncommitted.
+- Entry state differences from the prompt: 24 commits ahead of `origin/dev`, not 25.
+
+**Doc changes and reasons** (owner ticked each item; no label changed)
+- ADR 0007 line 13 (S-16, C1): `up`, `down` and `ps` follow `.config/stacks` when present (the Makefile has done so since ADR 0017). Line 14 (C2): `make upgrade` was cut. Line 14 (B2): "If ADR 0018 is decided, it supersedes this line in part."
+- Register row Python tooling (B1): `pyproject.toml` exists now, link to ADR 0018.
+- First tag `v0.2.0` in ADR 0020 and its register row (the package version; `update` would never offer `v0.1.0`).
+- New `docs/codebase.md` (owner chose the name): the module map, "Extending it" and "Keeping the command fast" moved out of CONTRIBUTING (a move, so each fact keeps one owner); CONTRIBUTING keeps a pointer, `docs/README.md` has the index row and role-list link, ADR 0021 line 25 links the new anchor (owner's yes for that ADR edit; wording and label unchanged). Local `CLAUDE.md` still names CONTRIBUTING for the checklist (owner edits by hand).
+- D1 needed no edit: "Ordered by the owner" was already removed in `46eac5a`.
+
 ## 2026-11-03: owner decisions after PK6e
 
 **Done** (owner answers; all committed on `feat/packaging`, nothing pushed)
