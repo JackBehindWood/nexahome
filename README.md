@@ -6,7 +6,38 @@ A modular, self-hosted homelab platform: local AI, development tools, storage, n
 
 ## Quick start
 
-Needs `git`, `make`, and a Docker CLI with Compose and a running engine. On Linux, Docker Engine runs directly. On macOS the project uses [Colima](docs/adr/0004-colima-runtime.md); start it once per boot. On Windows, use WSL2: it counts as Linux, best effort and not tested in CI ([ADR 0019](docs/adr/0019-platform-support-and-ci-matrix.md)). Running stacks needs no Python; Python 3.13 or newer (or `uv`, which fetches it) is only for [contributing](CONTRIBUTING.md):
+Two ways in. Both need a Docker CLI with Compose and a running engine: on Linux, Docker Engine runs directly; on macOS the project uses [Colima](docs/adr/0004-colima-runtime.md), started once per boot (`colima start --cpu 2 --memory 2 --disk 20`); on Windows use WSL2, which counts as Linux, best effort and not tested in CI ([ADR 0019](docs/adr/0019-platform-support-and-ci-matrix.md)).
+
+### Run NexaHome as shipped (no clone)
+
+For anyone who wants the stacks as they are. You need Python 3.13 or newer, or [`uv`](https://docs.astral.sh/uv/), which fetches it. There is no release yet, so the wheel comes from a clone (`uv build --wheel`, then `dist/`) until the first tag; replace the file name below with yours.
+
+```sh
+uv tool install ./nexahome-<version>-py3-none-any.whl   # puts `nexahome` on your PATH, in its own environment
+nexahome init                    # makes ~/nexahome from the stacks inside the package; it never overwrites
+cd ~/nexahome
+nexahome doctor                  # every problem ends in one command to run
+docker network inspect nexahome-edge >/dev/null 2>&1 || docker network create nexahome-edge
+docker compose -f stacks/hello/compose.yaml up -d --wait
+curl http://127.0.0.1:8080/      # hello, a static demo page
+docker compose -f stacks/hello/compose.yaml down
+```
+
+Without `uv`: `python3.13 -m venv venv && venv/bin/pip install ./nexahome-<version>-py3-none-any.whl`, then call `venv/bin/nexahome`. `nexahome init DIR` makes the folder somewhere else; keep it under your home directory, because Colima mounts only that.
+
+To run more stacks, list them and let the command prepare their `.env` files (some need values from you first; it says which), then start each one as above:
+
+```sh
+nexahome config set stacks hello actual   # the stacks this folder runs, kept in nexahome.toml
+nexahome env                              # creates each .env, generates secrets (never shown), then runs doctor
+docker compose -f stacks/actual/compose.yaml up -d --wait
+```
+
+The `docker compose` lines are the manual form of `make up` and `make down`, which need a clone; a `nexahome up` will replace them. Backup, restore, smoke checks and deploy are also still Makefile targets, so they need a clone for now. The stacks in `~/nexahome/stacks` belong to the package: do not edit them. Your changes go in each stack's `.env` (a `compose.override.yaml` is not read by the manual commands above, because they name the file with `-f`; it arrives with `nexahome up`). Anything that edits the three files that list every named app (the edge `Caddyfile`, the portal `services.yaml`, the Gatus targets) means forking the repository, the second way in.
+
+### Fork it, contribute, or run the full tooling (clone)
+
+Needs `git` and `make` too. Running stacks needs no Python; Python 3.13 or newer (or `uv`) is only for [contributing](CONTRIBUTING.md) and the `nexahome` command below.
 
 ```sh
 colima start --cpu 2 --memory 2 --disk 20
@@ -27,20 +58,22 @@ Add `STACK=hello` or `STACK=actual` to act on one stack. The first `make up` cre
 
 ## The `nexahome` command
 
-A small command-line tool that checks your machine and prepares a checkout. `make` still starts, stops and backs up everything; `nexahome` starts no container. It needs Python 3.13 or newer (or `uv`, which fetches it). From a clone:
+A small command-line tool that checks your machine and prepares a folder of stacks: an instance made by `nexahome init`, or a clone. `make` still starts, stops and backs up everything in a clone; `nexahome` starts no container. It needs Python 3.13 or newer (or `uv`, which fetches it). From a clone:
 
 ```sh
 make setup                  # once: creates .venv and installs the tool into it
 . .venv/bin/activate        # once per terminal; then plain `nexahome` works
 nexahome doctor             # diagnose this machine; every problem ends in one command to run
 nexahome env                # create each stack's .env and generate its secrets (add --dry-run to look first)
+nexahome init [DIR]         # make a new instance from the stacks inside the package (see Quick start)
+nexahome config             # show nexahome.toml; `config set stacks NAME...` chooses the stacks an instance runs
 nexahome stacks             # which stacks exist, which this host runs, whether they are running
 nexahome status             # health of the stacks and how recent the backup is
 nexahome check              # the Compose policy over the stacks
 nexahome update --available # is a newer release out? (there is none yet)
 ```
 
-`make setup` prepares the tool itself (the virtual environment); `nexahome env` prepares the stacks (their `.env` files). `nexahome --help` lists every command and `nexahome <command> --help` its options. Without activating the environment, call `.venv/bin/nexahome`. Run it from inside the checkout, or point `NEXAHOME_HOME` at the checkout. `doctor`, `stacks` and `update --available` also take `--json` for scripts (schema 1, described in `src/nexahome/report.py`). It is not on PyPI and has no release yet; `make test` runs its tests ([CONTRIBUTING](CONTRIBUTING.md#the-nexahome-package)).
+`make setup` prepares the tool itself (the virtual environment); `nexahome env` prepares the stacks (their `.env` files). `nexahome --help` lists every command and `nexahome <command> --help` its options. Without activating the environment, call `.venv/bin/nexahome`. Which folder it works on: `--home DIR` (given before the command), else `$NEXAHOME_HOME`, else the nearest folder above you that holds `nexahome.toml` (or, in a clone, `stacks/` and a Makefile), else `~/nexahome` when that holds a `nexahome.toml`. `doctor`, `stacks` and `update --available` also take `--json` for scripts (schema 1, described in `src/nexahome/report.py`). It is not on PyPI and has no release yet; `make test` runs its tests ([CONTRIBUTING](CONTRIBUTING.md#the-nexahome-package)).
 
 Exit codes, the same for every command:
 
