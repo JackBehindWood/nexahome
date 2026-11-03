@@ -12,7 +12,7 @@ import pytest
 
 from nexahome import cli
 from nexahome.errors import ExitCode
-from nexahome.instance import bundle, create, manifest
+from nexahome.instance import REINSTALL, bundle, create, manifest
 from nexahome.runner import SubprocessRunner
 
 from conftest import REPO, FakeRunner, MakeCheckout, MakeContext, has_compose
@@ -158,7 +158,8 @@ def test_the_home_setting_names_the_folder(make_context: MakeContext, tmp_path: 
 def test_init_without_bundled_stacks_ends_in_one_command(monkeypatch: pytest.MonkeyPatch, make_context: MakeContext, tmp_path: Path) -> None:
     monkeypatch.setattr(bundle, "location", lambda: None)
     code, ctx = init(make_context, tmp_path / "made")
-    assert code == ExitCode.NOT_READY and err(ctx).endswith("Next: uv tool install --reinstall nexahome\n") and not (tmp_path / "made").exists()
+    assert code == ExitCode.NOT_READY and err(ctx).endswith(f"Next: {REINSTALL}\n") and not (tmp_path / "made").exists()
+    assert "reinstall nexahome" not in REINSTALL  # P-01: no PyPI project of this name is ours; install from the wheel
 
 
 def test_the_filter_keeps_local_secrets_and_readmes_out(tmp_path: Path) -> None:

@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
 from nexahome.errors import NexaHomeError
-from nexahome.instance import CONFIG_NAME, bundle, config, home, manifest
+from nexahome.instance import CONFIG_NAME, REINSTALL, bundle, config, home, manifest
 
 if TYPE_CHECKING:
     from nexahome.context import Context
@@ -85,7 +85,7 @@ def create(root: Path, source: Path, version: str) -> Created:
     directories, files = bundle.walk(source)
     stacks = tuple(sorted(name for name in directories if "/" not in name))
     if config.DEFAULT_STACKS[0] not in stacks:
-        raise NexaHomeError("this install's bundled stacks do not include the demo stack", "uv tool install --reinstall nexahome")
+        raise NexaHomeError("this install's bundled stacks do not include the demo stack", REINSTALL)
     created: list[Path] = []
     hashes: dict[str, str] = {}
     try:
@@ -94,7 +94,7 @@ def create(root: Path, source: Path, version: str) -> Created:
             _make_directory(root / "stacks" / name, created)
         for name in files:
             if (source / name).stat().st_size > bundle.MAX_FILE_BYTES:
-                raise NexaHomeError(f"{name} is larger than {bundle.MAX_FILE_BYTES} bytes", "uv tool install --reinstall nexahome")
+                raise NexaHomeError(f"{name} is larger than {bundle.MAX_FILE_BYTES} bytes", REINSTALL)
             data = (source / name).read_bytes()
             _write(root / "stacks" / name, data, created)
             hashes[f"stacks/{name}"] = hashlib.sha256(data).hexdigest()

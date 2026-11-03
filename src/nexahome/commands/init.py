@@ -28,13 +28,13 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
     from nexahome import __version__
     from nexahome.docker import compose
     from nexahome.errors import NexaHomeError
-    from nexahome.instance import bundle, create
+    from nexahome.instance import REINSTALL, bundle, create
 
     root = create.target(ctx, args.directory)
     create.refuse_unless_new(root)
     source = bundle.location()
     if source is None:
-        raise NexaHomeError("this install carries no stacks to copy", "uv tool install --reinstall nexahome")
+        raise NexaHomeError("this install carries no stacks to copy", REINSTALL)
     made = create.create(root, source, __version__)
     shown = ctx.display(root)
     print(f"created {shown}: {len(made.stacks)} stacks, {made.files} files; nexahome.toml enables {', '.join(made.enabled)}", file=ctx.out)

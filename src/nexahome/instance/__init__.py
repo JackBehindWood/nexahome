@@ -12,3 +12,4 @@ This file imports nothing, so loading one module of the package costs only that 
 
 CONFIG_NAME = "nexahome.toml"  # at the top of an instance made by `nexahome init`; a clone has none
 SCHEMA = 1  # the layout of nexahome.toml and the manifest; a newer one is refused, never guessed
+REINSTALL = "uv tool install --reinstall ./nexahome-<version>-py3-none-any.whl"  # the wheel from the release; no PyPI name until publishing is decided
