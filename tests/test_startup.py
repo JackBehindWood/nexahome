@@ -21,6 +21,7 @@ BUDGET: dict[str, tuple[list[str], set[str]]] = {
     "--help": (["--help"], HEAVY - ARGPARSE_COST | {"nexahome.context", "nexahome.runner", "nexahome.diagnosis", "nexahome.updater", "nexahome.envfile", "nexahome.policy"}),
     "doctor --help": (["doctor", "--help"], HEAVY - ARGPARSE_COST | {"nexahome.diagnosis", "nexahome.commands.update", "nexahome.commands.env", "nexahome.updater"}),
     "doctor": (["doctor"], HEAVY - ARGPARSE_COST - {"subprocess", "concurrent.futures"} | {"nexahome.updater", "nexahome.commands.update", "nexahome.commands.env"}),
+    "init --help": (["init", "--help"], HEAVY - ARGPARSE_COST | {"nexahome.instance.create", "nexahome.instance.bundle", "nexahome.docker", "nexahome.commands.doctor"}),
     "update --help": (["update", "--help"], HEAVY - ARGPARSE_COST | {"nexahome.updater", "nexahome.net", "nexahome.commands.doctor"}),
 }
 

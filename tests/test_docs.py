@@ -60,7 +60,7 @@ def test_relative_links_resolve(path: Path) -> None:
 
 # Named in the docs on purpose before they exist (planned) or after being cut (with a trigger). Remove an entry
 # when the command is built or the sentence goes.
-PLANNED_OR_CUT = {"nexahome init", "make upgrade", "make mini-check"}
+PLANNED_OR_CUT = {"make upgrade", "make mini-check"}
 
 
 def test_documented_make_and_nexahome_commands_exist() -> None:

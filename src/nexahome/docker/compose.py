@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from nexahome.docker import EDGE_NETWORK
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -37,6 +39,17 @@ def stack_state(ctx: Context, compose: Path) -> str:
 
 def ps(ctx: Context, compose: Path) -> RunResult:
     return ctx.runner.run([*file_argv(compose), "ps"], timeout=TIMEOUT)
+
+
+def demo_commands(stack: str) -> list[str]:
+    """The command lines that start and stop one stack by hand, which `nexahome init` prints until `nexahome up` exists
+    (PK7). The network is created only when it is missing, as `make up` does."""
+    file = f"stacks/{stack}/compose.yaml"
+    return [
+        f"docker network inspect {EDGE_NETWORK} >/dev/null 2>&1 || docker network create {EDGE_NETWORK}",
+        f"docker compose -f {file} up -d --wait",
+        f"docker compose -f {file} down",
+    ]
 
 
 def config_json(runner: Runner, compose: Path) -> RunResult:
