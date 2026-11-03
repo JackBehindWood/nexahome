@@ -1,12 +1,10 @@
-"""Golden parity (PK-C3): the port prints exactly what scripts/check_personal_data.py prints."""
+"""The personal-data scan (ported from scripts/check_personal_data.py, PK5; parity was proven before it was deleted)."""
 
 from pathlib import Path
 
 import pytest
 
 from nexahome.policy.personal_data import load_denylist, scan_files, scan_text
-
-from conftest import load_script
 
 # Built at run time so that this file does not trip the check it tests.
 FLAGGED = "\n".join(
@@ -26,19 +24,21 @@ FLAGGED = "\n".join(
 )
 
 
-def test_matches_the_original_on_flagged_clean_binary_and_missing_files(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_flagged_clean_binary_and_missing_files(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
     (tmp_path / ".personal-denylist").write_text("# a comment\n\nsecret-term\n")
     (tmp_path / "flagged.txt").write_text(FLAGGED)
     (tmp_path / "clean.txt").write_text("nothing to see\n")
     (tmp_path / "binary.bin").write_bytes(b"\xff\xfe\x00")
     names = ["flagged.txt", "clean.txt", "binary.bin", "missing.txt"]
-    original = load_script("check_personal_data")
-    code = original.main(names)
-    assert capsys.readouterr().out.splitlines() == scan_files(names)
-    assert code == 1
+    assert scan_files(names) == [  # recorded from the original script's output; binary and missing files are skipped
+        "flagged.txt:2: private IPv4 address",
+        "flagged.txt:3: private IPv4 address",
+        "flagged.txt:5: home directory path with a user name",
+        "flagged.txt:6: home directory path with a user name",
+        "flagged.txt:7: local hostname",
+        "flagged.txt:10: term from .personal-denylist",
+    ]
 
 
 def test_a_clean_file_has_no_findings(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -64,3 +64,17 @@ def test_denylist_ignores_comments_and_blank_lines(tmp_path: Path) -> None:
     path.write_text("# c\n\n Term One \n")
     assert load_denylist(path) == ["term one"]
     assert load_denylist(tmp_path / "absent") == []
+
+
+def test_the_hook_entry_prints_findings_and_sets_the_exit_code(tmp_path: Path) -> None:
+    import subprocess
+    import sys
+
+    (tmp_path / "flagged.txt").write_text(FLAGGED)
+    (tmp_path / "clean.txt").write_text("nothing to see\n")
+    run = lambda *names: subprocess.run(  # noqa: E731
+        [sys.executable, "-m", "nexahome.policy.personal_data", *names], cwd=tmp_path, capture_output=True, text=True
+    )
+    flagged, clean = run("flagged.txt", "clean.txt"), run("clean.txt")
+    assert (flagged.returncode, flagged.stdout.splitlines()) == (1, scan_text("flagged.txt", FLAGGED))
+    assert (clean.returncode, clean.stdout) == (0, "")

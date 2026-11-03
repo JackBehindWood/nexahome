@@ -25,11 +25,11 @@ make hooks     # optional: install the git pre-commit hook in this repo only
 ```sh
 make test                     # the package tests (pytest)
 . .venv/bin/activate          # once per terminal: puts nexahome on your PATH (or call .venv/bin/nexahome)
-nexahome --help               # the commands: check, doctor, env, stacks, status, update
+nexahome --help               # the commands: check, config, doctor, env, init, stacks, status, update
 nexahome doctor               # diagnose this machine (read-only)
 ```
 
-Run `nexahome` from the checkout (or set `NEXAHOME_HOME` to it). The commands sit beside the Makefile, which stays the way to start and stop stacks; none of them starts a container. Exit codes are listed in the [README](README.md#the-nexahome-command). `update` is the only command that uses the network (`net.py`, https only); it asks before it installs and checks the wheel against `SHA256SUMS`.
+Run `nexahome` from the checkout (or give `--home DIR`, or set `NEXAHOME_HOME`); the same lookup finds an instance made by `nexahome init`, which has no Makefile. The commands sit beside the Makefile, which stays the way to start and stop stacks; none of them starts a container. Exit codes are listed in the [README](README.md#the-nexahome-command). `update` is the only command that uses the network (`net.py`, https only); it asks before it installs and checks the wheel against `SHA256SUMS`.
 
 To add a stack, follow [Add a stack](docs/runbooks/add-a-stack.md).
 
@@ -39,12 +39,23 @@ Agent and editor configuration (`CLAUDE.md`, `.claude/`, `.vscode/`) stays local
 
 ## The nexahome package
 
-The code is in `src/nexahome/`, tests in `tests/` ([ADR 0018](docs/adr/0018-code-package-and-language-strategy.md)). Standard library only; every function is annotated. To extend it:
+The code is in `src/nexahome/`, tests in `tests/` ([ADR 0018](docs/adr/0018-code-package-and-language-strategy.md)). Standard library only; every function is annotated. Packages are split by concern, and dependencies point one way: `commands/` (thin) use the packages below, which never import `commands/` (a test checks it):
 
-- **A command:** one new thin module in `commands/`, named after the command, with `NAME` (the same as the file name), `register()` (name, help, options) and `run()`; it is found automatically (a module whose name starts with an underscore is a helper). Put the logic in a module outside `commands/` and import it inside `run()` (see `commands/doctor.py` and `diagnosis.py`). Raise `NexaHomeError(message, fix)` for a failure the user can fix: the fix is one exact command. The registry tests check `--help` and the Windows refusal for every command. Take everything from the `Context` (runner, environment, working directory, clock), so a test can replace it; logic that other commands will reuse goes outside `commands/` too (`envfile.py`, `stacks.py`, `docker.py`).
-- **A `doctor` check:** a function `(ctx, prior) -> Check | None`, one `(id, function)` entry in `PROBES` in `diagnosis.py`, and a row in `tests/test_doctor.py`. A `warn` or `fail` needs a fix command; check ids are never renamed. Probes run side by side; reading `prior[...]` waits for that probe. The JSON schema is described once, in `nexahome/report.py`.
+| Package | Holds |
+| :-- | :-- |
+| `docker/` | everything about the Docker CLI: `engine`, `compose`, the three Docker `doctor` probes, the shared network name. No other module writes a `docker` command line. |
+| `instance/` | where an instance is (`home`), the stacks inside the package (`bundle`), what `init` does (`create`), `nexahome.toml` (`config`), the file hashes (`manifest`) |
+| `stacks/` | which stacks exist and run (`catalogue`), their `.env` files (`envfile`) |
+| `release/` | the network and releases: `net` (the only module that may import a network module), `versions`, `updater` |
+| `platform/`, `policy/` | what differs by operating system; the Compose and personal-data policy |
+| top level | `cli`, `context`, `errors`, `runner`, `parallel`, `report`, `diagnosis`, `backup_info` |
+
+To extend it:
+
+- **A command:** one new thin module in `commands/`, named after the command, with `NAME` (the same as the file name), `register()` (name, help, options) and `run()`; it is found automatically (a module whose name starts with an underscore is a helper). Put the logic in a module outside `commands/` and import it inside `run()` (see `commands/doctor.py` and `diagnosis.py`). Raise `NexaHomeError(message, fix)` for a failure the user can fix: the fix is one exact command. The registry tests check `--help` and the Windows refusal for every command. Take everything from the `Context` (runner, environment, working directory, clock), so a test can replace it; logic that other commands will reuse goes into the package it belongs to (table above); call Docker through `docker.engine` and `docker.compose`, never write a `docker` command line elsewhere (`tests/test_packaging.py` checks it).
+- **A `doctor` check:** a function `(ctx, prior) -> Check | None`, one `(id, function)` entry in `PROBES` in `diagnosis.py` (the Docker probes live in `docker/probes.py`), and a row in `tests/test_doctor.py`. A `warn` or `fail` needs a fix command; check ids are never renamed. Probes run side by side; reading `prior[...]` waits for that probe. The JSON schema is described once, in `nexahome/report.py`.
 - **A system (macOS, Linux, ...):** a module in `platform/` and one line in `SYSTEMS`. Only `nexahome.platform` may read the operating system; a test enforces it.
-- **A repository check:** `policy/` holds the Compose policy and personal-data checks. The hooks still run the originals in `scripts/` until PK5; the golden tests compare both.
+- **A repository check:** `policy/` holds the Compose policy and personal-data checks. The pre-commit hook runs `python -m nexahome.policy.personal_data` and `make check` runs `nexahome check`; the scripts they replaced are gone, and the tests hold their recorded output. The wheel ships `stacks/` as `nexahome/_stacks` (plain `include` and `sources` in `pyproject.toml`, not `force-include`, which would also ship a local `.env`).
 
 ### Keeping the command fast
 

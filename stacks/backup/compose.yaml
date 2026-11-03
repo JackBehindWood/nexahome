@@ -13,7 +13,7 @@ services:
     network_mode: none
     restart: "no"
     labels:
-      nexahome.oneshot: "true"  # exempt from the health check and restart rules (check_compose.py)
+      nexahome.oneshot: "true"  # exempt from the health check and restart rules (nexahome check)
     environment:
       RESTIC_REPOSITORY: /repo
       RESTIC_PASSWORD_FILE: /run/restic-password

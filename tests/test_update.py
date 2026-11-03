@@ -12,9 +12,9 @@ from pathlib import Path
 import pytest
 
 from nexahome import __version__, cli
-from nexahome import updater as update
+from nexahome.release import updater as update
 from nexahome.errors import ExitCode
-from nexahome.net import NetworkError
+from nexahome.release.net import NetworkError
 from nexahome.runner import RunResult
 
 from conftest import MakeContext

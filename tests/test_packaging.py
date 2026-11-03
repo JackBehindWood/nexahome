@@ -52,7 +52,7 @@ NETWORK = re.compile(r"^\s*(?:import|from)\s+(?:urllib|http|socket|ssl|ftplib|sm
 
 
 def test_only_net_py_touches_the_network() -> None:
-    assert [p.name for p in SOURCES if p.name != "net.py" and NETWORK.search(p.read_text())] == []  # PK-S2
+    assert [p.name for p in SOURCES if p.relative_to(PACKAGE).as_posix() != "release/net.py" and NETWORK.search(p.read_text())] == []  # PK-S2
 
 
 # "Pay for what you use" (ADR 0021): heavy standard-library modules are imported inside the function that needs them.
@@ -64,7 +64,7 @@ HEAVY_AT_TOP = {
 ALLOWED_AT_TOP = {
     ("runner.py", "subprocess"),  # every command that gets as far as running a program
     ("policy/compose.py", "json"),  # only loaded by `check`
-    ("updater.py", "json"),  # only loaded by `update`
+    ("release/updater.py", "json"),  # only loaded by `update`
     ("commands/_base.py", "argparse"),  # types only; never imported at run time
 }
 
@@ -78,4 +78,35 @@ def test_heavy_modules_are_imported_inside_functions() -> None:
                 continue
             names = [a.name for a in node.names] if isinstance(node, ast.Import) else [node.module or ""] if isinstance(node, ast.ImportFrom) and node.level == 0 else []
             found += [f"{relative}: {n}" for n in names if n.split(".")[0] in HEAVY_AT_TOP and (relative, n.split(".")[0]) not in ALLOWED_AT_TOP]
+    assert found == []
+
+
+def test_docker_knowledge_lives_in_the_docker_package() -> None:
+    """PK6-16: the program name and the shared network are named once, in nexahome/docker/; elsewhere they are imported."""
+    found = []
+    for path in SOURCES:
+        relative = path.relative_to(PACKAGE).as_posix()
+        if relative.startswith("docker/"):
+            continue
+        for node in ast.walk(ast.parse(path.read_text())):
+            if isinstance(node, ast.Constant) and node.value in ("docker", "nexahome-edge"):
+                found.append(f"{relative}:{node.lineno} {node.value!r}")
+    assert found == []
+
+
+DOMAIN_PACKAGES = ("docker", "instance", "stacks", "release", "platform", "policy")
+
+
+def test_domain_packages_never_import_the_commands() -> None:
+    """PK6-17: dependencies point one way: commands use the domain packages, never the reverse."""
+    found = []
+    for path in SOURCES:
+        relative = path.relative_to(PACKAGE).as_posix()
+        if relative.split("/")[0] not in DOMAIN_PACKAGES:
+            continue
+        for node in ast.walk(ast.parse(path.read_text())):
+            names = [a.name for a in node.names] if isinstance(node, ast.Import) else [node.module or ""] if isinstance(node, ast.ImportFrom) else []
+            if isinstance(node, ast.ImportFrom) and node.module == "nexahome":
+                names += [f"nexahome.{a.name}" for a in node.names]
+            found += [f"{relative}:{node.lineno} {n}" for n in names if n == "nexahome.commands" or n.startswith("nexahome.commands.")]
     assert found == []

@@ -4,7 +4,7 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
 ## Pending owner actions (the one current list)
 
-Last replaced 2026-11-02 (CI reshape). Older entries below end with a pointer here instead of their own list; their text is in git history.
+Last replaced 2026-11-03 (PK6). Older entries below end with a pointer here instead of their own list; their text is in git history.
 
 **Decide**
 - ADR 0021 is decided (owner, 2026-11-02). Still to decide: the other Proposed register rows (documentation conventions, repository layout, task runner, security baseline, roles, three Packaging rows); review ADRs 0014 to 0020, the SSH runbook and the packaging audit.
@@ -13,11 +13,10 @@ Last replaced 2026-11-02 (CI reshape). Older entries below end with a pointer he
 - Open choices: digest pinning; paid tier versus the open-source rule; keep `hello` on the edge and in the portal; the root `.env.example` now holds no setting (delete it?).
 
 **Git**
-- Push `feat/packaging` (five local commits: the deferral note, the PK4 close, the CI reshape, the `env` rename with package docs, and this log) with your yes. The new workflow then runs on pull request 22 (it is already open); read the run, then decide the merge of pull request 22 into `dev`. Until a `dev` to `main` pull request carries the new workflow, the weekly schedule cannot fire (GitHub runs schedules from the default branch).
-- CI reshape (owner's answers, 2026-11-02): done in `.github/workflows/ci.yml`, committed, not yet run. Making `gate` a required check is your GitHub action, once the new workflow has been green on a pull request; `platforms` is never to be required.
-- Pull request 21 is merged into `dev` (owner). `feat/packaging` is ahead of `dev` and not pushed. Decide: (1) the `tests` job is committed in `.github/workflows/ci.yml` (last commit but one); (2) push `feat/packaging` and open a pull request into `dev`, which is the only way to run the new job. The `dev` to `main` pull request opens only when you say so (description prepared locally). Afterwards check under Insights, Dependency graph, Dependabot that every stack entry parses.
+- 2026-11-03: `feat/packaging` is pushed and a pull request into `dev` is open, and so is a `dev` to `main` pull request (`gh pr list`). Neither is merged: each merge needs your explicit yes. The `dev` to `main` pull request shows the packaging work only after the first one is merged, and it carries the new `ci.yml` with `gate`. The first run of the PK5 and PK6 CI steps (wheel contents, instance round trip, demo start) is on the pull request into `dev`: read it before merging.
+- `gate` is a required check on `main` (since 2026-11-02; required: `checks`, `secrets`, `gate`, branches up to date). `main` still holds the old `ci.yml` without `gate`, so any other pull request into `main` before the catch-up lands waits for a check that never appears (for example a Dependabot update). `platforms` is never to be required. The weekly schedule fires only once the new workflow is on `main`. After the catch-up check under Insights, Dependency graph, Dependabot that every stack entry parses.
+- Merge of `dev` into `main`: `main` has 6 commits `dev` lacks (`git merge-tree` shows a clean merge). Delete merged branches only with your yes.
 - GitHub account setting "Block command line pushes that expose my email"; optional SSH-signed commits.
-- Making the `gate` job a required check on `main` (a GitHub setting): deferred until the CI redesign above, because `gate` must not depend on macOS runner capacity.
 
 **Local only**
 - Record the mini's order and delivery locally; update the `CLAUDE.md` hardware section (a Jetson is owned, the mini is planned); keep real hostnames in the gitignored `inventory.local.md`; decide extras and subscriptions; plan the return window before B1.
@@ -33,7 +32,60 @@ Last replaced 2026-11-02 (CI reshape). Older entries below end with a pointer he
 **Open work**
 - Diagnose the Pocket ID self-restart; optional admin-only sign-in for the health view.
 - `docs/constraints.md` (the run-path line) still says "Python is for checks"; with `src/nexahome` that is incomplete, but the line restates a decided rule, so it is left for the owner's rewords (B2, C1) with ADR 0018.
-- Backup `.env.example` ships example paths that `make check` needs (audit F26): fix with PK5 or PK7.
+- Backup `.env.example` ships example paths that `make check` needs (audit F26): fix with PK7 (not done in PK5).
+- ADR 0019 still names `scripts/check_compose.py` in its macOS Compose line; the script is gone. Reword it, or leave it as a record? Also `scripts/__pycache__` (untracked, gitignored) is a leftover: delete it?
+
+## 2026-11-03: PK6 (init, config, packages by concern, the 5-minute path)
+
+**Done** (18 commits on `feat/packaging`)
+- `nexahome init [DIR]` (default `~/nexahome`): copies the bundled stacks, writes `nexahome.toml` (`hello` enabled) and `.nexahome/manifest.json` (sha256 per file). Refuses a non-empty folder and anything inside a clone or instance; never overwrites; writes no `.env`; files 0644 and folders 0755 whatever the umask; a failed write removes only what that run made. `nexahome config list|get|set stacks`: strict reader (unknown key, wrong type, bad TOML, unknown stack, newer schema each end in one command), atomic write. Home resolution: `--home`, `$NEXAHOME_HOME`, nearest parent with `nexahome.toml` or `stacks/` plus a Makefile, else `~/nexahome` if it holds a `nexahome.toml`. In an instance `env` ends in the commands that start the stacks.
+- Packages by concern (owner request): `docker/` (all Docker CLI knowledge; a test keeps `"docker"` and the edge network name out of other modules), `instance/`, `stacks/`, `release/`; a test keeps them from importing `commands/`. Error-message pass: `check` with nothing to check now ends in a command; `status` names one for an unreadable stack; wording says "folder" or "instance".
+- CI (`tests` job, ubuntu py3.13): the wheel must equal the tracked stack files minus READMEs; an instance from the installed wheel (scratch `HOME`) is made, checked, refused a second `init` (exit 3), given `config set stacks`; the three docker commands `init` prints start the demo. Job names `secrets` and `checks` unchanged. Not yet run on GitHub.
+- Package version is now `0.2.0` (owner, from `0.1.0.dev0`); no tag exists.
+- Measured (laptop, medians of 15, back to back against `f1ed535`): no start-up change beyond 1 ms (`--version` 15.7 and 16.2 ms before, 16.3 and 16.2 after). Timed run, scratch `HOME`, Colima started and stopped: wheel in hand to a hello that answers 7.0 s (uv) and 8.9 s (venv and pip) with `busybox:1.37.0` already cached (pull time not included; Colima start 16 s not included).
+- Upgrade design rehearsed on a throwaway instance (scratchpad script, no repo code), 23 of 23 checks: three-way hash compare, edited plus changed upstream refused with the file named, staged tree plus two renames, rollback byte for byte, recovery after a crash between the renames. It found three rules the design needs: strip user-owned files from the kept `previous/` tree (a second copy of every `.env`), carry them back on rollback, delete `staging/` on recovery.
+
+**Doc changes and reasons**
+- `README.md`: two quick starts (runner path, fork path), `init` and `config` in the command list, how the folder is found. The runner path says the manual `docker compose` lines will be replaced by `nexahome up` and that overrides are not read by them (`-f` skips `compose.override.yaml`). A test keeps the lines equal to what `init` prints.
+- `CONTRIBUTING.md`: package map and the one-way dependency rule. `docs/project.md`: current status names `init` and `config` (no register row touched). `tests/test_docs.py`: `nexahome init` left the planned list; `nexahome up` joined it (PK7).
+- This log and `docs/roadmap.md`: PK6 done, Git list refreshed. No ADR edited, no row promoted.
+
+**Deviations** (details in the local packaging README): the wheel already carried `.env.example` (a doubt in the plan was false); doctor warns, not fails, outside `$HOME` (master 4.5 says fails); plain path instead of `importlib.resources` (26.5 ms import); manifest written now although ADR 0020 puts it at stage 3; two test files landed in the `stacks/ release/` commit; the personal-data hook blocked two commits on false positives (renamed). Not run: Linux container leg, cold-image timing, uv fetching Python 3.13.
+
+**Not verified:** every new CI step on GitHub; Python 3.13 on a runner; macOS and arm64 behaviour of the steps; a wheel from a published release; backup-first, a stateful image change and running containers during an upgrade swap; the hook with the package missing from `.venv`; the Mac mini, Linux hosts, Jetson, WSL2.
+
+**Next:** (1) read the CI run on the pull request into `dev`, then merge decisions (yours); (2) the audit session you asked for: full code package and `stacks/` audit, every doc checked against the repo, docs compacted with this log first (prompt handed over); (3) PK7 to PK10 wait for B2. **Open questions:** the first tag: ADR 0020 and the register say `v0.1.0`, the package is `0.2.0`; overrides: ADR 0020 and master 4.3 promise `compose.override.yaml`, the manual commands cannot read it; ADR 0020's manifest timing; doctor severity for a mount outside `$HOME`.
+
+**Pending:** superseded by the single list at the top of this log (2026-11-03, PK6).
+
+## 2026-11-03: PK5 (hooks and `make check` use the package, old checks deleted, stacks bundled)
+
+**Done**
+- Step 0 as approved: the two uncommitted doc edits committed, `git fetch`, `git merge --no-ff origin/dev` (no conflict; `git diff origin/dev HEAD` showed only the doc commit's files); `make check` green before and after. Entry checks: no pull request is open; `main` requires `checks`, `secrets` and `gate` and its `ci.yml` has no `gate` job (the hang risk is latent, see Pending).
+- Owner lifted the freeze rule for hooks and CI only. The four shell scripts were not changed: `setup.sh` installs the package so cannot call it, `deploy.sh` reaches the package through `make check`, `smoke.sh` and `backup.sh` have no package command yet (PK7 to PK9).
+- `nexahome.policy.personal_data` gained `main` and a `__main__` entry; the pre-commit `personal-data` hook runs `python -m nexahome.policy.personal_data`. `make check` runs `nexahome check` instead of the script. "No stacks" and "Docker CLI missing" now exit 3 there (the script exited 0 and 1).
+- The wheel carries `stacks/` as `nexahome/_stacks` and the sdist includes `/stacks`. A scratch probe showed hatch `force-include` ships a local `.env`, `data/` and every stack README (it ignores `.gitignore` and `exclude`), so `include` plus `[wheel.sources]` is used instead; that honours both. CI asserts every stack's `compose.yaml` is in the wheel and no `.env`, `data/` or README ships, then installs the wheel in a throwaway venv and runs `nexahome check --stacks` on the installed copy.
+- `tests/test_docs.py`: headers against changelog dates, `Confirmed`/`Proposed` placement, relative links, documented `make` and `nexahome` commands, Dependabot coverage. It found no real drift. `Open` is not checked (ordinary verb); `nexahome init`, `make upgrade` and `make mini-check` are on a named allowlist (planned or cut).
+- Parity gate, local: golden tests against the scripts, whole-tree hook output identical, `nexahome check` output identical. Then `scripts/check_compose.py` and `scripts/check_personal_data.py` were deleted in their own commit, and the golden tests now compare against recorded output (the personal-data fixture was recorded from the original script's real output).
+- Measured (laptop, medians): personal-data hook 30.1 ms against 29.4 ms before (bare interpreter 22.7 ms); `nexahome check` 202 ms against 556 ms.
+
+**Doc changes and reasons**
+- `README.md`: the exit-code note and the `scripts/` line now describe the new state (the note said the hooks would switch in PK5).
+- `CONTRIBUTING.md`: the repository-check bullet no longer says the hooks run the originals; it records why the wheel uses `include` and `sources`.
+- `docs/constraints.md`, `docs/project.md` (Current status only): the Compose policy is run by `nexahome check`; the hook, `make check` and the wheel use the package. Header dates and changelog lines updated. No Confirmed row was edited.
+- `docs/roadmap.md`: Next row, Packaging status and sessions, and a dated exception on the freeze-rule bullet (hooks and CI released on 2026-11-03 at the owner's request; ADR 0018's matching sentence is Proposed and was left unchanged). Reason: the bullet would otherwise contradict the work.
+
+**Deviations from the plan**
+- `force-include` was replaced (above). The first drafts of the docs tests were wrong twice (the local `CLAUDE.md` was scanned; `Open` matched as a label) and were narrowed.
+- The preferred CI run before deletion did not happen: the owner held the push, so parity was proven locally only. Static names for the skipped platform jobs were not done (with a matrix a static name may make the legs indistinguishable; GitHub's behaviour not verified). `/session-end` was run by the owner, not the agent.
+
+**Verification:** `make check` exit 0; `pytest` 322 passed on Python 3.14 and on 3.13.3 (scratch venv from the offline uv cache); working tree clean, nothing staged. The wheel steps were rehearsed against a scratch wheel (pass) and the assertion was shown to reject a `force-include` wheel. **Not verified:** the new CI steps on a GitHub runner with Python 3.13; macOS and arm64 behaviour of them; the hook with the package missing from `.venv`; docs-only skip, cancel-in-progress, `gate` failing on a failed job, platform jobs on a pull request into `main`, the weekly schedule (all unchanged from before); Dependabot with the anchors; a Dependabot pull request into `main`; the Mac mini, a Linux host, the Jetson, WSL2.
+
+**Next:** (1) push `feat/packaging` and read the run on a pull request into `dev` (your yes); (2) PK6: `nexahome init`, instance layout, `nexahome.toml`, home resolution, README quick start, timed run (additive; the bundled stacks are in the wheel); (3) after PK6: the `dev` to `main` pull request.
+
+**Open questions**
+- Reword the ADR 0019 line that names the deleted script?
+**Pending:** superseded by the single list at the top of this log (2026-11-03, PK5).
 
 ## 2026-11-02: CI reshape (fast Linux set, platform set off the merge path)
 
@@ -49,12 +101,14 @@ Last replaced 2026-11-02 (CI reshape). Older entries below end with a pointer he
 - `docs/adr/0019-...md`: two-tier matrix, `gate` semantics, schedule limits, PK-P1 reworded (platform jobs are proven on a pull request into `main` and in the weekly run), two rejected alternatives. Reason: the old text said every pull request runs every platform job. A wording change in the first sentence of the matrix bullet was needed to avoid a secret-scanner false positive on the word `secrets`.
 - `docs/roadmap.md`, `docs/constraints.md`, `docs/project.md` (Current status only): command list and CI state; changelog lines added. `CONTRIBUTING.md`, `README.md`: as above.
 
-**Verification:** `make check` exit 0; `pytest` 262 passed; the `plan` script, extracted from the YAML, run on scratch merge commits: docs-only gives `code=false`, any other path gives `code=true`, push, schedule and manual runs give `code=true`, `platforms=true` only for schedule, manual and a pull request into `main` with code. The file parses with PyYAML including the anchors. **Not verified:** that GitHub accepts the anchors and the new graph (the first push answers this); that a docs-only pull request skips the code jobs and `gate` stays green; that a newer push cancels the older run; `gate` going red on a failing job; the platform jobs and `platforms` on a pull request into `main`; the weekly schedule (cannot fire before this workflow is on `main`); manual runs of a branch; Dependabot reading the anchors; the Mac mini, a Linux host, the Jetson, WSL2.
+**After the push (owner's yes), run 41536337228 on pull request 22:** all jobs passed in about 47 s with no macOS or arm64 job started: `secrets`, `checks`, `plan`, `hello`, `portable (ubuntu-amd64)`, both `tests` jobs and `gate` (green with the platform jobs and `platforms` skipped); queue waits 0 to 2 s. This verifies that GitHub accepts the anchors and graph, that a pull request into `dev` starts no platform job, that `gate` does not depend on them, and that `secrets` and `checks` kept their names. Skipped platform jobs show the raw matrix name (`tests (${{ matrix.name }}, ...)`) in the check list: cosmetic. Merging pull request 22 and requiring `gate` were first denied by the permission classifier; both were then done on the owner's explicit request (merge commit `426dffb`; required checks now `checks`, `secrets`, `gate`).
 
-**Next:** (1) push with the owner's yes and read the run on pull request 22; (2) merge decision for pull request 22; (3) PK5, noting `nexahome check` exits 3 where the old script exits 0 or 1 (now in the README); (4) the owner makes `gate` required after a green run.
+**Verification:** `make check` exit 0; `pytest` 262 passed; the `plan` script, extracted from the YAML, run on scratch merge commits: docs-only gives `code=false`, any other path gives `code=true`, push, schedule and manual runs give `code=true`, `platforms=true` only for schedule, manual and a pull request into `main` with code. The file parses with PyYAML including the anchors. **Not verified:** that a docs-only pull request skips the code jobs and `gate` stays green; that a newer push cancels the older run; `gate` going red on a failing job; the platform jobs and `platforms` on a pull request into `main`; the weekly schedule (cannot fire before this workflow is on `main`); manual runs of a branch; Dependabot reading the anchors; the Mac mini, a Linux host, the Jetson, WSL2.
+
+**Next:** (1) bring `feat/packaging` up to date with `dev`, and open the `dev` to `main` pull request soon (the old workflow on `main` has no `gate`); (2) PK5 (plan first; the freeze rule on switching callers waits for B2 unless lifted), noting `nexahome check` exits 3 where the old script exits 0 or 1 (now in the README); (3) optional: a static `name` for the platform jobs.
 
 **Open questions**
-- Merge pull request 22 into `dev` once the new workflow has run?
+- Lift the freeze rule for the hooks and CI in PK5, or wait for B2?
 
 **Pending:** superseded by the single list at the top of this log (2026-11-02, CI reshape).
 

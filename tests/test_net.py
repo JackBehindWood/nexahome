@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from nexahome import net
+from nexahome.release import net
 
 
 class Handler(BaseHTTPRequestHandler):

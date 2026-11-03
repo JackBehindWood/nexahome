@@ -26,6 +26,6 @@ def register(subparsers: Subparsers) -> None:
 
 
 def run(args: argparse.Namespace, ctx: Context) -> int:
-    from nexahome import updater
+    from nexahome.release import updater
 
     return updater.update(ctx, available_only=args.available, as_json=args.json, assume_yes=args.yes)

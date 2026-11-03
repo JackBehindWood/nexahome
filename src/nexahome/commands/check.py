@@ -17,7 +17,7 @@ NAME = "check"
 
 def register(subparsers: Subparsers) -> None:
     parser = subparsers.add_parser(NAME, help="check the stacks against the Compose policy", description=__doc__.split("\n")[0])
-    parser.add_argument("--stacks", metavar="DIR", help="the folder that holds the stacks (default: stacks/ of the checkout)")
+    parser.add_argument("--stacks", metavar="DIR", help="the folder that holds the stacks (default: stacks/ of the instance or clone)")
     parser.set_defaults(run=run)
 
 
@@ -33,8 +33,7 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         shown = root
     results = compose.check_stacks(ctx.runner, root, shown)
     if not results:
-        print("no stacks found; nothing to check", file=ctx.out)
-        return ExitCode.NOT_READY
+        raise NexaHomeError(f"no stacks found in {ctx.display(root)}; nothing to check", f"ls {ctx.display(root)}" if args.stacks else "nexahome init")
     if any(result.docker_missing for result in results):
         raise NexaHomeError("docker CLI not found; cannot validate stacks", host_platform.docker_install_fix(ctx.host))
     failures = 0

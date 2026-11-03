@@ -54,3 +54,17 @@ def scan_files(names: Iterable[str], denylist: Sequence[str] | None = None) -> l
             continue
         findings += scan_text(name, text, terms)
     return findings
+
+
+def main(argv: Sequence[str]) -> int:
+    """Entry for the pre-commit hook: print each finding, exit 1 if there were any."""
+    findings = scan_files(argv)
+    for finding in findings:
+        print(finding)
+    return 1 if findings else 0
+
+
+if __name__ == "__main__":
+    import sys
+
+    sys.exit(main(sys.argv[1:]))

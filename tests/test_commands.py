@@ -10,7 +10,7 @@ from nexahome import cli
 from nexahome.errors import ExitCode
 from nexahome.runner import RunResult, SubprocessRunner
 
-from conftest import DOCKER_HEALTHY, REPO, FakeRunner, MakeCheckout, MakeContext, MakeHost, has_compose, load_script
+from conftest import DOCKER_HEALTHY, REPO, FakeRunner, MakeCheckout, MakeContext, MakeHost, has_compose
 
 INFO = ("docker", "info", "--format", "{{.ServerVersion}}")
 
@@ -64,7 +64,7 @@ def test_check_without_docker_ends_in_an_install_command(make_checkout: MakeChec
 def test_check_with_no_stacks_has_nothing_to_check(make_context: MakeContext, tmp_path: Path) -> None:
     ctx = make_context(cwd=tmp_path / "empty")  # no stacks/ here
     assert cli.main(["check"], ctx) == ExitCode.NOT_READY
-    assert out(ctx) == "no stacks found; nothing to check\n"
+    assert err(ctx).startswith("FAIL  no stacks found in ") and err(ctx).endswith("; nothing to check\nNext: nexahome init\n")
 
 
 def test_check_takes_another_stacks_folder(make_checkout: MakeCheckout, make_context: MakeContext, tmp_path: Path) -> None:
@@ -75,14 +75,11 @@ def test_check_takes_another_stacks_folder(make_checkout: MakeCheckout, make_con
 
 
 @pytest.mark.skipif(not has_compose(), reason="needs the Docker CLI with the Compose plugin (no engine)")
-def test_check_matches_the_original_script_on_the_real_stacks(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str], make_context: MakeContext
-) -> None:
-    monkeypatch.chdir(REPO)
-    code = load_script("check_compose").main()
-    original = capsys.readouterr().out
+def test_check_passes_on_the_real_stacks(make_context: MakeContext) -> None:
     ctx = make_context(cwd=REPO, runner=SubprocessRunner())
-    assert (cli.main(["check"], ctx), out(ctx)) == (code, original)
+    names = sorted(p.parent.name for p in (REPO / "stacks").glob("*/compose.yaml"))
+    assert cli.main(["check"], ctx) == ExitCode.OK
+    assert out(ctx) == "".join(f"stacks/{n}/compose.yaml: ok\n" for n in names)
 
 
 # --- env ---------------------------------------------------------------------------------------------------
@@ -156,7 +153,7 @@ def test_env_reports_a_stopped_engine_through_doctor(make_checkout: MakeCheckout
 def test_commands_outside_a_checkout_say_so(command: str, make_context: MakeContext, tmp_path: Path) -> None:
     ctx = make_context(cwd=tmp_path)
     assert cli.main([command], ctx) == ExitCode.NOT_READY
-    assert err(ctx) == "FAIL  not inside a NexaHome checkout (a folder that holds stacks/ and a Makefile)\nNext: cd /path/to/nexahome\n"
+    assert err(ctx).startswith("FAIL  no NexaHome instance here") and err(ctx).endswith("\nNext: nexahome init\n")
 
 
 def test_nexahome_home_selects_the_checkout_from_anywhere(make_checkout: MakeCheckout, make_context: MakeContext, tmp_path: Path) -> None:
@@ -167,7 +164,7 @@ def test_nexahome_home_selects_the_checkout_from_anywhere(make_checkout: MakeChe
     assert cli.main(["stacks"], ctx) == ExitCode.OK and "demo" in out(ctx)
     wrong = make_context(cwd=checkout, env={"NEXAHOME_HOME": str(elsewhere)})
     assert cli.main(["stacks"], wrong) == ExitCode.NOT_READY
-    assert err(wrong).startswith("FAIL  NEXAHOME_HOME does not point at a NexaHome checkout") and 'Next: ls "$NEXAHOME_HOME/stacks"' in err(wrong)
+    assert err(wrong).startswith("FAIL  NEXAHOME_HOME does not point at a NexaHome instance or clone") and 'Next: ls "$NEXAHOME_HOME"' in err(wrong)
 
 
 # --- stacks ------------------------------------------------------------------------------------------------

@@ -11,23 +11,19 @@ from collections.abc import Callable, Iterator, Mapping
 from typing import TYPE_CHECKING
 from pathlib import Path
 
-from nexahome import envfile
 from nexahome import platform as host_platform
 from nexahome.context import Context
+from nexahome.docker.probes import probe_compose, probe_docker_cli, probe_engine
 from nexahome.errors import NexaHomeError
 from nexahome.report import Check, Status
+from nexahome.stacks import envfile
 
-ENGINE_TIMEOUT = 10  # seconds; a stuck VM must not hang the command
 LOW_DISK_BYTES = 5 * 1024**3
 
 type Probe = Callable[[Context, Mapping[str, Check]], Check | None]
 
 if TYPE_CHECKING:
     from concurrent.futures import Future
-
-
-def _skip(check_id: str, needs: str) -> Check:
-    return Check(check_id, Status.SKIP, f"needs {needs}")
 
 
 def probe_platform(ctx: Context, prior: Mapping[str, Check]) -> Check:
@@ -45,41 +41,6 @@ def probe_python(ctx: Context, prior: Mapping[str, Check]) -> Check:
     return Check("python", Status.OK, ".".join(str(part) for part in ctx.host.python) + " (information)")
 
 
-def probe_docker_cli(ctx: Context, prior: Mapping[str, Check]) -> Check:
-    """Fail when `docker` is not on the PATH."""
-    result = ctx.runner.run(["docker", "--version"], timeout=ENGINE_TIMEOUT)
-    if not result.ok:
-        return Check("docker-cli", Status.FAIL, "Docker CLI not found", host_platform.docker_install_fix(ctx.host))
-    return Check("docker-cli", Status.OK, result.stdout.strip().splitlines()[0] if result.stdout.strip() else "found")
-
-
-def probe_compose(ctx: Context, prior: Mapping[str, Check]) -> Check:
-    """Fail when the Compose plugin is missing; skipped without the Docker CLI."""
-    if prior["docker-cli"].status != Status.OK:
-        return _skip("compose", "docker-cli")
-    result = ctx.runner.run(["docker", "compose", "version"], timeout=ENGINE_TIMEOUT)
-    if not result.ok:
-        return Check("compose", Status.FAIL, "Compose plugin not found", host_platform.compose_install_fix(ctx.host))
-    return Check("compose", Status.OK, result.stdout.strip().splitlines()[0] if result.stdout.strip() else "found")
-
-
-def probe_engine(ctx: Context, prior: Mapping[str, Check]) -> Check:
-    """Fail when no container runtime answers `docker info` in time; skipped without the Docker CLI."""
-    if prior["docker-cli"].status != Status.OK:
-        return _skip("engine", "docker-cli")
-    result = ctx.runner.run(["docker", "info", "--format", "{{.ServerVersion}}"], timeout=ENGINE_TIMEOUT)
-    if result.timed_out:
-        return Check(
-            "engine",
-            Status.FAIL,
-            f"the container runtime did not answer within {ENGINE_TIMEOUT} s",
-            host_platform.engine_restart_fix(ctx.host),
-        )
-    if not result.ok:
-        return Check("engine", Status.FAIL, "no container runtime running", host_platform.engine_start_fix(ctx.host))
-    return Check("engine", Status.OK, f"running, server {result.stdout.strip() or 'version unknown'}")
-
-
 def probe_disk(ctx: Context, prior: Mapping[str, Check]) -> Check:
     """Warn under 5 GiB free in the working directory."""
     free = ctx.disk_free(ctx.cwd)
@@ -90,19 +51,19 @@ def probe_disk(ctx: Context, prior: Mapping[str, Check]) -> Check:
 
 
 def probe_mount(ctx: Context, prior: Mapping[str, Check]) -> Check | None:
-    """Warn when a Colima host keeps the checkout outside the home directory it mounts; no result elsewhere."""
+    """Warn when a Colima host keeps the NexaHome folder (clone or instance) outside the home directory it mounts; no result elsewhere."""
     checkout = ctx.checkout()
     if checkout is None or not host_platform.colima_mount_applies(ctx.host):
         return None
     if checkout.is_relative_to(ctx.host.home):
-        return Check("mount", Status.OK, "the checkout is under the home directory, which Colima mounts")
+        return Check("mount", Status.OK, "the NexaHome folder is under the home directory, which Colima mounts")
     import shlex  # only the warning branch quotes a path
 
     source = '"$PWD"' if checkout == ctx.cwd else shlex.quote(str(checkout))
     return Check(
         "mount",
         Status.WARN,
-        "the checkout is outside the home directory, which the Colima VM does not mount",
+        "the NexaHome folder is outside the home directory, which the Colima VM does not mount",
         f'mv {source} "$HOME/"',
     )
 

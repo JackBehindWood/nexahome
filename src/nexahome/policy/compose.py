@@ -13,12 +13,12 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, NamedTuple
 
+from nexahome.docker import EDGE_NETWORK
+from nexahome.docker import compose as docker_compose
 from nexahome.parallel import map_ordered
 from nexahome.runner import Runner
 
-SHARED_NETWORK = "nexahome-edge"
 ALLOWED_CAP_ADD = {"NET_BIND_SERVICE"}  # Caddy's file capability (ADR 0011)
-CONFIG_TIMEOUT = 60  # seconds per stack
 
 type Config = Mapping[str, Any]
 
@@ -58,8 +58,8 @@ def check_project(directory: str, config: Config) -> list[str]:
     if config.get("name") != expected:
         problems.append(f"project name must be '{expected}', found '{config.get('name')}'")
     for network, spec in (config.get("networks") or {}).items():
-        if (spec or {}).get("external") and spec.get("name") != SHARED_NETWORK:
-            problems.append(f"network {network}: the only external network allowed is '{SHARED_NETWORK}'")
+        if (spec or {}).get("external") and spec.get("name") != EDGE_NETWORK:
+            problems.append(f"network {network}: the only external network allowed is '{EDGE_NETWORK}'")
     for volume, spec in (config.get("volumes") or {}).items():
         if (spec or {}).get("labels", {}).get("nexahome.backup") not in ("true", "false"):
             problems.append(f"volume {volume}: label nexahome.backup must be \"true\" or \"false\"")
@@ -90,11 +90,7 @@ class StackResult(NamedTuple):
 def check_stack(runner: Runner, compose: Path, shown: Path | None = None) -> StackResult:
     """Check one stack. `compose` is used to run and read; `shown` (default: the same) is what messages print."""
     label = shown or compose
-    env_example = compose.parent / ".env.example"
-    argv = ["docker", "compose", "-f", str(compose)]
-    if env_example.is_file():
-        argv += ["--env-file", str(env_example)]
-    result = runner.run([*argv, "config", "--format", "json"], timeout=CONFIG_TIMEOUT)
+    result = docker_compose.config_json(runner, compose)
     if result.missing:
         return StackResult(label, error="docker CLI not found; cannot validate stacks", docker_missing=True)
     if not result.ok:
