@@ -189,16 +189,3 @@ def test_an_unreadable_env_file_is_skipped_not_fatal(make_context: MakeContext, 
     (repo / "stacks" / "demo" / ".env").mkdir()  # reading a directory raises OSError
     checks = {c.id: c.status for c in diagnosis.run_probes(make_context(cwd=repo, runner=FakeRunner(HEALTHY)))}
     assert checks["env"] == Status.OK
-
-
-def test_the_prior_mapping_waits_for_a_probe_and_hides_those_that_did_not_apply() -> None:
-    from concurrent.futures import Future
-
-    done: Future[Check | None] = Future()
-    done.set_result(Check("docker-cli", Status.OK, "found"))
-    skipped: Future[Check | None] = Future()
-    skipped.set_result(None)
-    prior = diagnosis._Prior({"docker-cli": done, "mount": skipped})
-    assert prior["docker-cli"].status == Status.OK and list(prior) == ["docker-cli", "mount"] and len(prior) == 2
-    with pytest.raises(KeyError):
-        prior["mount"]

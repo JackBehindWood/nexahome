@@ -1,6 +1,6 @@
 # 0020. Instance, install and release model
 
-* **Status:** Proposed (design only; nothing is built or rehearsed)
+* **Status:** Proposed (`init`, `config` and the manifest are built; `upgrade` is rehearsed, not built; the design as a whole is not decided)
 * **Date:** 2026-11-02
 
 ## Context
@@ -22,9 +22,9 @@ Requirements and how each is verified:
 ## Decision
 **Two audiences, one honest line.** *Runners* use NexaHome as shipped, add unnamed stacks and extend with `compose.override.yaml`. *Customisers* fork the repository; this stays the register's audience ("a blueprint to read and fork"). The README says so plainly. Deferred with a trigger: a per-stack manifest from which the CLI renders the three aggregator files, when a third user-added named app appears.
 
-**Install.** `uv tool install <release URL>` (recommended; optional), or `python3.13 -m venv` plus `pip install <wheel>`. Installing uv, Docker or Colima stays the user's step, documented, never scripted. Release assets are a wheel, an sdist and checksums, published on GitHub; install docs verify with a command that works on macOS and Linux. PyPI and provenance attestations wait for a stable tag and a name check. First tag `v0.1.0`; the docs set stays 0.x, so the two numbers are independent. This changes the Proposed docs convention "1.0 reserved for the first release tag"; the owner agreed on 2026-11-02, the wording changes when this ADR is decided.
+**Install.** `uv tool install <release URL>` (recommended; optional), or `python3.13 -m venv` plus `pip install <wheel>`. Installing uv, Docker or Colima stays the user's step, documented, never scripted. Release assets are a wheel, an sdist and checksums, published on GitHub; install docs verify with a command that works on macOS and Linux. PyPI and provenance attestations wait for a stable tag and a name check. First tag `v0.2.0` (the package version); the docs set stays 0.x, so the two numbers are independent. This changes the Proposed docs convention "1.0 reserved for the first release tag"; the owner agreed on 2026-11-02, the wording changes when this ADR is decided.
 
-**Instance.** Home resolves in order: `--home`, `$NEXAHOME_HOME`, the nearest parent holding `nexahome.toml` or a NexaHome checkout, else `~/nexahome` (under `$HOME` because Colima mounts only the home directory). A git clone is an instance Git tracks, so contributors and the mini's deploy checkout ([ADR 0017](0017-deploy-flow.md)) need no second path; `init` and `upgrade` refuse inside a checkout and say "use git pull". Layout: `nexahome.toml` (schema 1, stack list; minimal at stage 2), package-owned `stacks/` (never edited; changes go in `.env` or `compose.override.yaml`), per-stack `.env`, `data/`. A hash manifest and the guarded replace arrive with `upgrade` at stage 3. Compatibility: a newer schema is refused with the upgrade command; new variables have defaults; a removed command warns for one minor release first.
+**Instance.** Home resolves in order: `--home`, `$NEXAHOME_HOME`, the nearest parent holding `nexahome.toml` or a NexaHome checkout, else `~/nexahome` if it holds `nexahome.toml` (under `$HOME` because Colima mounts only the home directory). A git clone is an instance Git tracks, so contributors and the mini's deploy checkout ([ADR 0017](0017-deploy-flow.md)) need no second path; `init` and `upgrade` refuse inside a checkout and say "use git pull". Layout: `nexahome.toml` (schema 1, stack list; minimal at stage 2), package-owned `stacks/` (never edited; changes go in `.env` or `compose.override.yaml`), per-stack `.env`, `data/`. `init` writes a hash manifest; the guarded replace arrives with `upgrade` at stage 3. Compatibility: a newer schema is refused with the upgrade command; new variables have defaults; a removed command warns for one minor release first.
 
 **Stacks stay single-sourced:** `stacks/` remains in the repository and the build includes it as package data; stack READMEs are left out because their relative links break.
 
@@ -33,7 +33,7 @@ Requirements and how each is verified:
 ## Consequences
 Easier: a 5-minute path, tested upgrades, the same code path for clones and installs. Harder: a guarded replace rather than a merge, so a user who edits package files is told to move the change into an override; two numbering schemes; a release process to maintain. Failure modes: wheel built without `stacks/` → round-trip test blocks the release; upgrade interrupted → staged and atomically renamed, previous copy kept; GitHub unreachable → the installed tool and instance keep working. Evolution: NAS sets `NEXAHOME_BACKUP_DIR`; a second host gets its own `nexahome.toml`.
 
-Unverified: hatchling `force-include` for a directory tree; hash on a direct wheel URL in uv; uv fetching Python 3.13; WSL2.
+Unverified: hash on a direct wheel URL in uv; hatchling `force-include` was replaced by `include` plus `sources` (it shipped a local `.env`); uv fetching Python 3.13; WSL2.
 
 ## Alternatives
 | Option | Verdict |

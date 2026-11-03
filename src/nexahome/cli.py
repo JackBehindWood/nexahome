@@ -32,6 +32,16 @@ def build_parser(selected: "Sequence[Command]") -> "argparse.ArgumentParser":
     return parser
 
 
+def _command_name(arguments: "Sequence[str]") -> str | None:
+    """The first word that is not the leading `--home` option, so `--home DIR config` loads `config` alone."""
+    rest = list(arguments)
+    if rest and rest[0] == "--home":
+        rest = rest[2:]
+    elif rest and rest[0].startswith("--home="):
+        rest = rest[1:]
+    return rest[0] if rest else None
+
+
 def _reader_went_away() -> int:
     """The reader of our output closed (for example `nexahome doctor | head`): stop quietly, as tools usually do."""
     import os
@@ -49,8 +59,11 @@ def main(argv: Sequence[str] | None = None, ctx: Context | None = None) -> int:
         except BrokenPipeError:
             return _reader_went_away()
         return ExitCode.OK
+    from nexahome.defaults import ENV_DEBUG, ENV_HOME  # after the `--version` fast path: that call never pays for it
+
     # A named command is loaded alone; help, errors and an empty command line need every command's description.
-    selected = [commands.load(arguments[0])] if arguments and arguments[0] in commands.names() else commands.load_all()
+    name = _command_name(arguments)
+    selected = [commands.load(name)] if name in commands.names() else commands.load_all()
     parser = build_parser(selected)
     try:
         args = parser.parse_args(arguments)
@@ -61,7 +74,7 @@ def main(argv: Sequence[str] | None = None, ctx: Context | None = None) -> int:
 
         ctx = Context.default()
     if args.home:  # the same setting as $NEXAHOME_HOME, which wins over searching upwards
-        ctx.env = {**ctx.env, "NEXAHOME_HOME": args.home}
+        ctx.env = {**ctx.env, ENV_HOME: args.home}
     if not args.command:
         parser.print_help(ctx.err)
         return ExitCode.USAGE
@@ -79,3 +92,8 @@ def main(argv: Sequence[str] | None = None, ctx: Context | None = None) -> int:
         return ExitCode.INTERRUPTED
     except BrokenPipeError:
         return _reader_went_away() if ctx.out is sys.stdout else ExitCode.PIPE_CLOSED
+    except (OSError, UnicodeDecodeError) as error:  # a file or program the command needed, not a NexaHomeError
+        if ctx.env.get(ENV_DEBUG):
+            raise
+        print(f"FAIL  could not read, write or run something: {error}\nNext: nexahome doctor", file=ctx.err)
+        return ExitCode.NOT_READY

@@ -1,6 +1,6 @@
 """`nexahome.toml`: the settings of an instance (schema 1: which stacks this host runs).
 
-Read strictly and written whole, atomically, by `nexahome config` (PK6-13). The standard library reads TOML but does
+Read strictly and written whole, atomically, by `nexahome config`. The standard library reads TOML but does
 not write it; this schema has three value types, so the writer is a few lines here instead of a dependency.
 """
 
@@ -13,12 +13,12 @@ from typing import TYPE_CHECKING, NamedTuple
 
 from nexahome import __version__
 from nexahome.errors import ExitCode, NexaHomeError
-from nexahome.instance import CONFIG_NAME, SCHEMA
+from nexahome.defaults import CONFIG_MAX_BYTES, INSTANCE_SCHEMA, PUBLIC_FILE_MODE
+from nexahome.instance import CONFIG_NAME
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-DEFAULT_STACKS = ("hello",)  # a fresh instance runs the demo; more stacks are added with `nexahome config set stacks`
 HEADER = "# Managed by `nexahome config`. Comments added by hand are not kept when it rewrites this file.\n"
 
 
@@ -29,7 +29,7 @@ def _quote(text: str) -> str:
 def render(stacks: tuple[str, ...] | list[str], created_by: str | None = None) -> str:
     """The file text, keys in a fixed order."""
     names = ", ".join(_quote(name) for name in stacks)
-    return f"{HEADER}schema = {SCHEMA}\ncreated_by = {_quote(created_by or f'nexahome {__version__}')}\nstacks = [{names}]\n"
+    return f"{HEADER}schema = {INSTANCE_SCHEMA}\ncreated_by = {_quote(created_by or f'nexahome {__version__}')}\nstacks = [{names}]\n"
 
 
 class Settings(NamedTuple):
@@ -41,7 +41,6 @@ class Settings(NamedTuple):
 KEYS = ("schema", "created_by", "stacks")
 SETTABLE = ("stacks",)  # schema and created_by describe the file; only `nexahome init` writes them
 STACK_NAME = re.compile(r"[a-z0-9][a-z0-9_-]*")  # also keeps a name from being a path
-MAX_BYTES = 64 * 1024
 
 
 def _editor_fix(path: Path) -> str:
@@ -74,24 +73,24 @@ def read(directory: Path) -> Settings | None:
     path = directory / CONFIG_NAME
     try:
         with open(path, "rb") as handle:
-            raw = handle.read(MAX_BYTES + 1)
+            raw = handle.read(CONFIG_MAX_BYTES + 1)
     except FileNotFoundError:
         return None
     edit = _editor_fix(path)
-    if len(raw) > MAX_BYTES:
-        raise NexaHomeError(f"{CONFIG_NAME} is larger than {MAX_BYTES} bytes", edit)
+    if len(raw) > CONFIG_MAX_BYTES:
+        raise NexaHomeError(f"{CONFIG_NAME} is larger than {CONFIG_MAX_BYTES} bytes", edit)
     try:
         data = tomllib.loads(raw.decode())
     except (tomllib.TOMLDecodeError, UnicodeDecodeError) as error:
         raise NexaHomeError(f"{CONFIG_NAME} is not valid TOML: {error}", edit) from error
     schema = data.get("schema")
-    if not isinstance(schema, int) or isinstance(schema, bool):
-        raise NexaHomeError(f"{CONFIG_NAME}: schema must be a number (this version writes {SCHEMA})", edit)
-    if schema > SCHEMA:
-        raise NexaHomeError(f"{CONFIG_NAME} has schema {schema}; this nexahome understands up to {SCHEMA}", "nexahome update --available")
+    if not isinstance(schema, int) or isinstance(schema, bool) or schema < 1:
+        raise NexaHomeError(f"{CONFIG_NAME}: schema must be a number (this version writes {INSTANCE_SCHEMA})", edit)
+    if schema > INSTANCE_SCHEMA:
+        raise NexaHomeError(f"{CONFIG_NAME} has schema {schema}; this nexahome understands up to {INSTANCE_SCHEMA}", "nexahome update --available")
     unknown = sorted(set(data) - set(KEYS))
     if unknown:
-        raise NexaHomeError(f"{CONFIG_NAME}: unknown key {', '.join(unknown)} (schema {SCHEMA} has {', '.join(KEYS)})", edit)
+        raise NexaHomeError(f"{CONFIG_NAME}: unknown key {', '.join(unknown)} (schema {INSTANCE_SCHEMA} has {', '.join(KEYS)})", edit)
     created_by = data.get("created_by", "")
     stacks = data.get("stacks")
     if not isinstance(created_by, str) or not isinstance(stacks, list):
@@ -113,7 +112,7 @@ def write(directory: Path, stacks: Sequence[str]) -> None:
     try:
         with os.fdopen(descriptor, "w") as handle:
             handle.write(text)
-        os.chmod(temporary, 0o644)
+        os.chmod(temporary, PUBLIC_FILE_MODE)
         os.replace(temporary, directory / CONFIG_NAME)
     except BaseException:
         Path(temporary).unlink(missing_ok=True)

@@ -12,7 +12,7 @@ import pytest
 
 from nexahome import cli
 from nexahome.errors import ExitCode
-from nexahome.instance import bundle, create, manifest
+from nexahome.instance import REINSTALL, bundle, create, manifest
 from nexahome.runner import SubprocessRunner
 
 from conftest import REPO, FakeRunner, MakeCheckout, MakeContext, has_compose
@@ -33,6 +33,12 @@ def listing(root: Path) -> list[str]:
 def init(make_context: MakeContext, target: Path, **options: object) -> tuple[int, object]:
     ctx = make_context(cwd=target.parent, runner=FakeRunner(), **options)  # type: ignore[arg-type]
     return cli.main(["init", str(target)], ctx), ctx
+
+
+def test_the_summary_counts_services_not_the_template_or_the_backup_tool(make_context: MakeContext, tmp_path: Path) -> None:
+    code, ctx = init(make_context, tmp_path / "made")
+    services = [p for p in (REPO / "stacks").iterdir() if p.is_dir() and p.name not in ("_template", "backup")]  # P-28
+    assert code == ExitCode.OK and f": {len(services)} stacks," in out(ctx)
 
 
 def test_the_stacks_are_found_without_a_wheel_or_a_makefile() -> None:
@@ -158,7 +164,8 @@ def test_the_home_setting_names_the_folder(make_context: MakeContext, tmp_path: 
 def test_init_without_bundled_stacks_ends_in_one_command(monkeypatch: pytest.MonkeyPatch, make_context: MakeContext, tmp_path: Path) -> None:
     monkeypatch.setattr(bundle, "location", lambda: None)
     code, ctx = init(make_context, tmp_path / "made")
-    assert code == ExitCode.NOT_READY and err(ctx).endswith("Next: uv tool install --reinstall nexahome\n") and not (tmp_path / "made").exists()
+    assert code == ExitCode.NOT_READY and err(ctx).endswith(f"Next: {REINSTALL}\n") and not (tmp_path / "made").exists()
+    assert "reinstall nexahome" not in REINSTALL  # P-01: no PyPI project of this name is ours; install from the wheel
 
 
 def test_the_filter_keeps_local_secrets_and_readmes_out(tmp_path: Path) -> None:

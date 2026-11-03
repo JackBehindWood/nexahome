@@ -8,7 +8,7 @@ ALL = $(or $(strip $(shell cat .config/stacks 2>/dev/null)),$(filter-out _templa
 STACKS = $(if $(STACK),$(STACK),$(filter $(CORE),$(ALL)) $(filter-out $(CORE),$(ALL)))
 
 .DEFAULT_GOAL := help
-.PHONY: help up down ps status smoke open portal backup-init backup restore snapshots verify backup-check deploy setup hooks unhooks check test
+.PHONY: help up down ps status smoke open portal backup-init backup restore snapshots verify backup-check deploy setup setup-dev hooks unhooks check test
 
 ##@ Use
 
@@ -81,8 +81,13 @@ deploy: ## Pull, check and start on this machine (the deploy-only checkout on ma
 
 ##@ Develop
 
-setup: ## Check prerequisites, create .venv with the pinned dev tools (deploy checkout: sh scripts/setup.sh --deploy stack...)
+setup: ## Check prerequisites, create .venv with the nexahome package and the check tools (deploy checkout: sh scripts/setup.sh --deploy stack...)
 	@sh scripts/setup.sh
+
+setup-dev: ## The same plus pytest, which only running the package tests needs
+	@sh scripts/setup.sh --dev
+
+NEED_PYTEST = @test -x $(BIN)/pytest || { printf 'FAIL  pytest is not installed\nNext: make setup-dev\n' >&2; exit 1; }
 
 hooks: ## Install the git pre-commit hook in this repo only (opt-in)
 	$(BIN)/pre-commit install
@@ -90,9 +95,10 @@ hooks: ## Install the git pre-commit hook in this repo only (opt-in)
 unhooks: ## Remove that hook
 	$(BIN)/pre-commit uninstall
 
-check: ## Run all checks: hooks on every file plus the Compose policy
-	$(BIN)/pre-commit run --all-files
+check: ## Run all checks: hooks on every file (tracked or not, ignored ones excepted) plus the Compose policy
+	git ls-files -z -co --exclude-standard | xargs -0 $(BIN)/pre-commit run --files
 	$(BIN)/nexahome check
 
 test: ## Run the nexahome package tests (pytest)
+	$(NEED_PYTEST)
 	$(BIN)/pytest

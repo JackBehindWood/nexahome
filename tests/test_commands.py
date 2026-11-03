@@ -29,7 +29,7 @@ def config_argv(checkout: Path, name: str) -> tuple[str, ...]:
 
 
 GOOD_CONFIG = json.dumps(
-    {"name": "nexahome-demo", "services": {"app": {"image": "x/y:1", "healthcheck": {}, "restart": "always"}}}
+    {"name": "nexahome-demo", "services": {"app": {"image": "x/y:1", "healthcheck": {}, "restart": "always", "user": "1000", "cap_drop": ["ALL"], "security_opt": ["no-new-privileges:true"], "read_only": True}}}
 )
 
 
@@ -41,7 +41,7 @@ def test_check_passes_and_prints_the_originals_line(make_checkout: MakeCheckout,
 
 
 def test_check_fails_with_exit_1_on_a_policy_problem(make_checkout: MakeCheckout, make_context: MakeContext) -> None:
-    bad = json.dumps({"name": "nexahome-demo", "services": {"app": {"image": "x/y:1", "healthcheck": {}, "restart": "always", "privileged": True}}})
+    bad = json.dumps({"name": "nexahome-demo", "services": {"app": {**json.loads(GOOD_CONFIG)["services"]["app"], "privileged": True}}})
     checkout = make_checkout()
     ctx = make_context(cwd=checkout, runner=FakeRunner({config_argv(checkout, "demo"): RunResult(0, bad)}))
     assert cli.main(["check"], ctx) == ExitCode.FAILED
@@ -199,7 +199,7 @@ def test_status_prints_compose_ps_and_the_backup_summary(make_checkout: MakeChec
     ctx = make_context(cwd=checkout, runner=FakeRunner({**DOCKER_HEALTHY, ps: RunResult(0, "NAME  STATUS\nedge  healthy\n")}))
     assert cli.main(["status"], ctx) == ExitCode.OK
     assert out(ctx).splitlines()[:2] == ["NAME  STATUS", "edge  healthy"]
-    assert f"backup: no repository at {checkout / 'data' / 'backup'} (make backup-init)" in out(ctx)
+    assert f"backup: no repository at {checkout / 'data' / 'backup'} (in a git clone: make backup-init)" in out(ctx)
 
 
 def test_status_without_an_engine_says_how_to_start_it(make_checkout: MakeCheckout, make_context: MakeContext, make_host: MakeHost) -> None:

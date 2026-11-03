@@ -1,4 +1,4 @@
-# All hooks are local and run the tools pinned in requirements-dev.txt from ./.venv.
+# All hooks are local and run the tools pinned in the check group of pyproject.toml from ./.venv.
 # No hook repositories are cloned, so nothing is cached outside this folder.
 repos:
   - repo: local

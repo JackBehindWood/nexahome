@@ -15,14 +15,32 @@ HEAVY = {
 # argparse imports shutil (terminal width) and, on Python 3.14, dataclasses and inspect (via _colorize) as soon as a
 # parser exists; that is the interpreter's cost, not ours
 ARGPARSE_COST = {"dataclasses", "inspect", "shutil"} if sys.version_info >= (3, 14) else {"shutil"}
+COMMANDS = ("check", "config", "doctor", "env", "init", "stacks", "status", "update")
+RUNNER = {"subprocess"}  # the real context builds the process runner, so a run of any command pays for it
+
+
+def others(name: str) -> set[str]:
+    """A call that names a command imports that command's module only (ADR 0021, PK-F2)."""
+    return {f"nexahome.commands.{other}" for other in COMMANDS if other != name}
+
+
 # what each call may NOT import (everything else it may)
 BUDGET: dict[str, tuple[list[str], set[str]]] = {
-    "--version": (["--version"], HEAVY | {"argparse", "nexahome.context", "nexahome.runner", "nexahome.commands.doctor", "nexahome.diagnosis"}),
+    "--version": (["--version"], HEAVY | {"argparse", "nexahome.context", "nexahome.runner", "nexahome.commands.doctor", "nexahome.diagnosis", "nexahome.defaults"}),
     "--help": (["--help"], HEAVY - ARGPARSE_COST | {"nexahome.context", "nexahome.runner", "nexahome.diagnosis", "nexahome.release.updater", "nexahome.stacks.envfile", "nexahome.policy"}),
     "doctor --help": (["doctor", "--help"], HEAVY - ARGPARSE_COST | {"nexahome.diagnosis", "nexahome.commands.update", "nexahome.commands.env", "nexahome.release.updater"}),
     "doctor": (["doctor"], HEAVY - ARGPARSE_COST - {"subprocess", "concurrent.futures"} | {"nexahome.release.updater", "nexahome.commands.update", "nexahome.commands.env"}),
     "init --help": (["init", "--help"], HEAVY - ARGPARSE_COST | {"nexahome.instance.create", "nexahome.instance.bundle", "nexahome.docker", "nexahome.commands.doctor"}),
     "update --help": (["update", "--help"], HEAVY - ARGPARSE_COST | {"nexahome.release.updater", "nexahome.release.net", "nexahome.commands.doctor"}),
+    "config": (["config"], HEAVY - ARGPARSE_COST - RUNNER | others("config")),
+    "--home DIR config": (["--home", "x", "config"], HEAVY - ARGPARSE_COST - RUNNER | others("config")),  # P-05: the option does not load every command
+    "--home=DIR config": (["--home=x", "config"], HEAVY - ARGPARSE_COST - RUNNER | others("config")),
+    "stacks": (["stacks"], HEAVY - ARGPARSE_COST - RUNNER | others("stacks")),
+    "status": (["status"], HEAVY - ARGPARSE_COST - RUNNER | others("status")),
+    "check": (["check"], HEAVY - ARGPARSE_COST - RUNNER - {"json", "shlex"} | others("check")),
+    "env": (["env"], HEAVY - ARGPARSE_COST - RUNNER | others("env")),
+    # `update` reads the package metadata (importlib.metadata); on 3.13 that pulls inspect, random and tempfile in with it
+    "update": (["update"], HEAVY - ARGPARSE_COST - RUNNER - {"importlib.metadata", "json", "urllib", "inspect", "random", "tempfile"} | others("update")),
 }
 
 

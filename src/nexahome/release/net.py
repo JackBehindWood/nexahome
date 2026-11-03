@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from nexahome import __version__
+from nexahome.defaults import DOWNLOAD_CHUNK_BYTES
 
 if TYPE_CHECKING:
     from http.client import HTTPMessage, HTTPResponse
@@ -43,6 +44,7 @@ def check_url(url: str) -> None:
 
 def _open(url: str, timeout: float) -> HTTPResponse:
     """Open an address. Every redirect is checked too; the caller closes the response."""
+    import http.client
     import urllib.error
     import urllib.request
 
@@ -62,7 +64,7 @@ def _open(url: str, timeout: float) -> HTTPResponse:
     except urllib.error.HTTPError as error:
         error.close()  # it holds the response body open
         raise NetworkError(f"the server answered HTTP {error.code}") from error
-    except (urllib.error.URLError, OSError, ValueError) as error:
+    except (urllib.error.URLError, http.client.HTTPException, OSError, ValueError) as error:
         raise NetworkError(str(getattr(error, "reason", error))) from error
     return response
 
@@ -91,7 +93,7 @@ def http_download(url: str, destination: Path, *, timeout: float, max_bytes: int
     written = 0
     try:
         with _open(url, timeout) as response, destination.open("wb") as out:
-            while piece := response.read(65536):
+            while piece := response.read(DOWNLOAD_CHUNK_BYTES):
                 written += len(piece)
                 if written > max_bytes:
                     raise NetworkError(f"the download is larger than the {max_bytes} byte limit")

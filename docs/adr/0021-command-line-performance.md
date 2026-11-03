@@ -22,7 +22,7 @@ Each has a check that fails when the rule is broken.
 | PK-F7 | An optimisation needs a measurement before and after; a regression is caught by a test, not by memory | this ADR's table; the tests above |
 
 ## Decision
-**Rules** (the how-to version for contributors is in [CONTRIBUTING](../../CONTRIBUTING.md#keeping-the-command-fast)):
+**Rules** (the how-to version for contributors is in [CONTRIBUTING](../codebase.md#keeping-the-command-fast)):
 
 1. **Import lazily.** A module imports at top level only what every use of that module needs. `json`, `subprocess` (outside `runner`), `hashlib`, `hmac`, `tempfile`, `secrets`, `shutil`, `shlex`, `urllib`, `ssl`, `http`, `concurrent`, `dataclasses`, `inspect`, `importlib.metadata`, the stdlib `platform` and `logging` go inside the function that uses them. Type-only imports go under `if TYPE_CHECKING:` with `from __future__ import annotations` (annotations that name such imports are evaluated eagerly on Python 3.13, which a test run on 3.14 hides).
 2. **Commands are thin.** `commands/<name>.py` declares `NAME` (equal to the file name), the options (`register`) and `run`, and imports its logic inside `run`. The logic lives outside `commands/` (`diagnosis.py`, `updater.py`, `policy/`, `envfile.py`, ...). Help can then list every command without paying for any of them.

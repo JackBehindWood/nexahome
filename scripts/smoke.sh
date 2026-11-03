@@ -94,7 +94,7 @@ run() {
 	code=$(curl -s --max-time 5 -o /dev/null -w '%{http_code}' -H 'Host: other.example' http://127.0.0.1:"$port"/)
 	[ "$code" = 404 ] && ok "edge foreign Host" "404" || bad "edge foreign Host" "got $code, want 404"
 
-	# 3: the four-step contract, live: edge aliases, Caddyfile blocks, portal tiles.
+	# 3: the five-step contract, live: edge aliases, Caddyfile blocks, portal tiles.
 	aliases=$(docker inspect --format '{{range $k, $v := .NetworkSettings.Networks}}{{range $v.Aliases}}{{println .}}{{end}}{{end}}' "$edge" | sed -n "s/\\.$domain\$//p" | sort -u)
 	blocks=$(repo_hosts); tiles=$(tile_hosts); targets=$(target_hosts)
 	drift=""

@@ -1,6 +1,6 @@
 # 0014. Mac mini hardware choice
 
-* **Status:** Proposed (drafted after the purchase; confirmed or corrected in P4 B2, inside the return window)
+* **Status:** Proposed (drafted before the purchase decision; confirmed or corrected in P4 B2, inside the vendor's return window)
 * **Date:** 2026-11-02
 
 ## Context
@@ -15,7 +15,7 @@ Apple Mac mini, M6, **32 GB memory, 512 GB internal storage**, bought new, plus 
 | :-- | :-- | :-- | :-- |
 | Cost tier | lowest | middle | highest |
 | Model size | up to 14B comfortable; 27 to 30B tight | 30B class (about 19 GB at 4-bit) with a capped context | same memory as A; higher bandwidth means faster decoding, not a bigger model |
-| Fit | a 14B goal | the stated goal, local AI to replace paid usage, at a price in reach | only if the education price is clearly lower and speed matters more than model size |
+| Fit | a 14B goal | the stated goal, local AI to replace paid usage, at a price in reach | only if the lowest listed price is clearly lower and speed matters more than model size |
 
 Fallback: M6 with 16 GB only if the small-model test had shown a small model suffices; it cannot run the 30B class. There is no wait for a newer generation: this one is current.
 
@@ -25,7 +25,7 @@ Sizing rule (re-measured in B2): weights (parameters times bits per weight, divi
 | :-- | :-- |
 | native model server, light stacks (`hello`, `actual`), development, Claude Code, backups and a copy of the repository | identity provider, health monitor, anything needed while the mini is off or asleep ([architecture](../architecture.md)) |
 
-Return-window rule: unbox and run B1 and B2 within 5 days of receipt; send the return notice by day 12 of the 14 if the model test fails.
+Return-window rule: unbox and run B1 and B2 early in the vendor's return window, and send the return notice in good time if the model test fails.
 
 ## Consequences
 Easier: one machine covers development and a 30B-class local model within budget; the same Compose files run on it ([ADR 0004](0004-colima-runtime.md)). Harder: memory and disk are fixed for the life of the machine; the model and Colima VM compete for 32 GB; a local model is weaker than a cloud agent at tool use, so the cloud agent stays for coding and the local one is a measured complement (B5). Saving money is real only if a subscription is cancelled; that is the owner's call, not an exit criterion.

@@ -11,7 +11,8 @@ from collections.abc import Sequence
 from enum import StrEnum
 from typing import NamedTuple
 
-SCHEMA = 1
+from nexahome.defaults import REPORT_SCHEMA
+
 
 
 class Status(StrEnum):
@@ -74,4 +75,4 @@ def render_json(checks: Sequence[Check]) -> str:
     import json  # only a --json run needs it
 
     rows = [{"id": c.id, "status": c.status, "summary": c.summary, "fix": c.fix} for c in checks]
-    return json.dumps({"schema": SCHEMA, "ok": passed(checks), "checks": rows}, indent=2)
+    return json.dumps({"schema": REPORT_SCHEMA, "ok": passed(checks), "checks": rows}, indent=2)

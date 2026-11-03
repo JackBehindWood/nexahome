@@ -84,5 +84,5 @@ def test_documented_make_and_nexahome_commands_exist() -> None:
 def test_every_stack_has_a_dependabot_entry() -> None:
     config = (REPO / ".github" / "dependabot.yml").read_text()
     covered = set(re.findall(r"directory: /stacks/([\w-]+)", config))
-    stacks = {p.parent.name for p in (REPO / "stacks").glob("*/compose.yaml") if p.parent.name != "_template"}
+    stacks = {p.parent.name for p in (REPO / "stacks").glob("*/compose.yaml")}
     assert stacks - covered == set()

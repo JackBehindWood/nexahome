@@ -16,7 +16,7 @@ NAME = "check"
 
 
 def register(subparsers: Subparsers) -> None:
-    parser = subparsers.add_parser(NAME, help="check the stacks against the Compose policy", description=__doc__.split("\n")[0])
+    parser = subparsers.add_parser(NAME, help="check the stacks against the Compose policy", description=(__doc__ or NAME).split("\n")[0])
     parser.add_argument("--stacks", metavar="DIR", help="the folder that holds the stacks (default: stacks/ of the instance or clone)")
     parser.set_defaults(run=run)
 
@@ -26,7 +26,7 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
     from nexahome.errors import NexaHomeError
     from nexahome.policy import compose
 
-    root = ctx.cwd / args.stacks if args.stacks else (ctx.checkout() or ctx.cwd) / "stacks"
+    root = ctx.cwd / args.stacks if args.stacks else (ctx.instance() or ctx.cwd) / "stacks"
     try:  # messages read stacks/x/... when the folder is inside the working directory
         shown = root.relative_to(ctx.cwd)
     except ValueError:

@@ -84,6 +84,19 @@ def test_a_missing_page_and_a_dead_address_are_network_errors(server: str) -> No
         net.http_get("http://127.0.0.1:9/", timeout=2, max_bytes=100)
 
 
+def test_a_malformed_answer_is_a_network_error_not_a_traceback(monkeypatch: pytest.MonkeyPatch) -> None:
+    import http.client
+    import urllib.request
+
+    class Broken:
+        def open(self, request: object, timeout: float) -> None:
+            raise http.client.BadStatusLine("garbage")  # P-13: raised by .open(), not by a read
+
+    monkeypatch.setattr(urllib.request, "build_opener", lambda *handlers: Broken())
+    with pytest.raises(net.NetworkError):
+        net.http_get("http://127.0.0.1:9/", timeout=2, max_bytes=100)
+
+
 def test_a_redirect_may_not_leave_https(server: str) -> None:
     with pytest.raises(net.NetworkError, match="only https"):
         net.http_get(f"{server}/away", timeout=5, max_bytes=100)
