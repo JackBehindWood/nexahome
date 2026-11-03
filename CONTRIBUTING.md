@@ -15,14 +15,15 @@ This is the only developer entry point ([ADR 0006](docs/adr/0006-concerns-and-au
 Needs the README prerequisites plus Python 3.13 or newer, or `uv` (which fetches it); 3.13 is the project minimum. Without `uv`, `make setup` stops with the version it found if `python3` is older, so install `uv` or a newer Python first.
 
 ```sh
-make setup     # create .venv and install the pinned dev tools
+make setup     # create .venv with the nexahome package and the pinned check tools
 make check     # hooks on every file plus the Compose policy check
 make hooks     # optional: install the git pre-commit hook in this repo only
 ```
 
-`make setup` also installs the `nexahome` package (editable) and pytest:
+`make setup-dev` adds pytest, which only running the package tests needs (the `nexahome` package itself is installed by `make setup`, editable):
 
 ```sh
+make setup-dev                # once: pytest
 make test                     # the package tests (pytest)
 . .venv/bin/activate          # once per terminal: puts nexahome on your PATH (or call .venv/bin/nexahome)
 nexahome --help               # the commands: check, config, doctor, env, init, stacks, status, update

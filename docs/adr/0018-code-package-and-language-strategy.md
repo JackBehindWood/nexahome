@@ -17,7 +17,7 @@ Requirements and how each is verified:
 | PK-P3 | Platform-specific code lives in one package, `nexahome.platform` (one module per system) | Test: no other `sys.platform` or `uname` use |
 
 ## Decision
-**Languages.** POSIX `sh` for glue only, small (about 30 lines), ShellCheck-clean in CI, no logic duplicated across scripts. Python **3.13 or newer** (owner's choice) for anything with logic: standard library only at runtime, `argparse` for the CLI. Build backend hatchling, build-time only. Dev tools: pytest, pinned in the `dev` dependency group of `pyproject.toml` per [ADR 0003](0003-project-local-tooling.md); each is still asked about before it is installed. Version policy: `requires-python >=3.13`; CI tests 3.13 and 3.14; a version is dropped at end of life with a changelog note.
+**Languages.** POSIX `sh` for glue only, small (about 30 lines), ShellCheck-clean in CI, no logic duplicated across scripts. Python **3.13 or newer** (owner's choice) for anything with logic: standard library only at runtime, `argparse` for the CLI. Build backend hatchling, build-time only. Dev tools: pytest, pinned in the `dev` dependency group of `pyproject.toml` (the check tools are in `check`) per [ADR 0003](0003-project-local-tooling.md); each is still asked about before it is installed. Version policy: `requires-python >=3.13`; CI tests 3.13 and 3.14; a version is dropped at end of life with a changelog note.
 
 **Stages, each a stop point.** Stopping after any stage leaves the repository coherent.
 1. `nexahome doctor` and the test harness (fake `docker`). Additive; also useful alone.
