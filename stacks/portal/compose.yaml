@@ -4,7 +4,7 @@ name: nexahome-portal
 # home.<NEXAHOME_DOMAIN>:<EDGE_PORT>, so it publishes no port. No Docker socket.
 services:
   portal:
-    image: ghcr.io/gethomepage/homepage:v2.6.0
+    image: ghcr.io/gethomepage/homepage:v2.7.0
     user: "1001:1001"
     read_only: true
     cap_drop: [ALL]
