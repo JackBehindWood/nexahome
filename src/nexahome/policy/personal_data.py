@@ -1,4 +1,4 @@
-"""Flag personal or environment-specific data in text files (port of scripts/check_personal_data.py).
+"""Flag personal or environment-specific data in text files.
 
 Flags private IPv4 addresses, home-directory paths with a user name, `.local` hostnames, and any term
 in the optional, gitignored `.personal-denylist` (one per line, case-insensitive). A line containing

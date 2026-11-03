@@ -1,7 +1,7 @@
 """nexahome update: update this tool to the newest release. It always checks first and asks before it installs.
 
 `--available` only reports whether a newer version exists. The logic (release source, checksum, installer choice)
-is in nexahome/updater.py.
+is in nexahome/release/updater.py.
 """
 
 from __future__ import annotations

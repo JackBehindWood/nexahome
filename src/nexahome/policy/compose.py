@@ -1,4 +1,4 @@
-"""Validate stacks/*/compose.yaml against the project's Compose policy (port of scripts/check_compose.py).
+"""Validate stacks/*/compose.yaml against the project's Compose policy.
 
 Policy: pinned image tag, health check, restart policy, published ports bound to 127.0.0.1, no host
 networking, not privileged; every named volume labelled nexahome.backup "true" or "false"; project name

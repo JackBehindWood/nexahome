@@ -1,6 +1,6 @@
 """`nexahome.toml`: the settings of an instance (schema 1: which stacks this host runs).
 
-Read strictly and written whole, atomically, by `nexahome config` (PK6-13). The standard library reads TOML but does
+Read strictly and written whole, atomically, by `nexahome config`. The standard library reads TOML but does
 not write it; this schema has three value types, so the writer is a few lines here instead of a dependency.
 """
 
