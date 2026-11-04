@@ -1,23 +1,22 @@
 # Session Log
 
-Newest first. Each entry: done, doc changes with reasons, next, open questions.
+Newest first; each entry follows the template in the session-end skill and has at most 12 lines. Older entries are one line each under "Earlier entries"; the full text is in `git log -p -- docs/session-log.md`.
 
 ## Pending owner actions (the one current list)
 
-Last replaced 2026-11-04 (end of DR2). Older entries end with a pointer here instead of their own list.
+Last replaced 2026-11-04 (end of DR3). Entries end with a pointer here instead of their own list.
 
 **Decide**
-- DR2 findings (local `.claude/tmp/dr2-report.md`, ranked S/M/L): the S batch is ready to edit on your yes. Needs your explicit yes: reword the Confirmed audience row in `docs/project.md` ("blueprint to read and fork") for the independence goal; row 84 (stale "stays Proposed"); and the CI-line conflict (keep the dated results line in ADR 0019 and amend the session-end rule, or delete the line). Also: `docs/adr/README.md` with a test; a log line budget (warn 220, fail 300) and the session-end skill edit listed in the report; a runner guide and release notes after `v0.2.0`.
-- Delete the merged local and remote `feat/packaging` (it equals `dev`; the uncommitted work sits on it). Recommended: create `feat/docs-review` first, then delete on your explicit yes.
-- Other Proposed register rows (documentation conventions, repository layout, task runner, security baseline, roles, three Packaging rows); review ADRs 0014 to 0020, the SSH runbook and the packaging design. None promoted in PK6f.
-- [ADR 0022](adr/0022-own-images-and-app-stacks.md) (own images and application stacks) is Proposed: your five answers are recorded in it; promote to Confirmed only on your explicit yes. The ADR 0007 amendment (profiles) and ADR 0020's open gap (a runner's own stacks) wait for that.
-- GitHub: Dependabot alerts and security updates are disabled for the repository (your action, Settings, Code security); the account setting "Block command line pushes that expose my email"; optional SSH-signed commits.
-- Open choices: digest pinning; paid tier versus the open-source rule; keep `hello` on the edge and in the portal; ruff or a type checker (answered: not now; revisit if a lint or typing bug slips through).
+- Still open from DR2: register row 80 repeats row 81 (merge it or mark it historical); a runner guide and release notes after `v0.2.0`; the build for a runner's own stacks (`stacks.d/` or a Compose override, [ADR 0020](adr/0020-instance-install-and-release-model.md) and [0022](adr/0022-own-images-and-app-stacks.md)).
+- `feat/packaging` carries the DR2 and DR3 commits (not pushed). Push and a pull request into `dev` on your yes; delete the branch only after it is merged.
+- Other Proposed register rows (documentation conventions, repository layout, task runner, security baseline, roles, three Packaging rows); review ADRs 0014 to 0020, the SSH runbook and the packaging design. None promoted.
+- [ADR 0022](adr/0022-own-images-and-app-stacks.md) (own images and application stacks) is Proposed: your five answers are recorded in it; promote only on your explicit yes. The ADR 0007 amendment (profiles) and ADR 0020's open gap wait for that.
+- GitHub: Dependabot alerts and security updates are disabled for the repository (Settings, Code security); the account setting "Block command line pushes that expose my email"; optional SSH-signed commits.
+- Open choices: digest pinning; paid tier versus the open-source rule; keep `hello` on the edge and in the portal; ruff or a type checker (not now; revisit if a lint or typing bug slips through).
 
 **Git**
-- Pull request 31 (`feat/packaging` into `dev`) is merged (2026-11-03, CI green on `b101a0f`). Next: `dev` into `main` by pull request (your yes).
+- Pull request 31 is merged into `dev` (2026-11-03). Next: `dev` into `main` by pull request (your yes).
 - Dependabot (into `main`): 26 merged. 29 and 30 are green but wait until this branch reaches `main` (30 will conflict on the deleted `requirements-dev.txt`; 29 may on `pyproject.toml`; not verified). 25 and 27 await review (red `platforms` is the abandoned macOS leg); 28 (pocket-id) held.
-- Optional: `nexahome init` smoke passed in a throwaway folder (init and check exit 0; doctor 3 only because no container runtime ran).
 
 **Security hygiene**
 - Keep `ENCRYPTION_KEY` and the restic password in a password manager (the repository is on the same disk: a drill, not protection); keep the ntfy topic secret.
@@ -27,191 +26,85 @@ Last replaced 2026-11-04 (end of DR2). Older entries end with a pointer here ins
 
 **Open work**
 - Diagnose the Pocket ID self-restart; optional admin-only sign-in for the health view.
-- Dependabot parsing is shown for `portal`, `identity`, `gatus` and `pip`; not yet for `github-actions`, `hello`, `actual`, `backup`, `edge`, `_template` (no newer tag is also a reason); the `dev` and `check` dependency groups are unproven until a Dependabot pull request appears after a push.
-- Audit rows left for PK7 or later: S-21 (two `.env` creators until `nexahome up`), S-26 (backup job mounts every stack's `.env`), S-30 (deploy checkout and instance share a folder name), the package rows P-07 (trust model of `update`), P-11, P-12, P-14, P-16, P-18 to P-22, P-25 to P-27.
+- Dependabot parsing is shown for `portal`, `identity`, `gatus` and `pip`; not yet for `github-actions`, `hello`, `actual`, `backup`, `edge`, `_template`; the `dev` and `check` dependency groups are unproven until a Dependabot pull request appears after a push.
+- Audit rows left for PK7 or later: S-21, S-26, S-30 and package rows P-07, P-11, P-12, P-14, P-16, P-18 to P-22, P-25 to P-27 (local audit notes).
+
+## 2026-11-04: DR3 (edit batch for the accepted DR2 findings)
+
+**Done**
+- Committed the DR2 Step 0 edits as they stood (`dbb37b5`), then applied the DR2 S batch, the one-owner changes, the ADR index and the log redesign.
+- Command list owned by the README, stack count by `docs/project.md`, changelog lines trimmed to 8 entries, the log compacted to the new template.
+**Doc changes and why**
+- `docs/project.md`: Confirmed audience row reworded for running as shipped and row 84 loses its stale clause (owner's yes; labels unchanged); Proposed rows 61, 62, 96, 97 reworded.
+- README, `docs/README.md`, architecture, observability, codebase, constraints, roadmap, CONTRIBUTING: DR2 S items and the one-owner changes. `docs/architecture.md` keeps the heading "Remote access" because ADR 0015 links its anchor.
+- New `docs/adr/README.md` and two tests (ADR index, log budget 220 warn and 300 fail). The local session-end skill has the new template, compaction step and CI rule.
+**Next:** the engine session (Gatus v5.38 and Pocket ID v2.19.2 drills, Dependabot runbook; needs your yes to start Colima), then an audit of `src/nexahome`, `tests/`, `stacks/` and `scripts/` for regular users, including making their own stack from the command.
+**Verified:** `make check` 0; `tests/test_docs.py` 65 passed (log 149 lines, under the 220 warning; the fail path shown in a scratch copy); 0 bad anchors; SECURITY.md read against the repo (private reporting enabled, anchor resolves; it does not mention the installed package or `update`, left for you). **Not verified:** GitHub rendering, the timed runner path, engine, mini.
 
 ## 2026-11-04: DR2 (edit batch, audit of the other docs, log shape)
 
-**Done:** DR1 answers applied (28 edits, labels unchanged); `/docs-audit` over README, CONTRIBUTING and `docs/*.md` outside adr, runbooks and the log; session-log measurements and a design (report in the local `.claude/tmp/dr2-report.md`).
-**Doc changes and why:**
-- Confirmed ADRs 0011, 0013, 0021: dead `check_compose.py` name, `[CONTRIBUTING]` label, `diagnosis.py` pool (clerical, owner's yes). ADR 0009 and register row "First application": Actual is the permanent reference client (owner's yes; labels unchanged).
-- Proposed ADRs 0014, 0016, 0017, 0018, 0019: macOS 27 reported, `nexahome check`, past-tense Context, the `uv` contradiction, one owner for `PK-P3`, the fused bullet, a dated CI results line in 0019 (see Open). ADR 0020 and 0022: direction for a runner's own stacks (user-owned folder or `compose.override.yaml`), not decided. ADR 0022 trimmed to the two Python profiles; template gained optional sections.
-- `docs/architecture.md`: general design versus reference deployment, and the host sizing rule moved from ADR 0014 (one owner).
-**Next:** your answers (Pending, Decide), then an edit session for the accepted DR2 findings, then an engine session for the Gatus v5.38 and Pocket ID v2.19.2 drills with the Dependabot runbook (needs your yes to start Colima).
-**Open:** the session-end skill says CI results appear only in the log and roadmap, which the ADR 0019 results line contradicts. **Verified:** `make check` 0, `tests/test_docs.py` 62 passed, 0 bad anchors, nothing staged. **Not verified:** the timed runner path, engine steps, anything on the mini.
+**Done:** DR1 answers applied (28 edits, labels unchanged); `/docs-audit` over README, CONTRIBUTING and `docs/*.md`; log measurements and design (local `.claude/tmp/dr2-report.md`).
+**Doc changes and why**
+- Confirmed ADRs 0011, 0013, 0021: dead `check_compose.py` name, `[CONTRIBUTING]` label, `diagnosis.py` pool (clerical, owner's yes). ADR 0009 and its register row: Actual is the permanent reference client.
+- Proposed ADRs 0014, 0016 to 0019: macOS 27, `nexahome check`, past-tense Context, the `uv` contradiction, a dated CI results line in 0019. ADR 0020 and 0022: direction for a runner's own stacks, not decided. ADR 0022 trimmed to two Python profiles.
+- `docs/architecture.md`: general design versus reference deployment, host sizing rule moved from ADR 0014.
+**Next:** DR3. **Open:** the session-end CI rule against the ADR 0019 line (resolved in DR3).
+**Verified:** `make check` 0, `tests/test_docs.py` 62 passed, 0 bad anchors. **Not verified:** the timed runner path, engine steps, the mini.
 
 ## 2026-11-04: DR1 (audit of ADRs and runbooks, read-only)
 
-**Done:** `/docs-audit` over all 23 ADRs and 5 runbooks; full tables in the local `.claude/tmp/dr1-report.md` (not tracked). About 45 findings, none a broken link or a wrong label: dead links and anchors 0, `make check` exit 0, `tests/test_docs.py` 62 passed, `make -n` of 12 runbook targets ok. Main findings: stale facts in Proposed ADRs (the mini ships with macOS 27 per reports, `check_compose.py` named after PK5, ADR 0018 Context in the past tense, a fused bullet in ADR 0019 line 25, `PK-P3` defined twice); the same in Confirmed 0011, 0013, 0021 (report only); ADR 0013's "no newer Gatus tag" is out of date (v5.38.0, pull request 27); ADR 0022 over-built for later (profile table); no runbook for handling a Dependabot update; `add-a-stack.md` assumes a clone, not an installed instance. Missing ADRs: a Compose hardening and security baseline ADR when that row is promoted. Prompt drift: ADR 0021 is Confirmed, not Proposed.
-**Doc changes and why:** none to ADRs or runbooks (read-first session, owner approves edits). This entry, the Pending list and the roadmap Next row only. Owner goal recorded (local memory): device-independent NexaHome for other users, the Mac mini and macOS setup being the reference deployment; findings tagged for it.
-**Next:** your answers to the eight questions in the report (Pending, Decide), then DR2 (other docs, README, CONTRIBUTING, session-log shape). **Not verified:** engine-dependent runbook commands (Colima stopped, not started), anything on the mini, Pocket ID v2.19 and Gatus v5.38 behaviour. Stayed on `feat/packaging` at the owner's choice; tree unchanged by this audit (the earlier uncommitted ADR 0022 and register edits remain).
+**Done:** `/docs-audit` over 23 ADRs and 5 runbooks (local `.claude/tmp/dr1-report.md`). About 45 findings, no broken link or wrong label.
+**Main findings:** stale facts in Proposed ADRs (macOS 27 reported, `check_compose.py` named after PK5, ADR 0018 Context in the past tense, a fused bullet in ADR 0019, `PK-P3` defined twice); the same in Confirmed 0011, 0013, 0021 (report only); ADR 0013's "no newer Gatus tag" out of date (v5.38.0); ADR 0022 over-built; no Dependabot runbook; `add-a-stack.md` assumes a clone.
+**Doc changes and why:** none to ADRs or runbooks (read-first session). Owner goal recorded in local memory: NexaHome usable by others, the Mac mini the reference deployment.
+**Next:** your answers, then DR2. **Verified:** `make check` 0, `tests/test_docs.py` 62 passed, `make -n` of 12 runbook targets. **Not verified:** engine-dependent runbook commands (Colima not started), anything on the mini, Pocket ID v2.19 and Gatus v5.38 behaviour.
 
 ## 2026-11-04: Housekeeping and ADR 0022 live
 
-**Done:** [ADR 0022](adr/0022-own-images-and-app-stacks.md) moved from the local draft to `docs/adr/` as Proposed at the owner's request. Local-only: agent config, memory, plan indexes and `CLAUDE.md` refreshed (no tracked effect); graph refreshed; `main` and `dev` brought level with `origin`.
-**Doc changes and why:** ADR 0022 added (the draft said "only after the first app is specified"; the owner chose to publish it now; status stays Proposed, nothing promoted); register row added in `docs/project.md`; [ADR 0018](adr/0018-code-package-and-language-strategy.md) (Proposed) line 40 now points at ADR 0022 instead of "drafted for a later ADR"; Pending list: the draft bullet now names the live ADR, the local `CLAUDE.md` bullet removed (done). ADRs 0007 and 0020 not edited.
-**Next:** your yes for the remote deletion of merged branches; `dev` into `main` by pull request; then the two documentation review sessions (ADRs and runbooks first, then the other docs, README, CONTRIBUTING and the session-log shape). **Open questions:** the Pending list. **Not verified:** CI on this change (not pushed), the ADR's engine claims (it says so itself).
+**Done:** [ADR 0022](adr/0022-own-images-and-app-stacks.md) moved from the local draft to `docs/adr/` as Proposed at the owner's request. Local-only: agent config, memory, plan indexes and `CLAUDE.md` refreshed; graph refreshed; `main` and `dev` level with `origin`.
+**Doc changes and why:** ADR 0022 added; register row added in `docs/project.md`; [ADR 0018](adr/0018-code-package-and-language-strategy.md) line 40 points at ADR 0022. ADRs 0007 and 0020 not edited.
+**Next:** the two documentation review sessions. **Not verified:** CI on this change (not pushed), the ADR's engine claims (it says so itself).
 
-## 2026-11-03: PK6f session end
-
-**Next:** `dev` into `main` by pull request on your yes, then PK7 after B2 (Mac mini) or earlier packaging work you choose; a possible small card to port the Makefile `.env` block (S-21). **Open questions:** the Pending list above. **Verified at the end:** `make check` exit 0; 442 tests pass (3.14 locally; CI also ran 3.13 on Linux, green); `tests/test_docs.py` 61 passed; nothing staged; tree clean after commits `7524289` and `b101a0f`, pushed. **Not verified:** CI on macOS and arm64 (skipped on a pull request into `dev`), Dependabot 29 and 30 conflicts against `main`, anything on hardware, the unexplained single 300 s timeout of the first full test run (reruns took 5 s).
-
-## 2026-11-03: PK6f (decisions batch and pull request)
+## 2026-11-03: PK6f (decisions batch, pull request 31, session end)
 
 **Done**
-- Pull request 31 opened `feat/packaging` into `dev` (not merged). CI on the 24 commits: `checks`, `secrets`, `plan`, `gate`, `hello up and down`, `portable (ubuntu-amd64)`, `tests` on Python 3.13 and 3.14 all passed; `platforms` and the macOS and arm64 legs were skipped on a pull request into `dev` by design.
-- Dependabot: pull request 26 (busybox) merged into `main` with the owner's yes; 29, 30, 25, 27 and 28 stay open (29 and 30 wait until this branch reaches `main`; 30 will conflict on the deleted `requirements-dev.txt`).
-- Owner answers: ADR 0022 draft recommendations accepted (kept local, copied to `docs/adr/` as Proposed only after the first app is specified); ruff not now (trigger: a lint or typing bug that slips through; a type checker waits for the same trigger); graphify leftovers dropped.
-- `nexahome init` smoke in a throwaway folder outside the clone (removed afterwards): `init` exit 0, `check` exit 0, `doctor` exit 3 only because no container runtime was running (Colima not started, not started by this session).
-- Code, at the owner's request after the doc work: `nexahome.parallel.run_waiting` (tasks that may wait for earlier ones; a `Mapping` of results, replacing `diagnosis._Prior` and its hand-rolled thread pool). `doctor` timing unchanged (median of 15: 137 ms before and after); 442 tests pass; `make check` exit 0. Uncommitted.
-- Entry state differences from the prompt: 24 commits ahead of `origin/dev`, not 25.
-
-**Doc changes and reasons** (owner ticked each item; no label changed)
-- ADR 0007 line 13 (S-16, C1): `up`, `down` and `ps` follow `.config/stacks` when present (the Makefile has done so since ADR 0017). Line 14 (C2): `make upgrade` was cut. Line 14 (B2): "If ADR 0018 is decided, it supersedes this line in part."
-- Register row Python tooling (B1): `pyproject.toml` exists now, link to ADR 0018.
-- First tag `v0.2.0` in ADR 0020 and its register row (the package version; `update` would never offer `v0.1.0`).
-- New `docs/codebase.md` (owner chose the name): the module map, "Extending it" and "Keeping the command fast" moved out of CONTRIBUTING (a move, so each fact keeps one owner); CONTRIBUTING keeps a pointer, `docs/README.md` has the index row and role-list link, ADR 0021 line 25 links the new anchor (owner's yes for that ADR edit; wording and label unchanged). Local `CLAUDE.md` still names CONTRIBUTING for the checklist (owner edits by hand).
-- D1 needed no edit: "Ordered by the owner" was already removed in `46eac5a`.
+- Pull request 31 (`feat/packaging` into `dev`) merged; CI on the 24 commits green except the macOS and arm64 legs, skipped by design on a pull request into `dev`. Dependabot 26 merged; 25, 27 to 30 stay open.
+- Owner answers: ADR 0022 draft accepted; ruff not now; graphify leftovers dropped. `nexahome init` smoke in a throwaway folder passed.
+- Code: `nexahome.parallel.run_waiting` replaced `diagnosis._Prior` (`doctor` median 137 ms before and after; 442 tests pass).
+**Doc changes and why** (owner ticked each item; no label changed): ADR 0007 lines 13 and 14 (S-16, C1, C2, B2); register row Python tooling and first tag `v0.2.0`; new `docs/codebase.md` (a move from CONTRIBUTING, one owner per fact); ADR 0021 line 25 link.
+**Next:** `dev` into `main` by pull request. **Verified:** `make check` 0; 442 tests; `tests/test_docs.py` 61 passed. **Not verified:** CI on macOS and arm64, Dependabot 29 and 30 conflicts, hardware, one unexplained 300 s timeout in a first full test run (reruns took 5 s).
 
 ## 2026-11-03: owner decisions after PK6e
 
-**Done** (owner answers; all committed on `feat/packaging`, nothing pushed)
-- Packaging-plan cleanup applied over the live local plan files (archives in `.claude/tmp/*-full.md`, `post-track-b-full.md` added).
-- Commits: PK6d ADR wording, log and roadmap; graphify ignore files; lazy `subprocess` import in `runner.py` (blank line restored, 435 tests pass).
-- Deleted `scripts/__pycache__` and the root `.env.example` (audit S-23; nothing reads it: stacks use their own, the Makefile and `nexahome` look under `stacks/<name>/`).
-
-**Doc changes and reasons**
-- ADR 0008 line 7: "register row Backup tool is Open" now says Confirmed (the register has said so since the drill; audit S-25). ADR 0009 line 12: ADR 0010 "Proposed" now "Confirmed 2026-11-02" (decided that day; audit S-25). Owner approved S-25; the Confirmed labels and decisions are unchanged.
-- First tag decided as v0.2.0; the matching wording in ADR 0020 and the register row waits for the register batch with S-16 (owner: batch later).
-
-**Open:** the other register rewords (B1, B2, C1, C2, D1, S-16); Dependabot merges and the push (owner chose "push only" when asked; not run yet); ADR 0022 draft; ruff or a type checker.
+**Done:** plan cleanup applied to the local packaging plan; commits for PK6d wording, graphify ignore files and a lazy `subprocess` import in `runner.py` (435 tests pass); deleted `scripts/__pycache__` and the root `.env.example` (nothing read it).
+**Doc changes and why:** ADR 0008 line 7 and ADR 0009 line 12 stale status wording fixed (audit S-25; owner approved; labels unchanged). First tag decided as `v0.2.0`; the matching wording waited for the register batch.
+**Open:** the other register rewords, Dependabot merges and the push (all resolved in PK6f).
 
 ## 2026-11-03: PK6e (graphify trial, code pass only)
 
-**Done**
-- Entry state checked read-only. Differences from the prompt: graphify 0.9.46 was already installed (`uv tool`, global), so there was no install; `origin/feat/packaging` exists at the base commit 2605a93 (no PK6 commit pushed); the session log was 182 lines in the working tree (141 committed); `GEMINI_API_KEY` is set in the shell, so a document pass would have sent text to Gemini (not run).
-- Owner approved an upgrade: 0.9.46 to 0.9.101 (`uv tool upgrade graphifyy`). Side effect: the first graphify run refreshed the global skill file (old copy kept as `.bak`); `~/.claude/CLAUDE.md` unchanged. A stray `src/graphify-out/` made by a read-only measurement was deleted.
-- Code-only build, no model, 0 tokens: scratch copy first (99 files, 1,234 nodes, about 3 s), then the repo (142 files, 1,640 nodes, 3,292 edges, 113 communities, about 3 s); `graphify-out/` is gitignored; no `.claude/` or `.env` file is in the graph.
-- Verdict: **not yet.** Q3 (what changes if `defaults.py` changes): 28 importers in 0.29 s, but it misses the function-level imports the repo uses on purpose (`cli.py`, ADR 0021) and a test string reference; grep found them in 0.03 s. Q2 (requirement IDs no test verifies): the graph has no ID nodes, a query returned about 6k tokens of noise; one `comm` line gave 19 IDs. Q1 (decision to code) needs documents: not run.
-- Cost: 0 tokens, about 3 s per build, 159 MB of tool, 5 MB output. Removal: `uv tool uninstall graphifyy`, `graphify uninstall --purge`, delete `graphify-out/`.
-
-**Doc changes and reasons**
-- `.gitignore`: `graphify-out/` added (generated output must not be tracked; owner asked). New `.graphifyignore` (sensitive and local-only paths repeated so a `.gitignore` change cannot expose them; owner asked). Both are staged, not committed.
-- Roadmap Next row, Done list and changelog; this entry and the Pending list. No ADR, register row or label changed in this session.
-
-**Verified:** `make check` exit 0; `tests/test_docs.py` 59 passed; no `.env`, key, `data/` or `.claude/` staged. **Not verified:** the document pass, Q1, whether the Gemini key is free tier, token estimates, behaviour on Linux or the Mac mini, CI on any of this.
-
-**Next:** your decisions (cleanup proposal, Dependabot order, push and pull request into `dev`, first tag, `scripts/__pycache__` and root `.env.example`, ADR 0022 draft, S-16 and S-25, commits, `runner.py` (it also dropped a blank line before `class RunResult`), ruff or a type checker). PK7 to PK10 after B2. A later graphify session only if Q1 is worth a probe.
-
-**Open questions:** keep or revert the refreshed skill; track `.graphifyignore`; whether to allow a Gemini document pass.
+**Done:** graphify upgraded 0.9.46 to 0.9.101 (owner's yes); code-only build, no model, 0 tokens: 142 files, 1,640 nodes, about 3 s; `graphify-out/` gitignored; no `.claude/` or `.env` file in the graph.
+**Verdict: not yet.** It misses the function-level imports the repo uses on purpose (grep found them in 0.03 s) and has no requirement-ID nodes; the decision-to-code question needs a document pass (not run: `GEMINI_API_KEY` is set, so text would leave the machine).
+**Cost:** about 159 MB of tool, 5 MB output. Removal: `uv tool uninstall graphifyy`, `graphify uninstall --purge`, delete `graphify-out/`.
+**Doc changes and why:** `.gitignore` gains `graphify-out/`; new `.graphifyignore` repeating the sensitive paths. No ADR, row or label changed.
+**Verified:** `make check` 0, `tests/test_docs.py` 59 passed. **Not verified:** the document pass, behaviour on Linux or the mini.
 
 ## 2026-11-03: PK6d (app-stack ADR draft, packaging-plan cleanup)
 
-**Done** (docs and local files only; no code written)
-- Entry state checked read-only. Differences from the prompt: the PK6c session-end entry was uncommitted; the Dependabot pull requests all target `main` (30 is clean today and conflicts only after the chain reaches `main`; 29 may conflict on `pyproject.toml`); the local master plan has no sections 3, 5 or 9.
-- A Proposed ADR draft for own images and application stacks, written to the gitignored `.claude/tmp/`, not to `docs/adr/`: adopt before build, a language-neutral contract (AS-1 to AS-13), runtime profiles (FastAPI and Streamlit first; Node, Go, Rust, C++, static, worker later; accelerators not covered), failure modes, evolution per hardware hop, a not-built list. Finding: a stack built with `build: .` would put its `.env` in the build context and `nexahome check` accepts it (scratch run, Docker CLI only), so the draft requires a `./app` context. Nothing promoted.
-- A side-by-side cleanup of the local packaging plan: `audit.md` 389 to 108 lines (open rows, fixed rows with commits, decisions), README 127 to 92, cards 75 to 37, master and PK9 card extended for `nexahome clean`. Originals archived; live plan files not yet replaced.
-- A plan for `nexahome clean [--all]` (dry run by default, refuses clones, `$HOME`, running containers; never touches backups or Docker volumes), recorded as PK-I5 and PK-I6 in the local plan and built in PK9. `~/.nexahome` does not exist; the owner meant `~/nexahome` and `.nexahome/`.
+**Done** (docs and local files only)
+- A Proposed ADR draft for own images and app stacks written to the gitignored `.claude/tmp/` (adopt before build, a language-neutral contract, runtime profiles, failure modes). Finding: a stack built with `build: .` would put its `.env` in the build context and `nexahome check` accepts it, so the draft requires a `./app` context.
+- The local packaging plan cleaned (audit 389 to 108 lines); `nexahome clean` planned for PK9.
+**Doc changes and why:** wording only in Proposed ADRs 0018, 0019, 0020 (status lines, `include` plus `sources`, home resolution, the `tests` job); no Confirmed ADR, row or label changed.
+**Next:** PK6e. **Verified:** `make check` 0; 435 tests. **Not verified:** anything on an engine, CI on this, hardware.
 
-**Doc changes and reasons** (owner: "you are allowed to edit them if needed"; all Proposed ADRs, labels unchanged, uncommitted)
-- ADR 0018: status line (stages 1 and 2 built, stage 3 partly, stage 4 not started), a sentence that hooks and CI were released on 2026-11-03, `force-include` replaced by `include` plus `sources`, and the "Go single binary" row now says it concerns the package (audit S-10; the code contradicted "no code exists").
-- ADR 0019: the `tests` job description (wheel check, instance round trip, demo start) and the deleted macOS fallback sentence (`ci.yml` has no fallback).
-- ADR 0020: status line, home resolution (`~/nexahome` only when it holds `nexahome.toml`), the manifest is written by `init`, `force-include` note.
-- No Confirmed ADR, register row or label was changed. This log and the roadmap Next row and Done list were updated for the session.
+## Earlier entries
 
-**Verified:** `make check` exit 0; 435 tests pass on Python 3.14 (59 in `tests/test_docs.py`); nothing staged; no `.env`, key, `data/` or `.claude/` tracked; the draft's links resolve and its personal-data scan is clean. **Not verified:** anything on an engine (RAM, image size, health command, a build), CI on any of this, the Compose `pull_policy: build` wording against the official spec, Streamlit and Pocket ID group claims, Dependabot support for Conan and CMake, buildpacks on arm64, `docker init` under Colima, the #29 conflict, hardware.
+One line each; the full text is in git history.
 
-**Next:** PK6e (graphify; ask before installing). Then your decisions below, and PK7 to PK10 after B2 (PK9 now carries `clean`).
-**Open questions:** Go for app stacks (the draft recommends: owner-written Go is covered by "no Go"); template layout and sign-in for the first app; apply the cleanup proposal; which Confirmed-ADR edits to tick (S-16, S-25); first tag number; delete `scripts/__pycache__` and the root `.env.example`.
-**Pending:** the list at the top.
+- **2026-11-03, PK6c (audit fixes, docs compaction):** 19 commits of package, stack, CI and tooling fixes (`defaults.py`, `check` and `dev` dependency groups, policy enforces the hardening keys); this log compacted from 868 to 141 lines.
+- **2026-11-03, audit planning and Step 0:** read-only checks (383 tests, wheel contents, `main` already had `gate`); `feat/packaging` fast-forwarded to `origin/dev`; audit sessions PK6a to PK6e planned.
+- **2026-11-03, PK6 (`init`, `config`, packages by concern):** `nexahome init` and `config`, packages `docker/` `instance/` `stacks/` `release/`, CI instance round trip, version 0.2.0; timed run 7.0 s with uv; upgrade design rehearsed 23 of 23.
+- **2026-11-03, PK5 (hooks and `make check` use the package):** old check scripts deleted after a parity gate, stacks bundled in the wheel (`include` plus `sources`, not `force-include`), `tests/test_docs.py` added; freeze rule released for hooks and CI.
 
-## 2026-11-03: PK6c (audit fixes, docs compaction)
-
-**Done** (19 commits on `feat/packaging`, `644839f` to `e92a46c`, not pushed; the prompt's rows were placeholders, so the audit's own recommendations were applied)
-- Package: P-01, P-03, P-04, P-05, P-06, P-08, P-09, P-10, P-13, P-15, P-17, P-23, P-28, P-29, P-30 (two assertions). The Compose policy now enforces the hardening keys and reads `compose.override.yaml` (P-02, D-A, D-F); `check` supplies placeholders for required variables (D-K); `defaults.py` holds the shared limits and names (D1); `Context.checkout()` became `instance()` (D-C).
-- Stacks and CI: template limits and Dependabot entry, gatus image name `nexahome/gatus:local` (D-G); `make check` covers untracked files (D-D); a deploy checkout installs the package, with a CI rehearsal step (D-E); `platforms` fails only on a failed leg (D-H).
-- Tooling (D3, changed at the owner's request): `pyproject.toml` has a `check` group (pre-commit, pre-commit-hooks, detect-secrets) installed by `make setup`, and a `dev` group (pytest) installed only by `setup.sh --dev` or `make setup-dev`; `requirements-dev.txt` removed.
-- Verified locally: `make check` green, 435 tests on Python 3.14.7 and 3.13.3, `tests/test_docs.py` 59 passed, start-up unchanged against `2605a93` (`--version` 28.7 ms both; the personal-data hook about 0.7 ms slower).
-
-**Doc changes and reasons**
-- Confirmed text, on the owner's per-item yes, no label changed: `docs/project.md` required checks now name `gate` and the health row names the opt-in ntfy notifier (both stale against GitHub and the stack); `docs/constraints.md` lists the enforced policy keys, all eight commands and the personal-data patterns; ADR 0003 and `constraints.md` name the `check` and `dev` groups.
-- Proposed text, wording only: ADR 0019 (`gate` required since 2026-11-02, `nexahome check`), ADR 0014, ADR 0018 and register row 92 (plan wording instead of order and price detail), ADR 0018 line 20 (dependency group).
-- Other: `docs/observability.md` (seven stacks, Gatus, ntfy), README (override and update notes), stack READMEs and comments (S-17 to S-19), `docs/project.md` package status, CONTRIBUTING (setup flow). This log compacted from 868 to 141 lines (older entries summarised, text in git history), Pending refreshed once, local-only actions moved to a gitignored note; roadmap Next row, Done list and stale status lines tidied. Your uncommitted session-end edits were kept and committed with the compaction.
-
-**Next:** PK6d (app-stack ADR draft, doc only), then PK6e (graphify, ask before installing). Your decisions: merging Dependabot 26, 29, 30 (30 will conflict on the removed `requirements-dev.txt` and needs a Dependabot reopen), 25 and 27 after review, 28 held; a push of `feat/packaging`.
-**Open questions:** first tag number (package 0.2.0, plan said `v0.1.0`); delete the root `.env.example` (S-23); delete `scripts/__pycache__`; the Proposed ADR wording batch (S-10); Go for app stacks.
-**Not verified:** CI on any of this (including the deploy rehearsal step and the `platforms` change); `setup.sh --dev` end to end (the scratch rehearsal was refused; only `sh -n`, `make -n` and the earlier uv and pip rehearsals); Dependabot reading the dependency groups and the `_template` entry; macOS CI legs; engine, `make smoke` and all hardware.
-**Pending:** the list at the top.
-
-## 2026-11-03: audit planning and Step 0 (between PK6 and PK7)
-
-**Done**
-- Read-only Step 0: 383 tests pass on Python 3.13 and 3.14 (also with pytest 9.2.0), `make check` green, the wheel holds exactly the 30 tracked non-README stack files, nothing under `.claude/`, `CLAUDE.md` or `.env` is tracked, CI on `eba6537` passed, PR 23 and 24 are merged. False premise: "`main` lacks `gate`" (it has it).
-- `feat/packaging` fast-forwarded to `origin/dev` (0 ahead, 8 behind); not pushed.
-- Dependabot 25 to 30 reviewed, rebase requested on five (see Pending, Git); no merge.
-- Local plans: audit sessions PK6a to PK6e added to the packaging plan (code, stacks and docs, fixes and compaction, app-stack ADR draft, graphify). Decided by the owner: a constants module (`defaults.py`), a `[dependency-groups] dev` for pytest (single source in `pyproject.toml`), own images only as a Proposed ADR draft first.
-
-**Doc changes and reasons**
-- This log: the Git block of Pending refreshed (it still said `main` lacked `gate` and the pull requests were open). `docs/roadmap.md`: Next row. No ADR edited, no row promoted, no code changed.
-
-**Next:** PK6a (read-only code audit), then PK6b, then you name the rows to fix (PK6c).
-**Open questions:** stay on `feat/packaging` or branch from `dev`; Go for app stacks (the 2026-11-02 answer said no Go); `requirements-dev.txt` retired or generated.
-**Not verified:** hatchling 1.33.0 build, CI on the rebased Dependabot pull requests, release notes read in full, Dependabot support for dependency groups.
-**Pending:** the list at the top.
-
-## 2026-11-03: PK6 (init, config, packages by concern, the 5-minute path)
-
-**Done** (18 commits on `feat/packaging`)
-- `nexahome init [DIR]` (default `~/nexahome`): copies the bundled stacks, writes `nexahome.toml` (`hello` enabled) and `.nexahome/manifest.json` (sha256 per file). Refuses a non-empty folder and anything inside a clone or instance; never overwrites; writes no `.env`; files 0644 and folders 0755 whatever the umask; a failed write removes only what that run made. `nexahome config list|get|set stacks`: strict reader (unknown key, wrong type, bad TOML, unknown stack, newer schema each end in one command), atomic write. Home resolution: `--home`, `$NEXAHOME_HOME`, nearest parent with `nexahome.toml` or `stacks/` plus a Makefile, else `~/nexahome` if it holds a `nexahome.toml`. In an instance `env` ends in the commands that start the stacks.
-- Packages by concern (owner request): `docker/` (all Docker CLI knowledge; a test keeps `"docker"` and the edge network name out of other modules), `instance/`, `stacks/`, `release/`; a test keeps them from importing `commands/`. Error-message pass: `check` with nothing to check now ends in a command; `status` names one for an unreadable stack; wording says "folder" or "instance".
-- CI (`tests` job, ubuntu py3.13): the wheel must equal the tracked stack files minus READMEs; an instance from the installed wheel (scratch `HOME`) is made, checked, refused a second `init` (exit 3), given `config set stacks`; the three docker commands `init` prints start the demo. Job names `secrets` and `checks` unchanged. Not yet run on GitHub.
-- Package version is now `0.2.0` (owner, from `0.1.0.dev0`); no tag exists.
-- Measured (laptop, medians of 15, back to back against `f1ed535`): no start-up change beyond 1 ms (`--version` 15.7 and 16.2 ms before, 16.3 and 16.2 after). Timed run, scratch `HOME`, Colima started and stopped: wheel in hand to a hello that answers 7.0 s (uv) and 8.9 s (venv and pip) with `busybox:1.37.0` already cached (pull time not included; Colima start 16 s not included).
-- Upgrade design rehearsed on a throwaway instance (scratchpad script, no repo code), 23 of 23 checks: three-way hash compare, edited plus changed upstream refused with the file named, staged tree plus two renames, rollback byte for byte, recovery after a crash between the renames. It found three rules the design needs: strip user-owned files from the kept `previous/` tree (a second copy of every `.env`), carry them back on rollback, delete `staging/` on recovery.
-
-**Doc changes and reasons**
-- `README.md`: two quick starts (runner path, fork path), `init` and `config` in the command list, how the folder is found. The runner path says the manual `docker compose` lines will be replaced by `nexahome up` and that overrides are not read by them (`-f` skips `compose.override.yaml`). A test keeps the lines equal to what `init` prints.
-- `CONTRIBUTING.md`: package map and the one-way dependency rule. `docs/project.md`: current status names `init` and `config` (no register row touched). `tests/test_docs.py`: `nexahome init` left the planned list; `nexahome up` joined it (PK7).
-- This log and `docs/roadmap.md`: PK6 done, Git list refreshed. No ADR edited, no row promoted.
-
-**Deviations** (details in the local packaging README): the wheel already carried `.env.example` (a doubt in the plan was false); doctor warns, not fails, outside `$HOME` (master 4.5 says fails); plain path instead of `importlib.resources` (26.5 ms import); manifest written now although ADR 0020 puts it at stage 3; two test files landed in the `stacks/ release/` commit; the personal-data hook blocked two commits on false positives (renamed). Not run: Linux container leg, cold-image timing, uv fetching Python 3.13.
-
-**Not verified:** every new CI step on GitHub; Python 3.13 on a runner; macOS and arm64 behaviour of the steps; a wheel from a published release; backup-first, a stateful image change and running containers during an upgrade swap; the hook with the package missing from `.venv`; the Mac mini, Linux hosts, Jetson, WSL2.
-
-**Next:** (1) read the CI run on the pull request into `dev`, then merge decisions (yours); (2) the audit session you asked for: full code package and `stacks/` audit, every doc checked against the repo, docs compacted with this log first (prompt handed over); (3) PK7 to PK10 wait for B2. **Open questions:** the first tag: ADR 0020 and the register say `v0.1.0`, the package is `0.2.0`; overrides: ADR 0020 and master 4.3 promise `compose.override.yaml`, the manual commands cannot read it; ADR 0020's manifest timing; doctor severity for a mount outside `$HOME`.
-
-**Pending:** superseded by the single list at the top of this log (2026-11-03, PK6).
-
-## 2026-11-03: PK5 (hooks and `make check` use the package, old checks deleted, stacks bundled)
-
-**Done**
-- Step 0 as approved: the two uncommitted doc edits committed, `git fetch`, `git merge --no-ff origin/dev` (no conflict; `git diff origin/dev HEAD` showed only the doc commit's files); `make check` green before and after. Entry checks: no pull request is open; `main` requires `checks`, `secrets` and `gate` and its `ci.yml` has no `gate` job (the hang risk is latent, see Pending).
-- Owner lifted the freeze rule for hooks and CI only. The four shell scripts were not changed: `setup.sh` installs the package so cannot call it, `deploy.sh` reaches the package through `make check`, `smoke.sh` and `backup.sh` have no package command yet (PK7 to PK9).
-- `nexahome.policy.personal_data` gained `main` and a `__main__` entry; the pre-commit `personal-data` hook runs `python -m nexahome.policy.personal_data`. `make check` runs `nexahome check` instead of the script. "No stacks" and "Docker CLI missing" now exit 3 there (the script exited 0 and 1).
-- The wheel carries `stacks/` as `nexahome/_stacks` and the sdist includes `/stacks`. A scratch probe showed hatch `force-include` ships a local `.env`, `data/` and every stack README (it ignores `.gitignore` and `exclude`), so `include` plus `[wheel.sources]` is used instead; that honours both. CI asserts every stack's `compose.yaml` is in the wheel and no `.env`, `data/` or README ships, then installs the wheel in a throwaway venv and runs `nexahome check --stacks` on the installed copy.
-- `tests/test_docs.py`: headers against changelog dates, `Confirmed`/`Proposed` placement, relative links, documented `make` and `nexahome` commands, Dependabot coverage. It found no real drift. `Open` is not checked (ordinary verb); `nexahome init`, `make upgrade` and `make mini-check` are on a named allowlist (planned or cut).
-- Parity gate, local: golden tests against the scripts, whole-tree hook output identical, `nexahome check` output identical. Then `scripts/check_compose.py` and `scripts/check_personal_data.py` were deleted in their own commit, and the golden tests now compare against recorded output (the personal-data fixture was recorded from the original script's real output).
-- Measured (laptop, medians): personal-data hook 30.1 ms against 29.4 ms before (bare interpreter 22.7 ms); `nexahome check` 202 ms against 556 ms.
-
-**Doc changes and reasons**
-- `README.md`: the exit-code note and the `scripts/` line now describe the new state (the note said the hooks would switch in PK5).
-- `CONTRIBUTING.md`: the repository-check bullet no longer says the hooks run the originals; it records why the wheel uses `include` and `sources`.
-- `docs/constraints.md`, `docs/project.md` (Current status only): the Compose policy is run by `nexahome check`; the hook, `make check` and the wheel use the package. Header dates and changelog lines updated. No Confirmed row was edited.
-- `docs/roadmap.md`: Next row, Packaging status and sessions, and a dated exception on the freeze-rule bullet (hooks and CI released on 2026-11-03 at the owner's request; ADR 0018's matching sentence is Proposed and was left unchanged). Reason: the bullet would otherwise contradict the work.
-
-**Deviations from the plan**
-- `force-include` was replaced (above). The first drafts of the docs tests were wrong twice (the local `CLAUDE.md` was scanned; `Open` matched as a label) and were narrowed.
-- The preferred CI run before deletion did not happen: the owner held the push, so parity was proven locally only. Static names for the skipped platform jobs were not done (with a matrix a static name may make the legs indistinguishable; GitHub's behaviour not verified). `/session-end` was run by the owner, not the agent.
-
-**Verification:** `make check` exit 0; `pytest` 322 passed on Python 3.14 and on 3.13.3 (scratch venv from the offline uv cache); working tree clean, nothing staged. The wheel steps were rehearsed against a scratch wheel (pass) and the assertion was shown to reject a `force-include` wheel. **Not verified:** the new CI steps on a GitHub runner with Python 3.13; macOS and arm64 behaviour of them; the hook with the package missing from `.venv`; docs-only skip, cancel-in-progress, `gate` failing on a failed job, platform jobs on a pull request into `main`, the weekly schedule (all unchanged from before); Dependabot with the anchors; a Dependabot pull request into `main`; the Mac mini, a Linux host, the Jetson, WSL2.
-
-**Next:** (1) push `feat/packaging` and read the run on a pull request into `dev` (your yes); (2) PK6: `nexahome init`, instance layout, `nexahome.toml`, home resolution, README quick start, timed run (additive; the bundled stacks are in the wheel); (3) after PK6: the `dev` to `main` pull request.
-
-**Open questions**
-- Reword the ADR 0019 line that names the deleted script?
-**Pending:** superseded by the single list at the top of this log (2026-11-03, PK5).
-
-## Earlier entries, compacted (PK6c, 2026-11-03)
+### Before 2026-11-03 (compacted in PK6c)
 
 Entries before 2026-11-03 are summarised here; the full text is in git history (`git log -p -- docs/session-log.md`).
 

@@ -1,6 +1,7 @@
 """The documentation set stays true to the repository (PK-A1): headers, links, labels, commands, Dependabot."""
 
 import re
+import warnings
 from pathlib import Path
 
 import pytest
@@ -86,3 +87,20 @@ def test_every_stack_has_a_dependabot_entry() -> None:
     covered = set(re.findall(r"directory: /stacks/([\w-]+)", config))
     stacks = {p.parent.name for p in (REPO / "stacks").glob("*/compose.yaml")}
     assert stacks - covered == set()
+
+
+def test_every_adr_is_listed_in_the_adr_index() -> None:
+    index = (DOCS / "adr" / "README.md").read_text()
+    missing = [p.name for p in sorted((DOCS / "adr").glob("[0-9][0-9][0-9][0-9]-*.md")) if p.name not in index]
+    assert missing == [], f"add a row to docs/adr/README.md for: {', '.join(missing)}"
+
+
+LOG_WARN, LOG_MAX = 220, 300  # lines; the log stays a log, not an archive (git keeps the full text)
+
+
+@pytest.mark.filterwarnings("default")  # the project turns warnings into errors; this one must only be shown
+def test_session_log_stays_within_its_line_budget() -> None:
+    lines = len((DOCS / "session-log.md").read_text().splitlines())
+    if lines > LOG_WARN:
+        warnings.warn(f"docs/session-log.md has {lines} lines (budget {LOG_WARN}); collapse the older entries into 'Earlier entries'", stacklevel=1)
+    assert lines <= LOG_MAX, f"docs/session-log.md has {lines} lines (maximum {LOG_MAX}); collapse entries older than the newest 8 into one line each"

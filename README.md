@@ -2,13 +2,13 @@
 
 A modular, self-hosted homelab platform: local AI, development tools, storage, networking and home automation. Built to be reproducible, secure and easy to adapt to your own hardware.
 
-**Status:** early foundation. Seven stacks run on a laptop: a demo (`hello`), Actual Budget (`actual`, a local expense tracker; use dummy data until backups are proven), `backup`, `edge`, `identity`, `portal` and `gatus`. CI (secret scan and `make check`) runs on every push and pull request to `main` and `dev`; see the [session log](docs/session-log.md).
+**Status:** early foundation. The stacks run on a laptop: a demo (`hello`), Actual Budget (`actual`, a local expense tracker; use dummy data until backups are proven), `backup`, `edge`, `identity`, `portal` and `gatus`. CI runs on every push and pull request; the latest result is in the [session log](docs/session-log.md).
 
 ## Quick start
 
 Two ways in. Both need a Docker CLI with Compose and a running engine: on Linux, Docker Engine runs directly; on macOS the project uses [Colima](docs/adr/0004-colima-runtime.md), started once per boot (`colima start --cpu 2 --memory 2 --disk 20`); on Windows use WSL2, which counts as Linux, best effort and not tested in CI ([ADR 0019](docs/adr/0019-platform-support-and-ci-matrix.md)).
 
-### Run NexaHome as shipped (no clone)
+### Run NexaHome as shipped (needs the wheel)
 
 For anyone who wants the stacks as they are. You need Python 3.13 or newer, or [`uv`](https://docs.astral.sh/uv/), which fetches it. There is no release yet, so the wheel comes from a clone (`uv build --wheel`, then `dist/`) until the first tag; replace the file name below with yours.
 
@@ -94,6 +94,8 @@ Each stack's `.env` and the `data/` directory are local only and gitignored. Not
 
 ## Back up, restore, update
 
+The Makefile targets below need a clone; an installed instance has no backup command yet.
+
 ```sh
 make backup-init          # once: creates the encrypted repository and a password file
 make backup               # saves every stack's data (stops each for a few seconds)
@@ -111,6 +113,8 @@ Save a copy of the password file (`.config/restic-password`) somewhere other tha
 - `stacks/<name>/` one deployable unit each: `compose.yaml`, `.env.example`, README; `stacks/_template/` is the starting point for a new one
 - `src/nexahome/` and `tests/` the `nexahome` command and its tests
 - `scripts/` the backup, smoke, deploy and setup scripts (the checks behind `make check` live in the `nexahome` package)
+
+How the general design differs from the owner's reference deployment: [architecture](docs/architecture.md#general-design-and-the-reference-deployment).
 
 ## Contributing
 

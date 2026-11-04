@@ -22,6 +22,8 @@ NexaHome is designed for any macOS or Linux host with a container runtime; nothi
 | General design | Any macOS or Linux host | This file, [constraints](constraints.md), the [stack contract](adr/0007-stack-contract.md), the [instance model](adr/0020-instance-install-and-release-model.md), [platform support](adr/0019-platform-support-and-ci-matrix.md) |
 | Reference deployment | The owner's Mac mini | ADRs 0014 to 0017 and the SSH runbook |
 
+**Runners and customisers.** Someone who does not clone installs the `nexahome` package and runs `nexahome init`, which makes an instance folder holding the stacks that ship inside the package; their settings live in each stack's `.env` and, once supported, a Compose override. Customisers fork. The model is in [ADR 0020](adr/0020-instance-install-and-release-model.md), including its open gap for a runner's own stacks.
+
 ## Layers
 
 Cross-cutting concerns (monitoring, configuration, documentation, security, backup) apply to every layer. Layers are logical, not separate machines.
@@ -33,7 +35,7 @@ Cross-cutting concerns (monitoring, configuration, documentation, security, back
 | 3 | Compute platform | Colima VM with Docker Compose ([ADR 0004](adr/0004-colima-runtime.md)) | Docker Engine on a Linux host; local AI native on the Mac mini |
 | 4 | Data and storage | Labelled named volumes ([ADR 0007](adr/0007-stack-contract.md)); backup built (restic, [ADR 0008](adr/0008-backup-tool.md)), restore drill passed on the laptop's own disk | NAS volumes, tested backups |
 | 5 | Service platform | Edge (Caddy), identity (Pocket ID), portal and health view (Gatus), each a stack | Shared services (auth, messaging) only when a stack needs them |
-| 6 | Applications | `hello` demo stack, `actual` expense tracker | AI tools, home automation, media, personal apps |
+| 6 | Applications | The stacks under `stacks/` | AI tools, home automation, media, personal apps |
 
 ```mermaid
 flowchart TB
@@ -64,6 +66,8 @@ flowchart TB
 ## Hosts and failure domains
 
 Containers on macOS run in a Linux VM and cannot use the GPU or USB devices. Local AI therefore runs natively on the host, not in containers.
+
+The table lists the owner's hosts; another deployment has its own.
 
 | Host | Availability | Role | If it is down |
 | :--- | :--- | :--- | :--- |
@@ -103,6 +107,8 @@ Administrative interfaces are never exposed to the public internet. No firewall 
 - The owner is the sole administrator. Roles `admin` and `users` exist in the identity provider ([ADR 0010](adr/0010-identity-provider.md)), an AI agent is never admin (the `agents` group has no client access), and Actual signs in through it with its password login kept as fallback ([roadmap](roadmap.md#p25-identity-edge-and-portal), [register](project.md#decision-register)).
 
 ## Remote access
+
+This section describes the reference deployment (the owner's Mac mini). A general host needs only what [secrets and identity](#secrets-and-identity) and the stack contract require.
 
 SSH from the MacBook Air to the Mac mini is required, for administration and deployment, VS Code Remote-SSH, Claude Code on the mini, and file transfer and backups. The goal is decided; the method is proposed in [ADR 0015](adr/0015-remote-access.md) (keys only, LAN only, no VPN until a need exists) with a draft [runbook](runbooks/mini-ssh.md), both unconfirmed until the mini exists ([roadmap](roadmap.md)). The VPN choice is not decided. SSH answers only while the mini is awake and unlocked: after a reboot or power cut it waits for the disk password at the desk ([ADR 0016](adr/0016-mac-mini-power-and-updates.md), proposed). Deploys to the mini are proposed in [ADR 0017](adr/0017-deploy-flow.md): `make deploy` in a deploy-only checkout, with the stacks that run there listed in a gitignored `.config/stacks`.
 
@@ -157,4 +163,4 @@ Phase names refer to the [roadmap](roadmap.md#phases).
 
 The decision register is in [project.md](project.md#decision-register); rationale is in [adr/](adr/).
 
-Changelog: 0.1 (2026-11-04): general design versus reference deployment, host sizing rule moved here from ADR 0014 (DR2); 0.1 (2026-11-02): central dashboard phase P2.5 (PK2 reword A3); 0.1 (2026-11-02): identity wording says built, not planned (PK2 reword A2); 0.1 (2026-11-02): layer 5 lists the built stacks (PK2 reword A1); 0.1 (2026-11-02): `NEXAHOME_DATA_DIR` claim removed (PK2); 0.1 (2026-11-02): deploy flow pointer (ADR 0017); 0.1 (2026-11-02): remote access paragraph points at ADR 0016 for reboot behaviour; 0.1 (2026-11-02): remote access paragraph points at ADR 0015 and the SSH runbook; 0.1 (2026-10-26): Jetson row, per-hop table for P4; 0.1 (2026-10-21): identity bullet updated for P2.5; backup tool decided; 0.1 (2026-10-21): restore drill recorded; 0.1 (2026-10-21): backup model; 0.1 (2026-10-21): Layer 4 and 6 current state; 0.1 (2026-10-20): full planned-services capability table; rewritten; added failure domains, trust zones, backup and restore, identity, migration paths and a capability table; duplicated rules moved to constraints.
+Changelog: 0.1 (2026-11-04): layer 6 names no stacks, hosts and remote access marked as the owner's reference deployment, runner and customiser paragraph (DR3); 0.1 (2026-11-04): general design versus reference deployment, host sizing rule moved here from ADR 0014 (DR2); 0.1 (2026-11-02): central dashboard phase P2.5 (PK2 reword A3); 0.1 (2026-11-02): identity wording says built, not planned (PK2 reword A2); 0.1 (2026-11-02): layer 5 lists the built stacks (PK2 reword A1); 0.1 (2026-11-02): `NEXAHOME_DATA_DIR` claim removed (PK2); 0.1 (2026-11-02): deploy flow pointer (ADR 0017); 0.1 (2026-11-02): remote access paragraph points at ADR 0016 for reboot behaviour

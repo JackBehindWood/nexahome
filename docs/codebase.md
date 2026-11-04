@@ -1,6 +1,6 @@
 # Codebase
 
-Version 0.1 · Last reviewed 2026-11-03
+Version 0.1 · Last reviewed 2026-11-04
 
 How the `nexahome` code is laid out, how to extend it and how to keep it fast. Setup and workflow are in [CONTRIBUTING](../CONTRIBUTING.md); the reasons for the language and layout are in the ADRs linked below.
 
@@ -31,11 +31,11 @@ The principle is **pay for what you use**: a call costs only what it needs, in s
 1. **Import inside the function.** `json`, `hashlib`, `hmac`, `tempfile`, `secrets`, `shutil`, `shlex`, `urllib`, `ssl`, `http`, `concurrent`, `dataclasses`, `importlib.metadata`, the stdlib `platform` and `logging` are imported in the function that needs them. Type-only imports go under `if TYPE_CHECKING:`, and the module starts with `from __future__ import annotations` (3.13 evaluates annotations eagerly; 3.14 does not, so a local run on 3.14 alone hides the mistake).
 2. **Keep `commands/` thin** and the logic outside it, so `nexahome --help` and every other command do not load it.
 3. **No work at import time:** no I/O, no subprocess, no environment read when a module is imported.
-4. **Run waiting calls side by side:** several independent `docker` calls go through `nexahome.parallel.map_ordered`.
+4. **Run waiting calls side by side:** several independent `docker` calls go through `nexahome.parallel.map_ordered`; calls that may wait for an earlier result go through `nexahome.parallel.run_waiting`.
 5. **Stream and cap:** a file or answer of unknown size is read in pieces and has a size limit; a directory is walked once.
 6. **Use `NamedTuple` or a plain class for small records**, not `dataclass`.
 7. **Measure before and after** and keep the number in the pull request: `python -X importtime -m nexahome <call> 2>&1 >/dev/null | sort -t'|' -k2 -n -r | head` for imports, `/usr/bin/time -l .venv/bin/python -m nexahome <call>` for peak memory (`-v` on Linux), the median of 15 runs for wall time.
 
 `make test` enforces the checklist: `tests/test_startup.py` lists the modules each call imports in a fresh process, and `tests/test_packaging.py` rejects heavy top-level imports. If a new command truly needs a heavy module, add it to its own function and add the call to the budget in `test_startup.py`; add to the allowlist in `test_packaging.py` only with a reason next to the entry.
 
-Changelog: 0.1 (2026-11-03): moved here from CONTRIBUTING so the code guide has one owner (PK6f, owner's yes).
+Changelog: 0.1 (2026-11-04): checklist names `run_waiting` (DR3); 0.1 (2026-11-03): moved here from CONTRIBUTING so the code guide has one owner (PK6f, owner's yes).

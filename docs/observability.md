@@ -1,8 +1,8 @@
 # Observability and operations
 
-Version 0.1 · Last reviewed 2026-11-03
+Version 0.1 · Last reviewed 2026-11-04
 
-How we see what is running. Today seven stacks run on one laptop, so the approach is deliberately minimal.
+How we see what is running. The approach is deliberately minimal while the stacks run on one host.
 
 ## Decoupling rule
 
@@ -20,7 +20,7 @@ Move past this setup when something breaks unnoticed or the host is always on. A
 
 ## What we want to see
 
-| Signal | Question it answers | Phase 0 source |
+| Signal | Question it answers | Source today |
 | :--- | :--- | :--- |
 | Health | Is each service up and responding? | health checks, `make ps` |
 | Logs | Why did it fail? | `docker compose logs` |
@@ -45,4 +45,4 @@ Hostnames and addresses must not be published. Keep the real inventory in a giti
 | Power | `<UPS or none>` |
 | Backup | `<last verified restore date>` |
 
-Changelog: 0.1 (2026-11-03): stack count, Gatus as the health view and the ntfy notifier brought up to date (PK6c); 0.1 (2026-11-02): ADR 0013 called decided (PK2); 0.1 (2026-10-26): shortlist result (Gatus), notifications row; 0.1 (2026-10-21): version renamed from 1.0 (pre-release project); 0.1 (2026-10-20): notifications signal added; reduced to the decoupling rule, a testable phase 0, a shortlist and an inventory template; dashboard and portal aspirations removed.
+Changelog: 0.1 (2026-11-04): stack count and "Phase 0" wording removed (DR3); 0.1 (2026-11-03): stack count, Gatus as the health view and the ntfy notifier brought up to date (PK6c); 0.1 (2026-11-02): ADR 0013 called decided (PK2); 0.1 (2026-10-26): shortlist result (Gatus), notifications row; 0.1 (2026-10-21): version renamed from 1.0 (pre-release project); 0.1 (2026-10-20): notifications signal added; reduced to the decoupling rule, a testable phase 0, a shortlist and an inventory template; dashboard and portal aspirations removed.

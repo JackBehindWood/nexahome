@@ -26,7 +26,7 @@ make hooks     # optional: install the git pre-commit hook in this repo only
 make setup-dev                # once: pytest
 make test                     # the package tests (pytest)
 . .venv/bin/activate          # once per terminal: puts nexahome on your PATH (or call .venv/bin/nexahome)
-nexahome --help               # the commands: check, config, doctor, env, init, stacks, status, update
+nexahome --help               # every command and option; the README describes them
 nexahome doctor               # diagnose this machine (read-only)
 ```
 
