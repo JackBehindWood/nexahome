@@ -39,7 +39,8 @@ One owner per fact. Before writing a second copy of any of these, search for the
 
 ## Tests
 
-- One test file per command (`test_check.py`, `test_env.py`, `test_stacks.py`, `test_status.py`, and so on) and one per module with logic of its own (`test_files.py`, `test_envfile.py`).
+- `tests/` mirrors `src/nexahome/`: one folder per package (`commands/`, `instance/`, `stacks/`, `release/`, `policy/`, `platform/`) with one file per command or module in it. The top level holds the guards and the modules that sit outside a package (`test_startup.py`, `test_packaging.py`, `test_docs.py`, `test_registry.py`, `test_cli.py`, `test_doctor.py`, `test_files.py`, `test_parallel.py` and so on). A new test goes in the folder of the package it tests.
+- File names stay unique across folders (pytest imports a test file by its name), so a command's tests are `commands/test_<command>.py` and a module's `<package>/test_<module>.py` with no other file of that name.
 - Shared in `tests/conftest.py`: `make_context` (injected host, runner and environment; `out(ctx)` and `err(ctx)` read what a command printed), `FakeRunner` (answers by exact argv), `fake_docker` (a `docker` script on `PATH`), `make_checkout` (a clone), `make_instance` (a folder as `init` leaves it, by hand) and the `instance` fixture (a real `nexahome init`; a test module may override it with a smaller one). Do not define `out`, `err` or a checkout builder in a test file.
 - Guards: `test_startup.py` (the modules each call imports), `test_packaging.py` (layering, lazy imports, annotations), `test_docs.py` (links, headers, and that the table above names every module).
 - Test a failure path by patching the one shared function (for example `files.create_exclusive`), not the file system.
@@ -59,4 +60,4 @@ The principle is **pay for what you use**: a call costs only what it needs, in s
 
 `make test` enforces the checklist: `tests/test_startup.py` lists the modules each call imports in a fresh process, and `tests/test_packaging.py` rejects heavy top-level imports. If a new command truly needs a heavy module, add it to its own function and add the call to the budget in `test_startup.py`; add to the allowlist in `test_packaging.py` only with a reason next to the entry.
 
-Changelog: 0.1 (2026-11-04): `defaults` and `files` in the module map, reuse owners and tests layout, a test keeps the map complete (Goal 3 follow-up); 0.1 (2026-11-04): `stacks/` row names `ownership` and `scaffold` (Goal 3); 0.1 (2026-11-04): checklist names `run_waiting` (DR3); 0.1 (2026-11-03): moved here from CONTRIBUTING so the code guide has one owner (PK6f, owner's yes).
+Changelog: 0.1 (2026-11-04): tests mirror the package folders (Goal 3 follow-up); 0.1 (2026-11-04): `defaults` and `files` in the module map, reuse owners and tests layout, a test keeps the map complete (Goal 3 follow-up); 0.1 (2026-11-04): `stacks/` row names `ownership` and `scaffold` (Goal 3); 0.1 (2026-11-04): checklist names `run_waiting` (DR3); 0.1 (2026-11-03): moved here from CONTRIBUTING so the code guide has one owner (PK6f, owner's yes).
