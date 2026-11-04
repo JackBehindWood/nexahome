@@ -32,7 +32,7 @@ Last replaced 2026-11-04 (end of DR3). Entries end with a pointer here instead o
 ## 2026-11-04: DR3 (edit batch for the accepted DR2 findings)
 
 **Done**
-- Committed the DR2 Step 0 edits as they stood (`dbb37b5`), then applied the DR2 S batch, the one-owner changes, the ADR index and the log redesign.
+- Committed the DR2 Step 0 edits as they stood (`dbb37b5`), then the DR2 S batch, one-owner changes, ADR index and log redesign (`81e64f0`), then SECURITY.md scope and supported versions (`b6951ca`). Not pushed.
 - Command list owned by the README, stack count by `docs/project.md`, changelog lines trimmed to 8 entries, the log compacted to the new template.
 **Doc changes and why**
 - `docs/project.md`: Confirmed audience row reworded for running as shipped and row 84 loses its stale clause (owner's yes; labels unchanged); Proposed rows 61, 62, 96, 97 reworded.
