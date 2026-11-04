@@ -9,4 +9,4 @@ Shell glue that runs where the `nexahome` package cannot. The `Makefile` calls t
 | `smoke.sh` | `make smoke` | Read-only checks of what is running; changes nothing. To be replaced by the package, then deleted. |
 | `deploy.sh` | `make deploy` | Pull, check, start, on the host that runs the stacks. To be replaced by the package, then deleted. |
 
-Rules for anything here: POSIX `sh`, ShellCheck-clean (CI runs it), about 30 lines, no JSON or TOML parsing, and a header that says why it cannot be Python. The package never calls a script.
+Rules for anything here: POSIX `sh`, ShellCheck-clean (CI runs it), about 30 lines, no JSON or TOML parsing, and a header that says why it cannot be Python. The package never calls a script. Tests: `tests/scripts/` runs `backup.sh` and `smoke.sh` unchanged against stub commands (no engine), and checks the Makefile's `.env` block against the package.
