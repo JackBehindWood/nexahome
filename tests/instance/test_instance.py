@@ -2,21 +2,23 @@
 
 from pathlib import Path
 
+import pytest
+
 from nexahome import cli
 from nexahome.errors import ExitCode
-from nexahome.instance import config, home
+from nexahome.instance import home
 
-from conftest import FakeRunner, MakeCheckout, MakeContext
+from conftest import FakeRunner, MakeCheckout, MakeContext, err, make_instance, out
 
 
-def make_instance(root: Path, stacks: tuple[str, ...] = ("demo",)) -> Path:
-    """What `nexahome init` leaves: nexahome.toml and stacks/, no Makefile."""
-    (root / "stacks").mkdir(parents=True)
-    for name in stacks:
-        (root / "stacks" / name).mkdir()
-        (root / "stacks" / name / "compose.yaml").write_text("")
-    (root / "nexahome.toml").write_text(config.render(stacks))
-    return root
+def test_the_layout_helpers_name_each_fact_once(tmp_path: Path) -> None:
+    assert home.stacks_dir(tmp_path) == tmp_path / "stacks"
+    assert home.stack_dir(tmp_path, "demo") == tmp_path / "stacks" / "demo"
+    assert not home.has_makefile(tmp_path) and not home.has_settings(tmp_path)
+    (tmp_path / "Makefile").write_text("")
+    assert home.has_makefile(tmp_path) and not home.has_settings(tmp_path)
+    (tmp_path / "nexahome.toml").write_text("")
+    assert home.has_settings(tmp_path)
 
 
 def test_what_counts_as_an_instance(make_checkout: MakeCheckout, tmp_path: Path) -> None:
@@ -63,3 +65,22 @@ def test_the_home_option_is_the_same_setting_as_the_variable(make_context: MakeC
     ctx = make_context(cwd=elsewhere, runner=FakeRunner())
     assert cli.main(["--home", str(root), "stacks"], ctx) == ExitCode.OK and "demo" in ctx.out.getvalue()  # type: ignore[attr-defined]
     assert cli.main(["--home", str(elsewhere), "stacks"], make_context(cwd=root)) == ExitCode.NOT_READY
+
+
+# --- commands that need an instance ---------------------------------------------------------------------------
+@pytest.mark.parametrize("command", ["env", "stacks", "status"])
+def test_commands_outside_a_checkout_say_so(command: str, make_context: MakeContext, tmp_path: Path) -> None:
+    ctx = make_context(cwd=tmp_path)
+    assert cli.main([command], ctx) == ExitCode.NOT_READY
+    assert err(ctx).startswith("FAIL  no NexaHome instance here") and err(ctx).endswith("\nNext: nexahome init\n")
+
+
+def test_nexahome_home_selects_the_checkout_from_anywhere(make_checkout: MakeCheckout, make_context: MakeContext, tmp_path: Path) -> None:
+    checkout = make_checkout({"demo": None})
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    ctx = make_context(cwd=elsewhere, env={"NEXAHOME_HOME": str(checkout)}, runner=FakeRunner())
+    assert cli.main(["stacks"], ctx) == ExitCode.OK and "demo" in out(ctx)
+    wrong = make_context(cwd=checkout, env={"NEXAHOME_HOME": str(elsewhere)})
+    assert cli.main(["stacks"], wrong) == ExitCode.NOT_READY
+    assert err(wrong).startswith("FAIL  NEXAHOME_HOME does not point at a NexaHome instance or clone") and 'Next: ls "$NEXAHOME_HOME"' in err(wrong)

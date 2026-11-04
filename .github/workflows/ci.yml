@@ -207,9 +207,10 @@ jobs:
           stray = [n for n in names if not n.startswith(("nexahome/", "nexahome-"))]
           assert not stray, f"files outside the package: {stray}"
           # PK6-5: every tracked file under stacks/ ships (compose files, .env.example, Caddyfile, www/, config/,
-          # Dockerfile) except the READMEs; nothing else (no .env, data directory or README) comes along.
+          # Dockerfile) except the READMEs but the template's (`nexahome stacks new` copies it); nothing else (no .env, data
+          # directory or other README) comes along.
           tracked = subprocess.check_output(["git", "ls-files", "stacks"], text=True).split()
-          expected = {"nexahome/_stacks/" + p.removeprefix("stacks/") for p in tracked if not p.endswith("README.md")}
+          expected = {"nexahome/_stacks/" + p.removeprefix("stacks/") for p in tracked if not p.endswith("README.md") or p == "stacks/_template/README.md"}
           shipped = {n for n in names if n.startswith("nexahome/_stacks/")}
           assert shipped == expected, f"missing: {sorted(expected - shipped)}; unexpected: {sorted(shipped - expected)}"
           EOF
@@ -224,7 +225,7 @@ jobs:
           HOME="$RUNNER_TEMP/user" nexahome init | tee "$RUNNER_TEMP/init.out"
           cd "$RUNNER_TEMP/user/nexahome"
           test -f nexahome.toml && test -f .nexahome/manifest.json
-          test -z "$(find . -name .env -o -name README.md -o -name data)"
+          test -z "$(find . -name .env -o \( -name README.md -not -path './stacks/_template/*' \) -o -name data)"  # the template's README ships on purpose: `stacks new` copies it
           nexahome check
           code=0; HOME="$RUNNER_TEMP/user" nexahome init || code=$?
           [ "$code" = 3 ] || { echo "::error::a second init must refuse with exit 3, got $code"; exit 1; }

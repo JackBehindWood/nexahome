@@ -39,6 +39,7 @@ def _require_ignored(ctx: Context, instance: Path, env_path: Path) -> None:
 def run(args: argparse.Namespace, ctx: Context) -> int:
     from nexahome import diagnosis
     from nexahome.stacks import catalogue as stack_catalogue
+    from nexahome.instance import home
     from nexahome.stacks import envfile
     from nexahome.errors import NexaHomeError
     from nexahome.report import passed, render_text
@@ -49,7 +50,7 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
     names = [args.stack] if args.stack else stack_catalogue.enabled(instance)
     pending = False
     for name in names:
-        stack_dir = instance / "stacks" / name
+        stack_dir = home.stack_dir(instance, name)
         _require_ignored(ctx, instance, stack_dir / ".env")
         result = envfile.prepare(stack_dir, dry_run=args.dry_run)
         if result is None:
@@ -73,7 +74,7 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
     checks = diagnosis.run_probes(ctx)
     print(render_text(checks), file=ctx.out)
     if passed(checks) and not pending:
-        if (instance / "Makefile").is_file():
+        if home.has_makefile(instance):
             print("Next: make up", file=ctx.out)
         else:  # an instance made by `nexahome init` has no Makefile; `nexahome up` does not exist yet (PK7)
             from nexahome.docker import compose

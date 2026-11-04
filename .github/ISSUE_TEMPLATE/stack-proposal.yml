@@ -1,0 +1,57 @@
+name: Stack proposal
+description: Propose a new stack (a service NexaHome runs), before you build it
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A stack is one folder with `compose.yaml`, `.env.example` and `README.md`. The checklist it must meet is in docs/runbooks/add-a-stack.md. Fill in what you know; measured numbers are better than guesses.
+  - type: textarea
+    id: why
+    attributes:
+      label: What is it for, and why this service?
+    validations:
+      required: true
+  - type: input
+    id: image
+    attributes:
+      label: Image and exact tag
+      description: A version tag, never `latest`. It must support arm64.
+      placeholder: registry/name:1.2.3
+    validations:
+      required: true
+  - type: input
+    id: ports
+    attributes:
+      label: Ports it listens on
+      description: They are published on 127.0.0.1 only.
+    validations:
+      required: true
+  - type: textarea
+    id: volumes
+    attributes:
+      label: Volumes and what they hold
+    validations:
+      required: true
+  - type: dropdown
+    id: backup
+    attributes:
+      label: Does its data need a backup?
+      options:
+        - "Yes"
+        - "No"
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: ram
+    attributes:
+      label: Idle RAM, measured
+      description: For example the MEM USAGE column of `docker stats --no-stream` after five minutes idle.
+    validations:
+      required: true
+  - type: textarea
+    id: check
+    attributes:
+      label: Output of `nexahome check` with the stack in place
+      description: Remove personal details before you paste.
+      render: text

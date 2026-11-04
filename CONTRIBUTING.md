@@ -6,6 +6,7 @@ Pull requests are welcome. This is a solo hobby project with no support promise,
 
 - Open an issue first for anything larger than a fix, so we agree on scope. Small fixes can go straight to a pull request.
 - Read the [rules](docs/constraints.md) (Compose policy, tooling, security) and the [documentation conventions](docs/README.md#conventions).
+- Everyone taking part follows the [code of conduct](CODE_OF_CONDUCT.md).
 - Nothing personal or secret in any commit: no names, hostnames, IP addresses, emails, home paths or credentials.
 
 ## Developer setup
@@ -26,7 +27,7 @@ make hooks     # optional: install the git pre-commit hook in this repo only
 make setup-dev                # once: pytest
 make test                     # the package tests (pytest)
 . .venv/bin/activate          # once per terminal: puts nexahome on your PATH (or call .venv/bin/nexahome)
-nexahome --help               # the commands: check, config, doctor, env, init, stacks, status, update
+nexahome --help               # every command and option; the README describes them
 nexahome doctor               # diagnose this machine (read-only)
 ```
 

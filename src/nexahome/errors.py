@@ -14,6 +14,12 @@ class ExitCode(IntEnum):
     PIPE_CLOSED = 141  # the reader went away, for example `| head` (128 + SIGPIPE)
 
 
+def editor_fix(shown: str) -> str:
+    """The fix line that opens a file in the user's editor. `shown` is the path, already shell-safe (the callers differ:
+    `Context.display`, a hand-quoted absolute path, or a fixed name). The one place that spells the editor variable."""
+    return f"${{EDITOR:-vi}} {shown}"
+
+
 class NexaHomeError(Exception):
     """Something the user can fix. `fix` is mandatory: one exact command."""
 

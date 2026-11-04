@@ -13,20 +13,11 @@ from nexahome.errors import ExitCode, NexaHomeError
 from nexahome.instance import config
 from nexahome.runner import RunResult
 
-from conftest import DOCKER_HEALTHY, FakeRunner, MakeCheckout, MakeContext, MakeHost
-from test_instance import make_instance
-
-
-def out(ctx: object) -> str:
-    return ctx.out.getvalue()  # type: ignore[attr-defined]
-
-
-def err(ctx: object) -> str:
-    return ctx.err.getvalue()  # type: ignore[attr-defined]
+from conftest import DOCKER_HEALTHY, FakeRunner, MakeCheckout, MakeContext, MakeHost, err, make_instance, out
 
 
 @pytest.fixture
-def instance(tmp_path: Path) -> Path:
+def instance(tmp_path: Path) -> Path:  # overrides conftest's real-init `instance`: a small one, written by hand
     root = make_instance(tmp_path / "made", ("hello", "actual", "edge", "identity"))
     (root / "nexahome.toml").write_text(config.render(("hello",)))  # four stacks exist, one is enabled, as after init
     return root

@@ -12,7 +12,7 @@ from nexahome.errors import ExitCode
 from nexahome.report import Check, Status
 from nexahome.runner import RunResult, SubprocessRunner
 
-from conftest import FakeDocker, FakeRunner, MakeContext, MakeHost
+from conftest import FakeDocker, FakeRunner, MakeCheckout, MakeContext, MakeHost
 
 CLI = ("docker", "--version")
 COMPOSE = ("docker", "compose", "version")
@@ -73,16 +73,10 @@ def test_low_disk_is_a_warning_with_a_command(make_context: MakeContext) -> None
     assert (disk.status, disk.fix) == (Status.WARN, "df -h .")
 
 
-def make_checkout(root: Path) -> Path:
-    (root / "stacks" / "demo").mkdir(parents=True)
-    (root / "Makefile").write_text("")
-    return root
-
-
-def test_checkout_outside_home_on_macos_warns(make_context: MakeContext, make_host: MakeHost, tmp_path: Path) -> None:
+def test_checkout_outside_home_on_macos_warns(make_checkout: MakeCheckout, make_context: MakeContext, make_host: MakeHost, tmp_path: Path) -> None:
     home = tmp_path / "home"
     home.mkdir()
-    repo = make_checkout(tmp_path / "elsewhere")
+    repo = make_checkout(root=tmp_path / "elsewhere")
     host = make_host(system="macos", home=home)
     at_root = {c.id: c for c in diagnosis.run_probes(make_context(host=host, cwd=repo, runner=FakeRunner(HEALTHY)))}
     assert (at_root["mount"].status, at_root["mount"].fix) == (Status.WARN, 'mv "$PWD" "$HOME/"')
@@ -91,19 +85,19 @@ def test_checkout_outside_home_on_macos_warns(make_context: MakeContext, make_ho
     assert deeper["mount"].fix == f'mv {repo} "$HOME/"'
 
 
-def test_checkout_under_home_is_fine_and_linux_has_no_mount_probe(
+def test_checkout_under_home_is_fine_and_linux_has_no_mount_probe(make_checkout: MakeCheckout,
     make_context: MakeContext, make_host: MakeHost, tmp_path: Path
 ) -> None:
-    repo = make_checkout(tmp_path / "repo")
+    repo = make_checkout(root=tmp_path / "repo")
     mac = {c.id: c.status for c in diagnosis.run_probes(make_context(host=make_host(system="macos", home=tmp_path), cwd=repo))}
     linux = {c.id for c in diagnosis.run_probes(make_context(cwd=repo))}
     assert mac["mount"] == Status.OK and "mount" not in linux
 
 
-def test_placeholders_are_named_by_key_and_values_are_never_printed(
+def test_placeholders_are_named_by_key_and_values_are_never_printed(make_checkout: MakeCheckout,
     make_context: MakeContext, tmp_path: Path
 ) -> None:
-    repo = make_checkout(tmp_path / "repo")
+    repo = make_checkout(root=tmp_path / "repo")
     (repo / "stacks" / "demo" / ".env").write_text("TOKEN=CHANGE_ME\nOTHER=plainvalue\n")
     ctx = make_context(cwd=repo, runner=FakeRunner(HEALTHY))
     assert cli.main(["doctor"], ctx) == ExitCode.OK  # a warning does not fail the run
@@ -184,8 +178,8 @@ def test_end_to_end_without_docker(make_context: MakeContext) -> None:
     assert "docker-cli" in ctx.out.getvalue() and "skip  compose" in ctx.out.getvalue()  # type: ignore[attr-defined]
 
 
-def test_an_unreadable_env_file_is_skipped_not_fatal(make_context: MakeContext, tmp_path: Path) -> None:
-    repo = make_checkout(tmp_path / "repo")
+def test_an_unreadable_env_file_is_skipped_not_fatal(make_checkout: MakeCheckout, make_context: MakeContext, tmp_path: Path) -> None:
+    repo = make_checkout(root=tmp_path / "repo")
     (repo / "stacks" / "demo" / ".env").mkdir()  # reading a directory raises OSError
     checks = {c.id: c.status for c in diagnosis.run_probes(make_context(cwd=repo, runner=FakeRunner(HEALTHY)))}
     assert checks["env"] == Status.OK

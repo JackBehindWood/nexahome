@@ -23,6 +23,7 @@ def register(subparsers: Subparsers) -> None:
 def run(args: argparse.Namespace, ctx: Context) -> int:
     from nexahome import backup_info
     from nexahome.docker import compose, engine
+    from nexahome.instance import home
     from nexahome import platform as host_platform
     from nexahome.stacks import catalogue as stack_catalogue
     from nexahome.parallel import map_ordered
@@ -36,5 +37,5 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
     else:
         print(f"no container runtime running; start it with: {host_platform.engine_start_fix(ctx.host)}", file=ctx.out)
     directory = backup_info.repository_dir(instance, ctx.env)
-    print("\n".join(backup_info.summary(directory, ctx.now())), file=ctx.out)
+    print("\n".join(backup_info.summary(directory, ctx.now(), home.has_makefile(instance))), file=ctx.out)
     return ExitCode.OK

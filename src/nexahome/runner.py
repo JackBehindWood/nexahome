@@ -23,6 +23,8 @@ class Runner(Protocol):
 
     def run(self, argv: Sequence[str], *, timeout: float) -> RunResult: ...
 
+    def stream(self, argv: Sequence[str]) -> int: ...
+
 
 class SubprocessRunner:
     """Runs argv lists without a shell. A missing program or a timeout is a result, not an exception."""
@@ -45,3 +47,13 @@ class SubprocessRunner:
         except subprocess.TimeoutExpired:
             return RunResult(124, timed_out=True)
         return RunResult(done.returncode, done.stdout, done.stderr)
+
+    def stream(self, argv: Sequence[str]) -> int:
+        """Runs a command on the terminal itself: nothing is captured and nothing times out, for output that goes on
+        until Ctrl-C (`logs --follow`). Ctrl-C stops the program and raises KeyboardInterrupt; a missing program is 127."""
+        import subprocess
+
+        try:
+            return subprocess.call(list(argv), stdin=subprocess.DEVNULL)
+        except (FileNotFoundError, PermissionError):
+            return 127

@@ -45,7 +45,7 @@ def test_probe_ids_are_unique_and_stable() -> None:
 
 
 def test_commands_are_found_automatically_and_listed_alphabetically() -> None:
-    assert [command.NAME for command in COMMANDS] == ["check", "config", "doctor", "env", "init", "stacks", "status", "update"]
+    assert [command.NAME for command in COMMANDS] == ["check", "config", "doctor", "env", "init", "logs", "stacks", "status", "update"]
     assert all(command.__name__ == f"nexahome.commands.{command.NAME}" for command in COMMANDS)  # one module per command
 
 
@@ -58,7 +58,7 @@ def test_a_module_without_the_interface_is_refused_with_a_hint(monkeypatch: pyte
 
 
 def test_names_come_from_the_file_names_without_importing_anything() -> None:
-    assert commands.names() == ("check", "config", "doctor", "env", "init", "stacks", "status", "update")
+    assert commands.names() == ("check", "config", "doctor", "env", "init", "logs", "stacks", "status", "update")
 
 
 def test_every_command_is_named_after_its_module() -> None:

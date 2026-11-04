@@ -6,15 +6,14 @@ not write it; this schema has three value types, so the writer is a few lines he
 
 from __future__ import annotations
 
-import os
 import re
 from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
-from nexahome import __version__
-from nexahome.errors import ExitCode, NexaHomeError
+from nexahome import __version__, files
+from nexahome.errors import ExitCode, NexaHomeError, editor_fix
 from nexahome.defaults import CONFIG_MAX_BYTES, INSTANCE_SCHEMA, PUBLIC_FILE_MODE
-from nexahome.instance import CONFIG_NAME
+from nexahome.instance import CONFIG_NAME, home
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -43,12 +42,6 @@ SETTABLE = ("stacks",)  # schema and created_by describe the file; only `nexahom
 STACK_NAME = re.compile(r"[a-z0-9][a-z0-9_-]*")  # also keeps a name from being a path
 
 
-def _editor_fix(path: Path) -> str:
-    import shlex
-
-    return f"${{EDITOR:-vi}} {shlex.quote(str(path))}"
-
-
 def validate_stacks(directory: Path, names: Sequence[object], fix: str, exit_code: ExitCode = ExitCode.NOT_READY) -> tuple[str, ...]:
     """The names as a tuple: at least one, each a stack under directory/stacks, no repeats. `fix` is the command
     named when one is wrong."""
@@ -58,8 +51,8 @@ def validate_stacks(directory: Path, names: Sequence[object], fix: str, exit_cod
     for name in names:
         if not isinstance(name, str) or not STACK_NAME.fullmatch(name):
             raise NexaHomeError(f"stacks: {name!r} is not a stack name (lower-case letters, digits, - and _)", fix, exit_code)
-        if not (directory / "stacks" / name / "compose.yaml").is_file():
-            raise NexaHomeError(f"stacks: there is no stack called {name!r} in {directory / 'stacks'}", fix, exit_code)
+        if not (home.stack_dir(directory, name) / "compose.yaml").is_file():
+            raise NexaHomeError(f"stacks: there is no stack called {name!r} in {home.stacks_dir(directory)}", fix, exit_code)
         if name not in clean:
             clean.append(name)
     return tuple(clean)
@@ -76,7 +69,9 @@ def read(directory: Path) -> Settings | None:
             raw = handle.read(CONFIG_MAX_BYTES + 1)
     except FileNotFoundError:
         return None
-    edit = _editor_fix(path)
+    import shlex  # only this read quotes the path, for the fix line
+
+    edit = editor_fix(shlex.quote(str(path)))
     if len(raw) > CONFIG_MAX_BYTES:
         raise NexaHomeError(f"{CONFIG_NAME} is larger than {CONFIG_MAX_BYTES} bytes", edit)
     try:
@@ -101,19 +96,9 @@ def read(directory: Path) -> Settings | None:
 def write(directory: Path, stacks: Sequence[str]) -> None:
     """Replace nexahome.toml with `stacks` (names already validated), keeping created_by. All or nothing: the new text
     is written beside the file and renamed over it."""
-    import tempfile
-
     try:
         current = read(directory)
     except NexaHomeError:
         current = None  # a file that cannot be read is replaced whole; that is how `config set` repairs it
     text = render(stacks, current.created_by if current and current.created_by else None)
-    descriptor, temporary = tempfile.mkstemp(dir=directory, prefix=f".{CONFIG_NAME}.")
-    try:
-        with os.fdopen(descriptor, "w") as handle:
-            handle.write(text)
-        os.chmod(temporary, PUBLIC_FILE_MODE)
-        os.replace(temporary, directory / CONFIG_NAME)
-    except BaseException:
-        Path(temporary).unlink(missing_ok=True)
-        raise
+    files.replace_atomically(directory / CONFIG_NAME, text, PUBLIC_FILE_MODE)

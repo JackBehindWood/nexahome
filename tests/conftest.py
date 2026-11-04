@@ -12,12 +12,29 @@ from pathlib import Path
 
 import pytest
 
+from nexahome import cli
 from nexahome.context import Context
+from nexahome.errors import ExitCode
+from nexahome.instance import config
 from nexahome.platform import Host
 from nexahome.runner import RunResult, Runner
 
 MakeHost = Callable[..., Host]
 MakeContext = Callable[..., Context]
+
+
+@pytest.fixture
+def real_ports() -> None:
+    """Ask for this fixture to let `stacks new` probe the real host ports."""
+
+
+@pytest.fixture(autouse=True)
+def host_ports_are_free(monkeypatch: pytest.MonkeyPatch, request: pytest.FixtureRequest) -> None:
+    """A test never depends on what is listening on the machine running it: every port reads as free."""
+    if "real_ports" not in request.fixturenames:
+        from nexahome.release import net
+
+        monkeypatch.setattr(net, "port_is_busy", lambda port: False)
 
 
 @pytest.fixture
@@ -37,14 +54,20 @@ def make_host(tmp_path: Path) -> MakeHost:
 class FakeRunner:
     """Answers by exact argv; anything not listed behaves like a program that is not installed."""
 
-    def __init__(self, responses: dict[tuple[str, ...], RunResult] | None = None) -> None:
+    def __init__(self, responses: dict[tuple[str, ...], RunResult] | None = None, streams: dict[tuple[str, ...], int] | None = None) -> None:
         self.responses = responses or {}
         self.calls: list[tuple[str, ...]] = []
+        self.streams = streams or {}  # exit codes of `stream` calls, by exact argv
+        self.streamed: list[tuple[str, ...]] = []
 
     def run(self, argv: Sequence[str], *, timeout: float) -> RunResult:
         key = tuple(argv)
         self.calls.append(key)
         return self.responses.get(key, RunResult(127, missing=True))
+
+    def stream(self, argv: Sequence[str]) -> int:
+        self.streamed.append(tuple(argv))
+        return self.streams.get(tuple(argv), 127)
 
 
 @pytest.fixture
@@ -65,6 +88,38 @@ def make_context(make_host: MakeHost, tmp_path: Path) -> MakeContext:
         )
 
     return make
+
+
+def out(ctx: object) -> str:
+    """What a command wrote to its `out` stream (the context from `make_context` holds StringIOs)."""
+    return ctx.out.getvalue()  # type: ignore[attr-defined]
+
+
+def err(ctx: object) -> str:
+    return ctx.err.getvalue()  # type: ignore[attr-defined]
+
+
+def make_instance(root: Path, stacks: tuple[str, ...] = ("demo",)) -> Path:
+    """What `nexahome init` leaves, by hand: nexahome.toml and stacks/<name>/compose.yaml, no Makefile."""
+    (root / "stacks").mkdir(parents=True)
+    for name in stacks:
+        (root / "stacks" / name).mkdir()
+        (root / "stacks" / name / "compose.yaml").write_text("")
+    (root / "nexahome.toml").write_text(config.render(stacks))
+    return root
+
+
+def ps_running_argv(compose_file: Path) -> tuple[str, ...]:
+    """The `docker compose ps` call that tells whether one stack runs."""
+    return ("docker", "compose", "-f", str(compose_file), "ps", "--status", "running", "-q")
+
+
+@pytest.fixture
+def instance(make_context: MakeContext, tmp_path: Path) -> Path:
+    """A real instance made by `nexahome init` from the bundled stacks. A module may override it with a smaller one."""
+    target = tmp_path / "made"
+    assert cli.main(["init", str(target)], make_context(cwd=tmp_path, runner=FakeRunner())) == ExitCode.OK
+    return target
 
 
 @dataclass

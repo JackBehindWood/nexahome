@@ -8,6 +8,8 @@ stays with that domain. tests/test_defaults.py enforces the shape.
 
 # Time limits, in seconds
 DOCKER_TIMEOUT = 15  # `docker version`, `docker info`, `compose ps`: a stuck VM must not hang the command
+LOGS_TIMEOUT = 60  # `compose logs --tail N` for one stack (not used with --follow, which runs until Ctrl-C)
+LOG_TAIL = 100  # lines per service when --tail is not given
 PROBE_TIMEOUT = 10  # the same questions asked by `doctor`, which must stay quick
 COMPOSE_CONFIG_TIMEOUT = 60  # per stack: `config` reads and interpolates every file
 FEED_TIMEOUT = 15  # the release feed and its checksum list

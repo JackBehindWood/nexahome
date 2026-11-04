@@ -5,16 +5,18 @@ from collections.abc import Mapping
 from pathlib import Path
 
 from nexahome.defaults import BACKUP_RECENT_SECONDS, ENV_BACKUP_DIR
+from nexahome.instance import home
 from nexahome.stacks import envfile
 
 _UNITS = ("B", "K", "M", "G", "T")
+_NO_BACKUP = "not available in an instance yet"
 
 
 def repository_dir(instance: Path, env: Mapping[str, str]) -> Path:
     """stacks/backup/.env wins, then $NEXAHOME_BACKUP_DIR, then data/backup (as backup.sh does)."""
     value = None
     try:
-        value = envfile.read_value((instance / "stacks" / "backup" / ".env").read_text(), ENV_BACKUP_DIR)
+        value = envfile.read_value((home.stack_dir(instance, "backup") / ".env").read_text(), ENV_BACKUP_DIR)
     except OSError:
         pass
     chosen = value or env.get(ENV_BACKUP_DIR)
@@ -29,10 +31,12 @@ def human_size(size: float) -> str:
     return f"{size:.0f}B" if unit == 0 else f"{size:.1f}{_UNITS[unit]}"
 
 
-def summary(directory: Path, now: float) -> list[str]:
-    """Lines for `nexahome status`: whether the newest snapshot is under 7 days old, and the repository size, from one walk of the folder."""
+def summary(directory: Path, now: float, clone: bool) -> list[str]:
+    """Lines for `nexahome status`: whether the newest snapshot is under 7 days old, and the repository size, from one walk of the folder.
+    `clone` says the folder has the Makefile; an instance made by `nexahome init` cannot back up yet (PK7)."""
     if not (directory / "config").is_file():
-        return [f"backup: no repository at {directory} (in a git clone: make backup-init)"]
+        return [f"backup: no repository at {directory} ({'in a git clone: make backup-init' if clone else _NO_BACKUP})"]
+    how = "in a git clone: make backup" if clone else _NO_BACKUP
     size = 0
     newest: float | None = None  # modification time of the newest snapshot file; None if there is none
     snapshots = directory / "snapshots"
@@ -49,7 +53,7 @@ def summary(directory: Path, now: float) -> list[str]:
     if newest is not None and now - newest < BACKUP_RECENT_SECONDS:
         first = "backup: last snapshot within 7 days"
     elif newest is not None:
-        first = "backup: last snapshot OLDER than 7 days (in a git clone: make backup)"
+        first = f"backup: last snapshot OLDER than 7 days ({how})"
     else:
-        first = "backup: repository has no snapshots yet (in a git clone: make backup)"
+        first = f"backup: repository has no snapshots yet ({how})"
     return [first, f"backup: repository size {human_size(size)} in {directory}"]

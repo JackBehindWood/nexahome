@@ -1,4 +1,4 @@
-"""The only module that talks to the network. Only `nexahome update` uses it, and only when it is run.
+"""The only module that talks to the network (and asks the host which loopback ports are taken). `nexahome update` fetches through it, and `stacks new` probes ports through it, each only when run.
 
 HTTPS only (plain HTTP is allowed to the local machine, for a mirror or a test), a time and size limit on every
 request, no credentials, and no data about the user: the request carries the tool name and version only.
@@ -25,6 +25,19 @@ if TYPE_CHECKING:
 
 
 LOOPBACK = ("127.0.0.1", "localhost", "::1")
+
+
+def port_is_busy(port: int) -> bool:
+    """True when something on this host already holds the port on 127.0.0.1 (where stacks publish). A port that cannot
+    be tested counts as busy, so the caller picks another one."""
+    import socket
+
+    with socket.socket() as probe:
+        try:
+            probe.bind(("127.0.0.1", port))
+        except OSError:
+            return True
+    return False
 
 
 class NetworkError(Exception):
