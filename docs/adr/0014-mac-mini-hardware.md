@@ -19,7 +19,7 @@ Apple Mac mini, M6, **32 GB memory, 512 GB internal storage**, bought new, plus 
 
 Fallback: M6 with 16 GB only if the small-model test had shown a small model suffices; it cannot run the 30B class. There is no wait for a newer generation: this one is current.
 
-Sizing rule (re-measured in B2): weights (parameters times bits per weight, divided by 8) plus KV cache for the chosen context, plus 4 to 6 GB for macOS, plus 2 to 4 GB for the Colima VM, plus 10% headroom. On 32 GB with a 19 GB model this leaves little for the cache, so the context is capped. 512 GB covers the system, tens of GB of models, the Colima disk and the backup repository; 256 GB would be tight.
+Sizing rule: see [architecture](../architecture.md#sizing-a-host-for-local-ai) (re-measured in B2). On 32 GB with a 19 GB model this leaves little for the cache, so the context is capped. 512 GB covers the system, tens of GB of models, the Colima disk and the backup repository; 256 GB would be tight.
 
 | On the mini | Not on the mini |
 | :-- | :-- |
@@ -36,4 +36,4 @@ Evolution per hop is in [architecture](../architecture.md#migration-paths). When
 M5 Pro (reference, see table); 16 GB models (fallback only); a used or refurbished machine (not wanted: new only); a Linux box with a GPU (more power, noise and cost, no Apple silicon memory sharing); waiting for the next generation (this one is current; costs were rising, not shown to be cheaper).
 
 ## Verification and status
-The owner dropped the planned small-model laptop test (strategy: local AI now, hybrid with a cloud agent later), so the choice rests on the sizing rule, not on a measurement; B2 is the first measurement. Live prices were checked by the owner and are kept local. **Not verified:** M6 idle and load power, tokens per second for the chosen model, whether the 30B class fits with Colima running, the macOS version the mini ships with, the external disk's file system with the backup job (B3). The choice closes "local AI model size" and "storage, budget and power" in the register only on the owner's explicit yes.
+The owner dropped the planned small-model laptop test (strategy: local AI now, hybrid with a cloud agent later), so the choice rests on the sizing rule, not on a measurement; B2 is the first measurement. Live prices were checked by the owner and are kept local. **Not verified:** M6 idle and load power, tokens per second for the chosen model, whether the 30B class fits with Colima running, the macOS version the mini ships with (reported as 27; verify at B1), the external disk's file system with the backup job (B3). The choice closes "local AI model size" and "storage, budget and power" in the register only on the owner's explicit yes.

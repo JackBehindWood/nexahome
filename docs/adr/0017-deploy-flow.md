@@ -31,7 +31,7 @@ sh scripts/setup.sh --deploy hello actual
 make deploy
 ```
 
-[`scripts/setup.sh`](../../scripts/setup.sh) is also what `make setup` runs (without `--deploy`, for the laptop, a workspace and CI). It checks `git`, `make` and `python3` (stops with the next command if one is missing), warns when Docker or its runtime is absent, creates `.venv` with the pinned tools, and with `--deploy` writes `.config/stacks` and disables push. It never installs system software and is safe to run again. `make up` creates each `.env` and generates secrets; copy them to the password manager. The mini needs Xcode command line tools, Homebrew and Colima first ([plan](../roadmap.md), B2).
+[`scripts/setup.sh`](../../scripts/setup.sh) is also what `make setup` runs (without `--deploy`, for the laptop, a workspace and CI). It checks `git`, `make` and `python3` (stops with the next command if one is missing), warns when Docker or its runtime is absent, creates `.venv` with the pinned tools, installs the `nexahome` package, and with `--deploy` writes `.config/stacks` and disables push. It never installs system software and is safe to run again. `make up` creates each `.env` and generates secrets; copy them to the password manager. The mini needs Xcode command line tools, Homebrew and Colima first ([plan](../roadmap.md), B2).
 
 **Rollback.** `git checkout <previous-sha> && make up`, then `git switch main` before the next deploy (a detached checkout is refused by the guard). Data: `make restore` (never overwrites; an app that migrated its data forward may not run on the old version, so restore a backup taken before the deploy).
 
@@ -78,6 +78,6 @@ Rehearsed on 2026-11-02 on the laptop (macOS 27, GNU make 3.81, Colima), in a se
 | Colima stopped | stopped at `up` with the `colima start` hint |
 | `scripts/setup.sh`, scratch copy | uv path and pip path (modern Python) pass; a second run is safe; `--deploy` writes the list and disables push; an unknown stack, a missing argument and a missing tool stop with the next command; a venv built on an old Python fails with the Python version named. Found and fixed: a half-made `.venv` made the second run fail |
 
-Findings along the way: the checkout must be under `$HOME` (a checkout in `/private/tmp` gave hello an empty web root and an unhealthy container); `COMPOSE_PROJECT_NAME` must not be exported while `make check` runs (`check_compose.py` enforces `nexahome-<stack>`), so the rehearsal set it in hello's `.env`.
+Findings along the way: the checkout must be under `$HOME` (a checkout in `/private/tmp` gave hello an empty web root and an unhealthy container); `COMPOSE_PROJECT_NAME` must not be exported while `make check` runs (`nexahome check` enforces `nexahome-<stack>`), so the rehearsal set it in hello's `.env`.
 
 **Not confirmed on a real mini** (P4-X4): D2 and D3; `make setup` (the rehearsal reused the laptop's `.venv`); GNU make version and Xcode command line tools there; anonymous HTTPS from the mini's network; whether `docker` and `colima` are on the PATH of a non-login shell, which is what `ssh <mini-alias> '...'` starts (a Homebrew PATH set only in `~/.zprofile` is not seen; `~/.zshenv` is; docker case is inference, check with `ssh <mini-alias> 'command -v docker'` in B2); behaviour with `actual` and image tag changes; Linux; a rollback that changes Compose files.

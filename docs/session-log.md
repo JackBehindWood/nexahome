@@ -4,14 +4,15 @@ Newest first. Each entry: done, doc changes with reasons, next, open questions.
 
 ## Pending owner actions (the one current list)
 
-Last replaced 2026-11-03 (end of PK6f). Older entries end with a pointer here instead of their own list.
+Last replaced 2026-11-04 (end of DR2). Older entries end with a pointer here instead of their own list.
 
 **Decide**
+- DR2 findings (local `.claude/tmp/dr2-report.md`, ranked S/M/L): the S batch is ready to edit on your yes. Needs your explicit yes: reword the Confirmed audience row in `docs/project.md` ("blueprint to read and fork") for the independence goal; row 84 (stale "stays Proposed"); and the CI-line conflict (keep the dated results line in ADR 0019 and amend the session-end rule, or delete the line). Also: `docs/adr/README.md` with a test; a log line budget (warn 220, fail 300) and the session-end skill edit listed in the report; a runner guide and release notes after `v0.2.0`.
+- Delete the merged local and remote `feat/packaging` (it equals `dev`; the uncommitted work sits on it). Recommended: create `feat/docs-review` first, then delete on your explicit yes.
 - Other Proposed register rows (documentation conventions, repository layout, task runner, security baseline, roles, three Packaging rows); review ADRs 0014 to 0020, the SSH runbook and the packaging design. None promoted in PK6f.
-- The app-stack ADR draft (local, `.claude/tmp/`): your five answers are recorded in it; it becomes `docs/adr/0022-...` as Proposed once the first app is specified.
+- [ADR 0022](adr/0022-own-images-and-app-stacks.md) (own images and application stacks) is Proposed: your five answers are recorded in it; promote to Confirmed only on your explicit yes. The ADR 0007 amendment (profiles) and ADR 0020's open gap (a runner's own stacks) wait for that.
 - GitHub: Dependabot alerts and security updates are disabled for the repository (your action, Settings, Code security); the account setting "Block command line pushes that expose my email"; optional SSH-signed commits.
 - Open choices: digest pinning; paid tier versus the open-source rule; keep `hello` on the edge and in the portal; ruff or a type checker (answered: not now; revisit if a lint or typing bug slips through).
-- Local `CLAUDE.md` still names `requirements-dev.txt` and CONTRIBUTING for the performance checklist (now `docs/codebase.md`): edit by hand.
 
 **Git**
 - Pull request 31 (`feat/packaging` into `dev`) is merged (2026-11-03, CI green on `b101a0f`). Next: `dev` into `main` by pull request (your yes).
@@ -28,6 +29,28 @@ Last replaced 2026-11-03 (end of PK6f). Older entries end with a pointer here in
 - Diagnose the Pocket ID self-restart; optional admin-only sign-in for the health view.
 - Dependabot parsing is shown for `portal`, `identity`, `gatus` and `pip`; not yet for `github-actions`, `hello`, `actual`, `backup`, `edge`, `_template` (no newer tag is also a reason); the `dev` and `check` dependency groups are unproven until a Dependabot pull request appears after a push.
 - Audit rows left for PK7 or later: S-21 (two `.env` creators until `nexahome up`), S-26 (backup job mounts every stack's `.env`), S-30 (deploy checkout and instance share a folder name), the package rows P-07 (trust model of `update`), P-11, P-12, P-14, P-16, P-18 to P-22, P-25 to P-27.
+
+## 2026-11-04: DR2 (edit batch, audit of the other docs, log shape)
+
+**Done:** DR1 answers applied (28 edits, labels unchanged); `/docs-audit` over README, CONTRIBUTING and `docs/*.md` outside adr, runbooks and the log; session-log measurements and a design (report in the local `.claude/tmp/dr2-report.md`).
+**Doc changes and why:**
+- Confirmed ADRs 0011, 0013, 0021: dead `check_compose.py` name, `[CONTRIBUTING]` label, `diagnosis.py` pool (clerical, owner's yes). ADR 0009 and register row "First application": Actual is the permanent reference client (owner's yes; labels unchanged).
+- Proposed ADRs 0014, 0016, 0017, 0018, 0019: macOS 27 reported, `nexahome check`, past-tense Context, the `uv` contradiction, one owner for `PK-P3`, the fused bullet, a dated CI results line in 0019 (see Open). ADR 0020 and 0022: direction for a runner's own stacks (user-owned folder or `compose.override.yaml`), not decided. ADR 0022 trimmed to the two Python profiles; template gained optional sections.
+- `docs/architecture.md`: general design versus reference deployment, and the host sizing rule moved from ADR 0014 (one owner).
+**Next:** your answers (Pending, Decide), then an edit session for the accepted DR2 findings, then an engine session for the Gatus v5.38 and Pocket ID v2.19.2 drills with the Dependabot runbook (needs your yes to start Colima).
+**Open:** the session-end skill says CI results appear only in the log and roadmap, which the ADR 0019 results line contradicts. **Verified:** `make check` 0, `tests/test_docs.py` 62 passed, 0 bad anchors, nothing staged. **Not verified:** the timed runner path, engine steps, anything on the mini.
+
+## 2026-11-04: DR1 (audit of ADRs and runbooks, read-only)
+
+**Done:** `/docs-audit` over all 23 ADRs and 5 runbooks; full tables in the local `.claude/tmp/dr1-report.md` (not tracked). About 45 findings, none a broken link or a wrong label: dead links and anchors 0, `make check` exit 0, `tests/test_docs.py` 62 passed, `make -n` of 12 runbook targets ok. Main findings: stale facts in Proposed ADRs (the mini ships with macOS 27 per reports, `check_compose.py` named after PK5, ADR 0018 Context in the past tense, a fused bullet in ADR 0019 line 25, `PK-P3` defined twice); the same in Confirmed 0011, 0013, 0021 (report only); ADR 0013's "no newer Gatus tag" is out of date (v5.38.0, pull request 27); ADR 0022 over-built for later (profile table); no runbook for handling a Dependabot update; `add-a-stack.md` assumes a clone, not an installed instance. Missing ADRs: a Compose hardening and security baseline ADR when that row is promoted. Prompt drift: ADR 0021 is Confirmed, not Proposed.
+**Doc changes and why:** none to ADRs or runbooks (read-first session, owner approves edits). This entry, the Pending list and the roadmap Next row only. Owner goal recorded (local memory): device-independent NexaHome for other users, the Mac mini and macOS setup being the reference deployment; findings tagged for it.
+**Next:** your answers to the eight questions in the report (Pending, Decide), then DR2 (other docs, README, CONTRIBUTING, session-log shape). **Not verified:** engine-dependent runbook commands (Colima stopped, not started), anything on the mini, Pocket ID v2.19 and Gatus v5.38 behaviour. Stayed on `feat/packaging` at the owner's choice; tree unchanged by this audit (the earlier uncommitted ADR 0022 and register edits remain).
+
+## 2026-11-04: Housekeeping and ADR 0022 live
+
+**Done:** [ADR 0022](adr/0022-own-images-and-app-stacks.md) moved from the local draft to `docs/adr/` as Proposed at the owner's request. Local-only: agent config, memory, plan indexes and `CLAUDE.md` refreshed (no tracked effect); graph refreshed; `main` and `dev` brought level with `origin`.
+**Doc changes and why:** ADR 0022 added (the draft said "only after the first app is specified"; the owner chose to publish it now; status stays Proposed, nothing promoted); register row added in `docs/project.md`; [ADR 0018](adr/0018-code-package-and-language-strategy.md) (Proposed) line 40 now points at ADR 0022 instead of "drafted for a later ADR"; Pending list: the draft bullet now names the live ADR, the local `CLAUDE.md` bullet removed (done). ADRs 0007 and 0020 not edited.
+**Next:** your yes for the remote deletion of merged branches; `dev` into `main` by pull request; then the two documentation review sessions (ADRs and runbooks first, then the other docs, README, CONTRIBUTING and the session-log shape). **Open questions:** the Pending list. **Not verified:** CI on this change (not pushed), the ADR's engine claims (it says so itself).
 
 ## 2026-11-03: PK6f session end
 

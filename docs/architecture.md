@@ -1,6 +1,6 @@
 # Architecture
 
-Version 0.1 · Last reviewed 2026-11-02
+Version 0.1 · Last reviewed 2026-11-04
 
 What the system is and why it is shaped this way. Rules are in [constraints](constraints.md), sequencing in the [roadmap](roadmap.md), decisions in the [register](project.md#decision-register).
 
@@ -12,6 +12,15 @@ Terms:
 - **Layer:** one row of the layer table. **Host:** a physical machine running workloads. **Stack:** one deployable unit, a directory under `stacks/`.
 - **Failure domain:** what stops working together when one thing fails. **Trust zone:** a network area whose members trust each other equally.
 - **MQTT:** a lightweight publish/subscribe messaging protocol used by smart-home devices. **VLAN:** a separate virtual network on shared switches.
+
+## General design and the reference deployment
+
+NexaHome is designed for any macOS or Linux host with a container runtime; nothing in the design needs one particular machine. The owner's Mac mini and macOS setup is the reference deployment: it is built first, so its choices (SSH, power, disk encryption, deploy checkout) are written down as [ADRs 0014 to 0017](adr/0014-mac-mini-hardware.md) and the [SSH runbook](runbooks/mini-ssh.md), and stay unconfirmed until tested on that hardware. Read them as one worked example, not as requirements.
+
+| Part | Applies to | Where |
+| :--- | :--- | :--- |
+| General design | Any macOS or Linux host | This file, [constraints](constraints.md), the [stack contract](adr/0007-stack-contract.md), the [instance model](adr/0020-instance-install-and-release-model.md), [platform support](adr/0019-platform-support-and-ci-matrix.md) |
+| Reference deployment | The owner's Mac mini | ADRs 0014 to 0017 and the SSH runbook |
 
 ## Layers
 
@@ -66,6 +75,10 @@ Containers on macOS run in a Linux VM and cannot use the GPU or USB devices. Loc
 | UPS | Planned | Clean shutdown of server and NAS on power loss | Unclean shutdown risk only |
 
 Rules: critical services never depend on monitoring ([observability](observability.md#decoupling-rule)) or on the Mac mini. A per-service dependency map is added when more than one real service exists.
+
+### Sizing a host for local AI
+
+Memory needed = weights (parameters times bits per weight, divided by 8) + KV cache for the chosen context + the operating system's share (4 to 6 GB on macOS) + 2 to 4 GB for a container VM where one runs + 10% headroom. Re-measure on the real host before relying on it. The reference host's worked numbers are in [ADR 0014](adr/0014-mac-mini-hardware.md).
 
 ## Network and trust zones
 
@@ -144,4 +157,4 @@ Phase names refer to the [roadmap](roadmap.md#phases).
 
 The decision register is in [project.md](project.md#decision-register); rationale is in [adr/](adr/).
 
-Changelog: 0.1 (2026-11-02): central dashboard phase P2.5 (PK2 reword A3); 0.1 (2026-11-02): identity wording says built, not planned (PK2 reword A2); 0.1 (2026-11-02): layer 5 lists the built stacks (PK2 reword A1); 0.1 (2026-11-02): `NEXAHOME_DATA_DIR` claim removed (PK2); 0.1 (2026-11-02): deploy flow pointer (ADR 0017); 0.1 (2026-11-02): remote access paragraph points at ADR 0016 for reboot behaviour; 0.1 (2026-11-02): remote access paragraph points at ADR 0015 and the SSH runbook; 0.1 (2026-10-26): Jetson row, per-hop table for P4; 0.1 (2026-10-21): identity bullet updated for P2.5; backup tool decided; 0.1 (2026-10-21): restore drill recorded; 0.1 (2026-10-21): backup model; 0.1 (2026-10-21): Layer 4 and 6 current state; 0.1 (2026-10-20): full planned-services capability table; rewritten; added failure domains, trust zones, backup and restore, identity, migration paths and a capability table; duplicated rules moved to constraints.
+Changelog: 0.1 (2026-11-04): general design versus reference deployment, host sizing rule moved here from ADR 0014 (DR2); 0.1 (2026-11-02): central dashboard phase P2.5 (PK2 reword A3); 0.1 (2026-11-02): identity wording says built, not planned (PK2 reword A2); 0.1 (2026-11-02): layer 5 lists the built stacks (PK2 reword A1); 0.1 (2026-11-02): `NEXAHOME_DATA_DIR` claim removed (PK2); 0.1 (2026-11-02): deploy flow pointer (ADR 0017); 0.1 (2026-11-02): remote access paragraph points at ADR 0016 for reboot behaviour; 0.1 (2026-11-02): remote access paragraph points at ADR 0015 and the SSH runbook; 0.1 (2026-10-26): Jetson row, per-hop table for P4; 0.1 (2026-10-21): identity bullet updated for P2.5; backup tool decided; 0.1 (2026-10-21): restore drill recorded; 0.1 (2026-10-21): backup model; 0.1 (2026-10-21): Layer 4 and 6 current state; 0.1 (2026-10-20): full planned-services capability table; rewritten; added failure domains, trust zones, backup and restore, identity, migration paths and a capability table; duplicated rules moved to constraints.
