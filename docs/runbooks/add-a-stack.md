@@ -1,8 +1,8 @@
 # Add a stack
 
-Version 0.1 · Last reviewed 2026-11-02
+Version 0.1 · Last reviewed 2026-11-04
 
-**Audience:** developers and contributors. **Admin rights needed:** no.
+**Audience:** developers and contributors with a clone or a fork. **Admin rights needed:** no. If you installed the package and have no clone, use [Make your own stack](own-stack.md).
 
 ```sh
 cp -R stacks/_template stacks/<name>   # then edit compose.yaml, .env.example, README.md
@@ -35,4 +35,4 @@ Check with `make smoke`: it lists any alias without a Caddyfile block or tile (o
 
 Rules: [Compose policy](../constraints.md#compose-policy). Contract: [ADR 0007](../adr/0007-stack-contract.md).
 
-Changelog: 0.1 (2026-11-02): version header and changelog added; five steps for a web app (the health target was hidden in step 4); Dependabot ecosystem note (PK2).
+Changelog: 0.1 (2026-11-04): audience line points runners to the own-stack runbook (Goal 3); 0.1 (2026-11-02): version header and changelog added; five steps for a web app (the health target was hidden in step 4); Dependabot ecosystem note (PK2).

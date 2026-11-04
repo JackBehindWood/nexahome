@@ -4,10 +4,10 @@ Newest first; each entry follows the template in the session-end skill and has a
 
 ## Pending owner actions (the one current list)
 
-Last replaced 2026-11-04 (end of the engine session). Entries end with a pointer here instead of their own list.
+Last replaced 2026-11-04 (end of the Goal 3 session). Entries end with a pointer here instead of their own list.
 
 **Decide**
-- Still open from DR2: register row 80 repeats row 81 (merge it or mark it historical); a runner guide and release notes after `v0.2.0`; the build for a runner's own stacks (`stacks.d/` or a Compose override, [ADR 0020](adr/0020-instance-install-and-release-model.md) and [0022](adr/0022-own-images-and-app-stacks.md)).
+- Still open from DR2: register row 80 repeats row 81 (merge it or mark it historical); release notes after `v0.2.0`; reword [ADR 0020](adr/0020-instance-install-and-release-model.md) line 23, [ADR 0022](adr/0022-own-images-and-app-stacks.md) line 46 and register row 98 to the built design (own stacks in `stacks/`, ownership by name; both ADRs are Proposed).
 - `feat/packaging` carries the DR2 and DR3 commits (not pushed). Push and a pull request into `dev` on your yes; delete the branch only after it is merged.
 - Other Proposed register rows (documentation conventions, repository layout, task runner, security baseline, roles, three Packaging rows); review ADRs 0014 to 0020, the SSH runbook and the packaging design. None promoted.
 - [ADR 0022](adr/0022-own-images-and-app-stacks.md) (own images and application stacks) is Proposed: your five answers are recorded in it; promote only on your explicit yes. The ADR 0007 amendment (profiles) and ADR 0020's open gap wait for that.
@@ -28,6 +28,16 @@ Last replaced 2026-11-04 (end of the engine session). Entries end with a pointer
 - Drill leftovers: Colima profile `drill` is stopped (`colima delete drill` frees its disk if you want it gone); the scratch copy is deleted. The Pocket ID self-restart is not diagnosed: the 45-minute watch was skipped at your request (0 restarts in the first 4 minutes only).
 - Dependabot parsing is shown for `portal`, `identity`, `gatus` and `pip`; not yet for `github-actions`, `hello`, `actual`, `backup`, `edge`, `_template`; the `dev` and `check` dependency groups are unproven until a Dependabot pull request appears after a push.
 - Audit rows left for PK7 or later: S-21, S-26, S-30 and package rows P-07, P-11, P-12, P-14, P-16, P-18 to P-22, P-25 to P-27 (local audit notes).
+
+## 2026-11-04: Goal 3 (first-run audit and your own stacks)
+
+**Done**
+- Requirements G1 to G11 and a 16-row first-run audit (local `.claude/tmp/goal3-requirements.md`, `goal3-audit.md`). Location decided with the owner: a runner's stack sits in `stacks/<name>`, ownership is by name (bundle or manifest); `stacks.d/` rejected because the backup job mounts `stacks/` only.
+- `nexahome stacks new NAME` and `stacks remove NAME`, an `owner` column and JSON key in `stacks` (`stacks/ownership.py`, `stacks/scaffold.py`); `check` names a missing Compose plugin and ends failures in `Next: edit <file>`; template texts fit a runner; `new` enables the stack in `nexahome.toml`.
+- `_template/README.md` now ships in the wheel and in instances (pyproject exclude, `bundle.walk`, one CI line; the owner approved the CI change).
+**Doc changes and why:** new `docs/runbooks/own-stack.md` (runner path); `add-a-stack.md` audience line; README command list and the "do not edit" sentence; docs index; `docs/codebase.md` layout row. ADR 0020 line 23, ADR 0022 line 46 and register row 98 still say `stacks.d/` or override: not edited, they wait for your yes.
+**Next:** the follow-up session (remaining audit rows, `tests/` split, a `stack_dir()` helper, a read-only look at `pyproject.toml`); `dev` into `main` on your yes. **Open:** `remove` asks y/N, not a typed name (`Context.ask` is yes/no); whether the hatch pattern `!stacks/_template/README.md` works (the CI wheel check decides).
+**Verified:** `make check` 0; 482 passed on 3.14.7; 479 of 480 on 3.13.3 in a scratch venv (the one needs an installed package); `new`, `check`, `env`, `remove` run in a scratch instance; `stacks` start-up unchanged within noise, `stacks new` median 62 ms. **Not verified:** the wheel build, a running engine, Linux, the mini, the cold read, a 7 ms rise in `check` (inside noise, not proven).
 
 ## 2026-11-04: engine drills (Gatus v5.38.0, Pocket ID v2.19.2, Dependabot runbook)
 

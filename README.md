@@ -33,7 +33,7 @@ nexahome env                              # creates each .env, generates secrets
 docker compose -f stacks/actual/compose.yaml up -d --wait
 ```
 
-The `docker compose` lines are a manual form of `make up` and `make down` (which need a clone) without its `.env` handling; a `nexahome up` will replace them. Backup, restore, smoke checks and deploy are also still Makefile targets, so they need a clone for now. The stacks in `~/nexahome/stacks` belong to the package: do not edit them. Your changes go in each stack's `.env` (a `compose.override.yaml` is read by the manual commands above only if you add `-f stacks/<name>/compose.override.yaml` after the first `-f`, because they name the file with `-f`; `nexahome check` reads it for you). Anything that edits the three files that list every named app (the edge `Caddyfile`, the portal `services.yaml`, the Gatus targets) means forking the repository, the second way in.
+The `docker compose` lines are a manual form of `make up` and `make down` (which need a clone) without its `.env` handling; a `nexahome up` will replace them. Backup, restore, smoke checks and deploy are also still Makefile targets, so they need a clone for now. The stacks that came in the package belong to it: do not edit them. Your own stacks sit beside them ([make your own stack](docs/runbooks/own-stack.md)). Your changes to a package stack go in its `.env` (a `compose.override.yaml` is read by the manual commands above only if you add `-f stacks/<name>/compose.override.yaml` after the first `-f`, because they name the file with `-f`; `nexahome check` reads it for you). Anything that edits the three files that list every named app (the edge `Caddyfile`, the portal `services.yaml`, the Gatus targets) means forking the repository, the second way in.
 
 ### Fork it, contribute, or run the full tooling (clone)
 
@@ -67,7 +67,8 @@ nexahome doctor             # diagnose this machine; every problem ends in one c
 nexahome env                # create each stack's .env and generate its secrets (add --dry-run to look first)
 nexahome init [DIR]         # make a new instance from the stacks inside the package (see Quick start)
 nexahome config             # show nexahome.toml; `config set stacks NAME...` chooses the stacks an instance runs
-nexahome stacks             # which stacks exist, which this host runs, whether they are running
+nexahome stacks             # which stacks exist, who owns them, which this host runs, whether they are running
+nexahome stacks new NAME    # make a stack of your own from the template; `stacks remove NAME` deletes it
 nexahome status             # health of the stacks and how recent the backup is
 nexahome check              # the Compose policy over the stacks
 nexahome update --available # is a newer release out? (there is none yet)
