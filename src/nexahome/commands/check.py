@@ -23,7 +23,7 @@ def register(subparsers: Subparsers) -> None:
 
 def run(args: argparse.Namespace, ctx: Context) -> int:
     from nexahome import platform as host_platform
-    from nexahome.errors import NexaHomeError
+    from nexahome.errors import NexaHomeError, editor_fix
     from nexahome.policy import compose
 
     root = ctx.cwd / args.stacks if args.stacks else (ctx.instance() or ctx.cwd) / "stacks"
@@ -53,5 +53,5 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         import shlex
 
         first = next(result for result in results if result.problems or result.error)
-        print(f"Next: ${{EDITOR:-vi}} {shlex.quote(str(first.compose))}", file=ctx.err)
+        print(f"Next: {editor_fix(shlex.quote(str(first.compose)))}", file=ctx.err)
     return ExitCode.FAILED if failures else ExitCode.OK

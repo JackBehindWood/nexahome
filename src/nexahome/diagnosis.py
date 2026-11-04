@@ -14,7 +14,7 @@ from nexahome import platform as host_platform
 from nexahome.context import Context
 from nexahome.defaults import LOW_DISK_BYTES
 from nexahome.docker.probes import probe_compose, probe_docker_cli, probe_engine
-from nexahome.errors import NexaHomeError
+from nexahome.errors import NexaHomeError, editor_fix
 from nexahome.report import Check, Status
 from nexahome.stacks import envfile
 
@@ -79,7 +79,7 @@ def probe_env(ctx: Context, prior: Mapping[str, Check]) -> Check | None:
         return Check("env", Status.OK, "no .env value is still CHANGE_ME")
     names = ", ".join(f"{path.parent.name}/{key}" for path, key in found)
     return Check(
-        "env", Status.WARN, f"{len(found)} value(s) still CHANGE_ME: {names}", f"${{EDITOR:-vi}} {ctx.display(found[0][0])}"
+        "env", Status.WARN, f"{len(found)} value(s) still CHANGE_ME: {names}", editor_fix(ctx.display(found[0][0]))
     )
 
 

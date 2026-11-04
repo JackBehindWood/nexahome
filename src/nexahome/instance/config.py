@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
 from nexahome import __version__
-from nexahome.errors import ExitCode, NexaHomeError
+from nexahome.errors import ExitCode, NexaHomeError, editor_fix
 from nexahome.defaults import CONFIG_MAX_BYTES, INSTANCE_SCHEMA, PUBLIC_FILE_MODE
 from nexahome.instance import CONFIG_NAME
 
@@ -43,12 +43,6 @@ SETTABLE = ("stacks",)  # schema and created_by describe the file; only `nexahom
 STACK_NAME = re.compile(r"[a-z0-9][a-z0-9_-]*")  # also keeps a name from being a path
 
 
-def _editor_fix(path: Path) -> str:
-    import shlex
-
-    return f"${{EDITOR:-vi}} {shlex.quote(str(path))}"
-
-
 def validate_stacks(directory: Path, names: Sequence[object], fix: str, exit_code: ExitCode = ExitCode.NOT_READY) -> tuple[str, ...]:
     """The names as a tuple: at least one, each a stack under directory/stacks, no repeats. `fix` is the command
     named when one is wrong."""
@@ -76,7 +70,9 @@ def read(directory: Path) -> Settings | None:
             raw = handle.read(CONFIG_MAX_BYTES + 1)
     except FileNotFoundError:
         return None
-    edit = _editor_fix(path)
+    import shlex  # only this read quotes the path, for the fix line
+
+    edit = editor_fix(shlex.quote(str(path)))
     if len(raw) > CONFIG_MAX_BYTES:
         raise NexaHomeError(f"{CONFIG_NAME} is larger than {CONFIG_MAX_BYTES} bytes", edit)
     try:
