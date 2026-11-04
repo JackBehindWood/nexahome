@@ -6,6 +6,7 @@ Pull requests are welcome. This is a solo hobby project with no support promise,
 
 - Open an issue first for anything larger than a fix, so we agree on scope. Small fixes can go straight to a pull request.
 - Read the [rules](docs/constraints.md) (Compose policy, tooling, security) and the [documentation conventions](docs/README.md#conventions).
+- Everyone taking part follows the [code of conduct](CODE_OF_CONDUCT.md).
 - Nothing personal or secret in any commit: no names, hostnames, IP addresses, emails, home paths or credentials.
 
 ## Developer setup

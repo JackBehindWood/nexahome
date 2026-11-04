@@ -15,7 +15,7 @@ HEADERED = sorted([*DOCS.glob("*.md"), *(DOCS / "runbooks").glob("*.md")])
 HEADERED = [p for p in HEADERED if p.name != "session-log.md"]
 LABELS = re.compile(r"\b(?:Confirmed|Proposed)\b")  # "Open" is also an ordinary verb, so it is not checked
 LABEL_HOMES = {"project.md", "session-log.md", "README.md"}  # README.md states the rule itself
-ROOT_DOCS = [REPO / name for name in ("README.md", "CONTRIBUTING.md", "SECURITY.md")]  # CLAUDE.md is local only
+ROOT_DOCS = [REPO / name for name in ("README.md", "CONTRIBUTING.md", "SECURITY.md", "CODE_OF_CONDUCT.md")]  # CLAUDE.md is local only
 MARKDOWN = sorted([*ROOT_DOCS, *DOCS.rglob("*.md"), *(REPO / "stacks").glob("*/README.md")])
 # ADRs and the log record what was planned, rejected or cut, so they may name commands that do not exist.
 CURRENT = [p for p in MARKDOWN if p.parent != DOCS / "adr" and p.name != "session-log.md"]
