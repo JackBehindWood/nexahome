@@ -103,3 +103,27 @@ def test_rollback_cleans_up_on_ctrl_c_and_does_not_swallow_it(tmp_path: Path) ->
         files.create_exclusive(tmp_path / "f", b"x", 0o644, created)
         raise KeyboardInterrupt
     assert not (tmp_path / "f").exists()
+
+
+# --- durability: a power cut must not leave an empty or missing file ----------------------------------------
+def test_replace_atomically_flushes_the_new_file_before_the_rename_and_the_folder_after(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    events: list[str] = []
+    real_fsync, real_replace = os.fsync, os.replace
+    monkeypatch.setattr(os, "fsync", lambda fd: (events.append("fsync"), real_fsync(fd))[1])
+    monkeypatch.setattr(os, "replace", lambda a, b: (events.append("replace"), real_replace(a, b))[1])
+    files.replace_atomically(tmp_path / "f", "new", 0o600)
+    assert events == ["fsync", "replace", "fsync"]  # data on disk, then the name, then the name on disk
+
+
+def test_a_folder_that_cannot_be_flushed_does_not_fail_a_write_that_already_happened(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    real_fsync, calls = os.fsync, []
+
+    def fsync(fd: int) -> None:
+        calls.append(fd)
+        if len(calls) == 2:  # the folder: some filesystems refuse it
+            raise OSError(22, "Invalid argument")
+        real_fsync(fd)
+
+    monkeypatch.setattr(os, "fsync", fsync)
+    files.replace_atomically(tmp_path / "f", "new", 0o600)
+    assert (tmp_path / "f").read_text() == "new" and [p.name for p in tmp_path.iterdir()] == ["f"]

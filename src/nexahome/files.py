@@ -42,18 +42,30 @@ def create_exclusive(path: Path, data: bytes, mode: int, created: list[Path] | N
 
 
 def replace_atomically(path: Path, text: str, mode: int) -> None:
-    """Replace `path` with `text`, all or nothing: the text is written to a file beside it and renamed over it."""
+    """Replace `path` with `text`, all or nothing: the text is written to a file beside it, flushed to disk, renamed
+    over it, and the folder is flushed too, so a power cut leaves the old file or the new one, never an empty one
+    (ADR 0016). `os.fsync` is the portable call; on macOS the drive may still hold the data in its own cache."""
     import tempfile  # only a run that rewrites a file pays for it
 
     descriptor, temporary = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name.lstrip('.')}.")
     try:
         with os.fdopen(descriptor, "w") as handle:
             handle.write(text)
+            handle.flush()
+            os.fsync(handle.fileno())
         os.chmod(temporary, mode)
         os.replace(temporary, path)
     except BaseException:
         Path(temporary).unlink(missing_ok=True)
         raise
+    try:  # the name is already in place; a filesystem that refuses to flush a folder must not fail the write
+        folder = os.open(path.parent, os.O_RDONLY)
+        try:
+            os.fsync(folder)
+        finally:
+            os.close(folder)
+    except OSError:
+        pass
 
 
 def remove_created(created: list[Path]) -> None:

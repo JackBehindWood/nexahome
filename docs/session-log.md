@@ -27,7 +27,7 @@ Last replaced 2026-11-04 (end of the Goal 3 follow-up). Entries end with a point
 **Open work**
 - Drill leftovers: Colima profile `drill` is stopped (`colima delete drill` frees its disk if you want it gone); the scratch copy is deleted. The Pocket ID self-restart is not diagnosed: the 45-minute watch was skipped at your request (0 restarts in the first 4 minutes only).
 - Dependabot parsing is shown for `portal`, `identity`, `gatus` and `pip`; not yet for `github-actions`, `hello`, `actual`, `backup`, `edge`, `_template`; the `dev` and `check` dependency groups are unproven until a Dependabot pull request appears after a push.
-- Decide at B2 or with the first tag: `fsync` in `files.replace_atomically` (not done; a behaviour change, relevant to power cuts, ADR 0016); `[project.urls] Latest release` in `pyproject.toml` (wheels have no update feed until it exists).
+- Decide with the first tag: `[project.urls] Latest release` in `pyproject.toml` (wheels have no update feed until it exists). macOS `F_FULLFSYNC` is not used (`fcntl` is POSIX-only and a test forbids it); `files.replace_atomically` uses `os.fsync`.
 - Audit rows left for PK7 or later: S-21, S-26, S-30 and package rows P-07, P-11, P-12, P-14, P-16, P-18 to P-22, P-25 to P-27 (local audit notes).
 
 ## 2026-11-04: Goal 3 follow-up (audit rows, shared code, tests mirror, codebase docs)
@@ -38,7 +38,7 @@ Last replaced 2026-11-04 (end of the Goal 3 follow-up). Entries end with a point
 - `tests/` split by command and now mirrors the package folders; `out`, `err`, `make_instance` and the real-`init` fixture live in `conftest.py`; 278 test names equal before and after.
 - Wheel pattern `!stacks/_template/README.md` proven in a scratch venv (hatchling 1.32.4, deleted after): the template's README is the only one shipped.
 **Doc changes and why:** `docs/codebase.md` (module map gains `defaults` and `files`, reuse owners, tests layout; a new test keeps the map complete); `own-stack.md` (A-04). At your yes: ADR 0021 file paths, ADR 0020 line 23, ADR 0022 line 46 and register row 98 reworded to the built design (labels unchanged).
-**Next:** push and a pull request into `dev` on your yes; PK7 after B2. **Open:** `fsync` and `[project.urls]` (Pending list).
+**Next:** push and a pull request into `dev` on your yes; PK7 after B2. **Open:** `[project.urls]` (Pending list). Added later the same day at your yes: `files.replace_atomically` flushes the file before the rename and the folder after (ADR 0016), 0.28 ms per write, two tests.
 **Verified:** `make check` (hooks and every stack) passed; 512 passed on 3.14.7, 511 of 512 on 3.13.3 (the one needs an installed package), reverse file order passes; start-up unchanged within noise (`--version` 28.1 ms before and after, 3.14). **Not verified:** CI (not pushed), Linux, the mini, an engine, non-UTF-8 locales (env files now encode as UTF-8), one tool stall during a test run (the tests took 6.5 s).
 
 ## 2026-11-04: Goal 3 (first-run audit and your own stacks)

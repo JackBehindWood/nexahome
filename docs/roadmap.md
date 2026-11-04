@@ -9,7 +9,7 @@ What gets built and in what order. Hardware has no dates; phases are ordered by 
 | When | Work |
 | :--- | :--- |
 | Now | Documentation review (DR1 to DR3), the engine drills, the first Goal 3 build and its follow-up (audit rows, shared code, `tests/` mirroring the packages, codebase docs) are done on `feat/packaging` (not pushed). The next work is a push and a pull request into `dev` on the owner's yes. |
-| Next | (1) `dev` into `main` by pull request on the owner's yes, then the first tag (with `[project.urls] Latest release`). PK7 to PK10 and P4 Track B wait for the Mac mini. Also open: the Pocket ID self-restart, Dependabot pull requests 25, 28 to 30, the `fsync` decision (B2). |
+| Next | (1) `dev` into `main` by pull request on the owner's yes, then the first tag (with `[project.urls] Latest release`). PK7 to PK10 and P4 Track B wait for the Mac mini. Also open: the Pocket ID self-restart, Dependabot pull requests 25, 28 to 30. |
 | Later | Track B of P4 when the mini arrives, then NAS and UPS, network, home automation, personal applications and media. Outside P4: J1, a spike on the owned Jetson Orin Nano (not set up yet) |
 
 Pending owner actions are tracked in the [session log](session-log.md), not here.
