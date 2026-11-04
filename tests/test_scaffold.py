@@ -14,28 +14,13 @@ from nexahome.instance import bundle
 from nexahome.runner import RunResult
 from nexahome.stacks import ownership
 
-from conftest import REPO, FakeRunner, MakeCheckout, MakeContext, has_compose
 from nexahome.runner import SubprocessRunner
 
-
-def out(ctx: object) -> str:
-    return ctx.out.getvalue()  # type: ignore[attr-defined]
-
-
-def err(ctx: object) -> str:
-    return ctx.err.getvalue()  # type: ignore[attr-defined]
-
-
-@pytest.fixture
-def instance(make_context: MakeContext, tmp_path: Path) -> Path:
-    """A real instance made by `nexahome init` from the bundled stacks."""
-    target = tmp_path / "made"
-    assert cli.main(["init", str(target)], make_context(cwd=tmp_path, runner=FakeRunner())) == ExitCode.OK
-    return target
+from conftest import REPO, FakeRunner, MakeCheckout, MakeContext, err, has_compose, ps_running_argv, out
 
 
 def running(instance: Path, name: str, state: str) -> dict[tuple[str, ...], RunResult]:
-    argv = ("docker", "compose", "-f", str(instance / "stacks" / name / "compose.yaml"), "ps", "--status", "running", "-q")
+    argv = ps_running_argv(instance / "stacks" / name / "compose.yaml")
     return {argv: RunResult(0, "abc\n" if state == "running" else "")}
 
 

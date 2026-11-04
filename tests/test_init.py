@@ -15,15 +15,7 @@ from nexahome.errors import ExitCode
 from nexahome.instance import REINSTALL, bundle, create, manifest
 from nexahome.runner import SubprocessRunner
 
-from conftest import REPO, FakeRunner, MakeCheckout, MakeContext, has_compose
-
-
-def out(ctx: object) -> str:
-    return ctx.out.getvalue()  # type: ignore[attr-defined]
-
-
-def err(ctx: object) -> str:
-    return ctx.err.getvalue()  # type: ignore[attr-defined]
+from conftest import REPO, FakeRunner, MakeCheckout, MakeContext, err, has_compose, out
 
 
 def listing(root: Path) -> list[str]:
