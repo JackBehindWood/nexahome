@@ -8,6 +8,7 @@ import pytest
 
 from nexahome import cli
 from nexahome.errors import ExitCode
+from nexahome.instance import config
 from nexahome.runner import RunResult, SubprocessRunner
 
 from conftest import DOCKER_HEALTHY, REPO, FakeRunner, MakeCheckout, MakeContext, MakeHost, has_compose
@@ -227,6 +228,15 @@ def test_status_prints_compose_ps_and_the_backup_summary(make_checkout: MakeChec
     assert cli.main(["status"], ctx) == ExitCode.OK
     assert out(ctx).splitlines()[:2] == ["NAME  STATUS", "edge  healthy"]
     assert f"backup: no repository at {checkout / 'data' / 'backup'} (in a git clone: make backup-init)" in out(ctx)
+
+
+def test_status_in_an_instance_does_not_send_the_user_to_make(make_checkout: MakeCheckout, make_context: MakeContext) -> None:
+    root = make_checkout({"hello": None})
+    (root / "Makefile").unlink()  # what `nexahome init` leaves: nexahome.toml, no Makefile
+    (root / "nexahome.toml").write_text(config.render(("hello",)))
+    ctx = make_context(cwd=root, runner=FakeRunner(DOCKER_HEALTHY))
+    assert cli.main(["status"], ctx) == ExitCode.OK
+    assert "make backup" not in out(ctx) and "not available in an instance yet" in out(ctx)
 
 
 def test_status_without_an_engine_says_how_to_start_it(make_checkout: MakeCheckout, make_context: MakeContext, make_host: MakeHost) -> None:

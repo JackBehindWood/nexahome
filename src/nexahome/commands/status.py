@@ -36,5 +36,5 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
     else:
         print(f"no container runtime running; start it with: {host_platform.engine_start_fix(ctx.host)}", file=ctx.out)
     directory = backup_info.repository_dir(instance, ctx.env)
-    print("\n".join(backup_info.summary(directory, ctx.now())), file=ctx.out)
+    print("\n".join(backup_info.summary(directory, ctx.now(), (instance / "Makefile").is_file())), file=ctx.out)
     return ExitCode.OK
