@@ -34,7 +34,7 @@ path = "src/nexahome/__init__.py"
 # honour .gitignore and exclude, so a local .env or data/ directory cannot reach a wheel. Stack READMEs
 # stay out because their relative links into docs/ would break; the template's has none and `nexahome stacks new`
 # copies it, so it ships (the CI wheel assertion checks exactly that one).
-include = ["src/nexahome", "stacks"]
+include = ["src/nexahome", "/stacks"]  # anchored: a bare "stacks" also matches tests/stacks/
 exclude = ["stacks/**/README.md", "!stacks/_template/README.md"]
 
 [tool.hatch.build.targets.wheel.sources]
