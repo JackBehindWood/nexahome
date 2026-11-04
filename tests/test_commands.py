@@ -61,6 +61,33 @@ def test_check_without_docker_ends_in_an_install_command(make_checkout: MakeChec
     assert err(ctx) == "FAIL  docker CLI not found; cannot validate stacks\nNext: brew install colima docker docker-compose\n"
 
 
+def test_check_without_the_compose_plugin_ends_in_the_install_command(
+    make_checkout: MakeCheckout, make_context: MakeContext, make_host: MakeHost
+) -> None:
+    from nexahome import platform as host_platform
+
+    checkout = make_checkout()
+    host = make_host(system="macos")
+    runner = FakeRunner(
+        {
+            config_argv(checkout, "demo"): RunResult(1, stderr="unknown shorthand flag: 'f' in -f"),  # A-01: docker without the plugin
+            ("docker", "compose", "version"): RunResult(1, stderr="docker: 'compose' is not a docker command"),
+        }
+    )
+    ctx = make_context(host=host, cwd=checkout, runner=runner)
+    assert cli.main(["check"], ctx) == ExitCode.NOT_READY
+    assert err(ctx) == f"FAIL  the Docker Compose plugin is not installed; cannot validate stacks\nNext: {host_platform.compose_install_fix(host)}\n"
+    assert "unknown shorthand" not in err(ctx)
+
+
+def test_a_policy_failure_ends_with_the_file_to_edit(make_checkout: MakeCheckout, make_context: MakeContext) -> None:
+    bad = json.dumps({"name": "nexahome-demo", "services": {"app": {**json.loads(GOOD_CONFIG)["services"]["app"], "privileged": True}}})
+    checkout = make_checkout()
+    ctx = make_context(cwd=checkout, runner=FakeRunner({config_argv(checkout, "demo"): RunResult(0, bad)}))
+    assert cli.main(["check"], ctx) == ExitCode.FAILED
+    assert err(ctx) == "Next: ${EDITOR:-vi} stacks/demo/compose.yaml\n"  # A-08
+
+
 def test_check_with_no_stacks_has_nothing_to_check(make_context: MakeContext, tmp_path: Path) -> None:
     ctx = make_context(cwd=tmp_path / "empty")  # no stacks/ here
     assert cli.main(["check"], ctx) == ExitCode.NOT_READY
@@ -178,10 +205,10 @@ def test_stacks_lists_enabled_and_state(make_checkout: MakeCheckout, make_contex
     ctx = make_context(cwd=checkout, runner=runner)
     assert cli.main(["stacks"], ctx) == ExitCode.OK
     assert out(ctx).splitlines() == [
-        "stack   enabled  state",
-        "actual  yes      stopped",
-        "backup  no       unknown",
-        "edge    yes      running",
+        "stack   enabled  owner    state",
+        "actual  yes      package  stopped",
+        "backup  no       package  unknown",
+        "edge    yes      package  running",
     ]
 
 
@@ -189,7 +216,7 @@ def test_stacks_json(make_checkout: MakeCheckout, make_context: MakeContext) -> 
     checkout = make_checkout({"edge": None})
     ctx = make_context(cwd=checkout, runner=FakeRunner({ps_q(checkout, "edge"): RunResult(0, "id\n")}))
     assert cli.main(["stacks", "--json"], ctx) == ExitCode.OK
-    assert json.loads(out(ctx)) == {"schema": 1, "stacks": [{"name": "edge", "enabled": True, "state": "running"}]}
+    assert json.loads(out(ctx)) == {"schema": 1, "stacks": [{"name": "edge", "enabled": True, "owner": "package", "state": "running"}]}
 
 
 # --- status ------------------------------------------------------------------------------------------------

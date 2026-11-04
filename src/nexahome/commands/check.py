@@ -36,6 +36,12 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         raise NexaHomeError(f"no stacks found in {ctx.display(root)}; nothing to check", f"ls {ctx.display(root)}" if args.stacks else "nexahome init")
     if any(result.docker_missing for result in results):
         raise NexaHomeError("docker CLI not found; cannot validate stacks", host_platform.docker_install_fix(ctx.host))
+    if any(result.error and not result.docker_missing for result in results):  # A-01: say what is missing, not Docker's usage text
+        from nexahome.docker import compose
+
+        plugin = compose.plugin_version(ctx)
+        if not plugin.ok and not plugin.missing:
+            raise NexaHomeError("the Docker Compose plugin is not installed; cannot validate stacks", host_platform.compose_install_fix(ctx.host))
     failures = 0
     for result in results:
         for line in result.lines():
@@ -43,4 +49,9 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         if result.error:
             print(result.error, file=ctx.err)
         failures += len(result.problems) + (result.error is not None)
+    if failures:  # A-08: every failure ends in one command
+        import shlex
+
+        first = next(result for result in results if result.problems or result.error)
+        print(f"Next: ${{EDITOR:-vi}} {shlex.quote(str(first.compose))}", file=ctx.err)
     return ExitCode.FAILED if failures else ExitCode.OK

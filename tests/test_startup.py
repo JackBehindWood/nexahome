@@ -27,7 +27,7 @@ def others(name: str) -> set[str]:
 # what each call may NOT import (everything else it may)
 BUDGET: dict[str, tuple[list[str], set[str]]] = {
     "--version": (["--version"], HEAVY | {"argparse", "nexahome.context", "nexahome.runner", "nexahome.commands.doctor", "nexahome.diagnosis", "nexahome.defaults"}),
-    "--help": (["--help"], HEAVY - ARGPARSE_COST | {"nexahome.context", "nexahome.runner", "nexahome.diagnosis", "nexahome.release.updater", "nexahome.stacks.envfile", "nexahome.policy"}),
+    "--help": (["--help"], HEAVY - ARGPARSE_COST | {"nexahome.context", "nexahome.runner", "nexahome.diagnosis", "nexahome.release.updater", "nexahome.stacks.envfile", "nexahome.stacks.scaffold", "nexahome.stacks.ownership", "nexahome.policy"}),
     "doctor --help": (["doctor", "--help"], HEAVY - ARGPARSE_COST | {"nexahome.diagnosis", "nexahome.commands.update", "nexahome.commands.env", "nexahome.release.updater"}),
     "doctor": (["doctor"], HEAVY - ARGPARSE_COST - {"subprocess", "concurrent.futures"} | {"nexahome.release.updater", "nexahome.commands.update", "nexahome.commands.env"}),
     "init --help": (["init", "--help"], HEAVY - ARGPARSE_COST | {"nexahome.instance.create", "nexahome.instance.bundle", "nexahome.docker", "nexahome.commands.doctor"}),
@@ -35,7 +35,8 @@ BUDGET: dict[str, tuple[list[str], set[str]]] = {
     "config": (["config"], HEAVY - ARGPARSE_COST - RUNNER | others("config")),
     "--home DIR config": (["--home", "x", "config"], HEAVY - ARGPARSE_COST - RUNNER | others("config")),  # P-05: the option does not load every command
     "--home=DIR config": (["--home=x", "config"], HEAVY - ARGPARSE_COST - RUNNER | others("config")),
-    "stacks": (["stacks"], HEAVY - ARGPARSE_COST - RUNNER | others("stacks")),
+    "stacks": (["stacks"], HEAVY - ARGPARSE_COST - RUNNER | others("stacks") | {"nexahome.stacks.scaffold"}),  # the list never loads the writer
+    "stacks new": (["stacks", "new", "x"], HEAVY - ARGPARSE_COST - RUNNER | others("stacks")),
     "status": (["status"], HEAVY - ARGPARSE_COST - RUNNER | others("status")),
     "check": (["check"], HEAVY - ARGPARSE_COST - RUNNER - {"json", "shlex"} | others("check")),
     "env": (["env"], HEAVY - ARGPARSE_COST - RUNNER | others("env")),

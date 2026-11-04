@@ -207,9 +207,10 @@ jobs:
           stray = [n for n in names if not n.startswith(("nexahome/", "nexahome-"))]
           assert not stray, f"files outside the package: {stray}"
           # PK6-5: every tracked file under stacks/ ships (compose files, .env.example, Caddyfile, www/, config/,
-          # Dockerfile) except the READMEs; nothing else (no .env, data directory or README) comes along.
+          # Dockerfile) except the READMEs but the template's (`nexahome stacks new` copies it); nothing else (no .env, data
+          # directory or other README) comes along.
           tracked = subprocess.check_output(["git", "ls-files", "stacks"], text=True).split()
-          expected = {"nexahome/_stacks/" + p.removeprefix("stacks/") for p in tracked if not p.endswith("README.md")}
+          expected = {"nexahome/_stacks/" + p.removeprefix("stacks/") for p in tracked if not p.endswith("README.md") or p == "stacks/_template/README.md"}
           shipped = {n for n in names if n.startswith("nexahome/_stacks/")}
           assert shipped == expected, f"missing: {sorted(expected - shipped)}; unexpected: {sorted(shipped - expected)}"
           EOF

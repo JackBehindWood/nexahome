@@ -52,7 +52,7 @@ def test_init_copies_what_the_wheel_ships_and_nothing_else(make_context: MakeCon
     _, files = bundle.walk(bundle.location())  # type: ignore[arg-type]
     expected = {f"stacks/{name}" for name in files} | {"nexahome.toml", ".nexahome/manifest.json"}
     assert {p.relative_to(root).as_posix() for p in root.rglob("*") if p.is_file()} == expected
-    assert not [p for p in root.rglob("*") if p.name == ".env" or p.name == "README.md" or p.name == "data"]
+    assert not [p for p in root.rglob("*") if p.name == ".env" or p.name == "data" or (p.name == "README.md" and p.parent.name != "_template")]
     assert "Next: cd " in out(ctx) and "nexahome doctor" in out(ctx)
 
 
@@ -122,7 +122,7 @@ def test_init_refuses_and_writes_nothing(make_context: MakeContext, make_checkou
 def test_a_failed_write_removes_only_what_this_run_made(monkeypatch: pytest.MonkeyPatch, make_context: MakeContext, tmp_path: Path) -> None:
     root = tmp_path / "made"
     root.mkdir()  # exists and empty: init may fill it, and must leave it standing
-    real, calls = create._write, []
+    real, calls = create.write_new, []
 
     def failing(path: Path, data: bytes, created: list[Path]) -> None:
         calls.append(path)
@@ -130,7 +130,7 @@ def test_a_failed_write_removes_only_what_this_run_made(monkeypatch: pytest.Monk
             raise OSError(28, "No space left on device")
         real(path, data, created)
 
-    monkeypatch.setattr(create, "_write", failing)
+    monkeypatch.setattr(create, "write_new", failing)
     code, ctx = init(make_context, root)
     assert code == ExitCode.NOT_READY and "No space left" in err(ctx) and f"Next: nexahome init {root}" in err(ctx)
     assert root.is_dir() and listing(root) == []
@@ -140,7 +140,7 @@ def test_a_failed_write_removes_a_folder_it_created(monkeypatch: pytest.MonkeyPa
     def failing(path: Path, data: bytes, created: list[Path]) -> None:
         raise OSError(13, "Permission denied")
 
-    monkeypatch.setattr(create, "_write", failing)
+    monkeypatch.setattr(create, "write_new", failing)
     assert init(make_context, tmp_path / "x" / "made")[0] == ExitCode.NOT_READY
     assert not (tmp_path / "x").exists()
 

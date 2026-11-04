@@ -32,9 +32,10 @@ path = "src/nexahome/__init__.py"
 [tool.hatch.build.targets.wheel]
 # The stacks ship as package data (ADR 0020). Plain include and sources, not force-include: only these
 # honour .gitignore and exclude, so a local .env or data/ directory cannot reach a wheel. Stack READMEs
-# stay out because their relative links into docs/ would break.
+# stay out because their relative links into docs/ would break; the template's has none and `nexahome stacks new`
+# copies it, so it ships (the CI wheel assertion checks exactly that one).
 include = ["src/nexahome", "stacks"]
-exclude = ["stacks/**/README.md"]
+exclude = ["stacks/**/README.md", "!stacks/_template/README.md"]
 
 [tool.hatch.build.targets.wheel.sources]
 "src" = ""

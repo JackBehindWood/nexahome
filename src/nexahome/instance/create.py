@@ -47,7 +47,7 @@ def refuse_unless_new(path: Path) -> None:
         raise NexaHomeError(f"{path} is not empty; init never overwrites", "nexahome init ~/nexahome-new")
 
 
-def _make_directory(path: Path, created: list[Path]) -> None:
+def make_directory(path: Path, created: list[Path]) -> None:
     """Create `path` and any missing parents, recording each one so a failure can remove them."""
     missing: list[Path] = []
     for folder in (path, *path.parents):
@@ -60,7 +60,7 @@ def _make_directory(path: Path, created: list[Path]) -> None:
         os.chmod(folder, PUBLIC_DIR_MODE)
 
 
-def _write(path: Path, data: bytes, created: list[Path]) -> None:
+def write_new(path: Path, data: bytes, created: list[Path]) -> None:
     descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, PUBLIC_FILE_MODE)
     created.append(path)
     with os.fdopen(descriptor, "wb") as handle:
@@ -68,7 +68,7 @@ def _write(path: Path, data: bytes, created: list[Path]) -> None:
     os.chmod(path, PUBLIC_FILE_MODE)
 
 
-def _remove(created: list[Path]) -> None:
+def remove_created(created: list[Path]) -> None:
     for path in reversed(created):
         try:
             path.unlink() if path.is_file() else path.rmdir()
@@ -88,22 +88,22 @@ def create(root: Path, source: Path, version: str) -> Created:
     created: list[Path] = []
     hashes: dict[str, str] = {}
     try:
-        _make_directory(root / "stacks", created)
+        make_directory(root / "stacks", created)
         for name in directories:
-            _make_directory(root / "stacks" / name, created)
+            make_directory(root / "stacks" / name, created)
         for name in files:
             if (source / name).stat().st_size > STACK_FILE_MAX_BYTES:
                 raise NexaHomeError(f"{name} is larger than {STACK_FILE_MAX_BYTES} bytes", REINSTALL)
             data = (source / name).read_bytes()
-            _write(root / "stacks" / name, data, created)
+            write_new(root / "stacks" / name, data, created)
             hashes[f"stacks/{name}"] = hashlib.sha256(data).hexdigest()
-        _write(root / CONFIG_NAME, config.render(DEFAULT_STACKS).encode(), created)
-        _make_directory(root / ".nexahome", created)
-        _write(root / manifest.PATH, manifest.render(version, hashes).encode(), created)
+        write_new(root / CONFIG_NAME, config.render(DEFAULT_STACKS).encode(), created)
+        make_directory(root / ".nexahome", created)
+        write_new(root / manifest.PATH, manifest.render(version, hashes).encode(), created)
     except OSError as error:
-        _remove(created)
+        remove_created(created)
         raise NexaHomeError(f"init stopped and removed what it had made: {error}", f"nexahome init {root}") from error
     except BaseException:
-        _remove(created)
+        remove_created(created)
         raise
     return Created(root, stacks, DEFAULT_STACKS, len(files))
