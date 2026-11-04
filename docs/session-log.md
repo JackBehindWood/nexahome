@@ -8,7 +8,7 @@ Last replaced 2026-11-04 (end of the Goal 3 follow-up). Entries end with a point
 
 **Decide**
 - Still open from DR2: register row 80 repeats row 81 (merge it or mark it historical); release notes after `v0.2.0`.
-- `feat/packaging` is on `origin`; its DR2, DR3, Goal 3 and Goal 3 follow-up commits are not pushed. Push and a pull request into `dev` on your yes (CI has not yet seen the wheel pattern, which a local build proved); delete the branch only after it is merged.
+- `feat/packaging` is on `origin`; its DR2, DR3, Goal 3 and Goal 3 follow-up commits are not pushed. Push and a pull request into `dev` on your yes (pull request 32 is open and green on Linux amd64); delete the branch only after it is merged.
 - Other Proposed register rows (documentation conventions, repository layout, task runner, security baseline, roles, three Packaging rows); review ADRs 0014 to 0020, the SSH runbook and the packaging design. None promoted.
 - [ADR 0022](adr/0022-own-images-and-app-stacks.md) (own images and application stacks) is Proposed: your five answers are recorded in it; promote only on your explicit yes. The ADR 0007 amendment (profiles) and ADR 0020's open gap wait for that.
 - GitHub: Dependabot alerts and security updates are disabled for the repository (Settings, Code security); the account setting "Block command line pushes that expose my email"; optional SSH-signed commits.
@@ -36,10 +36,10 @@ Last replaced 2026-11-04 (end of the Goal 3 follow-up). Entries end with a point
 - Audit rows A-02, A-03, A-06, A-07, A-11, each with a test that failed first; A-04 as a runbook sentence; `check` prints its `Next:` through `ctx.display` (no output change: the path was already relative).
 - Shared code, behaviour unchanged: `errors.editor_fix`; `nexahome/files.py` (`create_exclusive`, `replace_atomically`, `make_directory`, `remove_created`, `Rollback`); `instance.home` (`stacks_dir`, `stack_dir`, `has_makefile`, `has_settings`).
 - `tests/` split by command and now mirrors the package folders; `out`, `err`, `make_instance` and the real-`init` fixture live in `conftest.py`; 278 test names equal before and after.
-- Wheel pattern `!stacks/_template/README.md` proven in a scratch venv (hatchling 1.32.4, deleted after): the template's README is the only one shipped.
+- Pushed and opened pull request 32 into `dev` at your yes. Its first CI run found two real faults, both fixed: the bare `stacks` wheel include also matched `tests/stacks/`, and the round-trip step still forbade the template README. Green after (Linux amd64, 3.13 and 3.14, `gate` pass).
 **Doc changes and why:** `docs/codebase.md` (module map gains `defaults` and `files`, reuse owners, tests layout; a new test keeps the map complete); `own-stack.md` (A-04). At your yes: ADR 0021 file paths, ADR 0020 line 23, ADR 0022 line 46 and register row 98 reworded to the built design (labels unchanged).
 **Next:** push and a pull request into `dev` on your yes; PK7 after B2. **Open:** `[project.urls]` (Pending list). Added later the same day at your yes: `files.replace_atomically` flushes the file before the rename and the folder after (ADR 0016), 0.28 ms per write, two tests.
-**Verified:** `make check` (hooks and every stack) passed; 512 passed on 3.14.7, 511 of 512 on 3.13.3 (the one needs an installed package), reverse file order passes; start-up unchanged within noise (`--version` 28.1 ms before and after, 3.14). **Not verified:** CI (not pushed), Linux, the mini, an engine, non-UTF-8 locales (env files now encode as UTF-8), one tool stall during a test run (the tests took 6.5 s).
+**Verified:** `make check` (hooks and every stack) passed; 512 passed on 3.14.7, 511 of 512 on 3.13.3 (the one needs an installed package), reverse file order passes; start-up unchanged within noise (`--version` 28.1 ms before and after, 3.14). **Not verified:** CI on macOS and arm64 (skipped on a pull request into `dev`), the mini, an engine, non-UTF-8 locales (env files now encode as UTF-8), one tool stall during a test run (the tests took 6.5 s).
 
 ## 2026-11-04: Goal 3 (first-run audit and your own stacks)
 
