@@ -11,7 +11,8 @@ import os
 from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
-from nexahome.defaults import DEFAULT_STACKS, ENV_HOME, PUBLIC_DIR_MODE, PUBLIC_FILE_MODE, STACK_FILE_MAX_BYTES
+from nexahome import files
+from nexahome.defaults import DEFAULT_STACKS, ENV_HOME, PUBLIC_FILE_MODE, STACK_FILE_MAX_BYTES
 from nexahome.errors import NexaHomeError
 from nexahome.instance import CONFIG_NAME, REINSTALL, bundle, config, home, manifest
 
@@ -47,63 +48,34 @@ def refuse_unless_new(path: Path) -> None:
         raise NexaHomeError(f"{path} is not empty; init never overwrites", "nexahome init ~/nexahome-new")
 
 
-def make_directory(path: Path, created: list[Path]) -> None:
-    """Create `path` and any missing parents, recording each one so a failure can remove them."""
-    missing: list[Path] = []
-    for folder in (path, *path.parents):
-        if folder.exists():
-            break
-        missing.append(folder)
-    for folder in reversed(missing):
-        folder.mkdir()
-        created.append(folder)
-        os.chmod(folder, PUBLIC_DIR_MODE)
-
-
-def write_new(path: Path, data: bytes, created: list[Path]) -> None:
-    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, PUBLIC_FILE_MODE)
-    created.append(path)
-    with os.fdopen(descriptor, "wb") as handle:
-        handle.write(data)
-    os.chmod(path, PUBLIC_FILE_MODE)
-
-
-def remove_created(created: list[Path]) -> None:
-    for path in reversed(created):
-        try:
-            path.unlink() if path.is_file() else path.rmdir()
-        except OSError:
-            pass  # best effort: what is left is named in the message
-
-
 def create(root: Path, source: Path, version: str) -> Created:
     """Copy `source` (the stacks) to root/stacks and write nexahome.toml and the manifest. `root` must have passed
     refuse_unless_new."""
     import hashlib
 
-    directories, files = bundle.walk(source)
+    directories, paths = bundle.walk(source)
     stacks = tuple(sorted(name for name in directories if "/" not in name))
     if DEFAULT_STACKS[0] not in stacks:
         raise NexaHomeError("this install's bundled stacks do not include the demo stack", REINSTALL)
     created: list[Path] = []
     hashes: dict[str, str] = {}
     try:
-        make_directory(root / "stacks", created)
+        files.make_directory(root / "stacks", created)
         for name in directories:
-            make_directory(root / "stacks" / name, created)
-        for name in files:
+            files.make_directory(root / "stacks" / name, created)
+        for name in paths:
             if (source / name).stat().st_size > STACK_FILE_MAX_BYTES:
                 raise NexaHomeError(f"{name} is larger than {STACK_FILE_MAX_BYTES} bytes", REINSTALL)
             data = (source / name).read_bytes()
-            write_new(root / "stacks" / name, data, created)
+            files.create_exclusive(root / "stacks" / name, data, PUBLIC_FILE_MODE, created)
             hashes[f"stacks/{name}"] = hashlib.sha256(data).hexdigest()
-        write_new(root / CONFIG_NAME, config.render(DEFAULT_STACKS).encode(), created)
-        make_directory(root / ".nexahome", created)
-        write_new(root / manifest.PATH, manifest.render(version, hashes).encode(), created)
+        files.create_exclusive(root / CONFIG_NAME, config.render(DEFAULT_STACKS).encode(), PUBLIC_FILE_MODE, created)
+        files.make_directory(root / ".nexahome", created)
+        files.create_exclusive(root / manifest.PATH, manifest.render(version, hashes).encode(), PUBLIC_FILE_MODE, created)
     except OSError as error:
-        remove_created(created)
+        files.remove_created(created)
         raise NexaHomeError(f"init stopped and removed what it had made: {error}", f"nexahome init {root}") from error
     except BaseException:
-        remove_created(created)
+        files.remove_created(created)
         raise
-    return Created(root, stacks, DEFAULT_STACKS, len(files))
+    return Created(root, stacks, DEFAULT_STACKS, len(paths))

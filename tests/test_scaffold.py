@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from nexahome import cli
+from nexahome import cli, files
 from nexahome.errors import ExitCode
 from nexahome.instance import bundle
 from nexahome.runner import RunResult
@@ -145,18 +145,16 @@ def test_new_without_an_instance_says_how_to_make_one(make_context: MakeContext,
 def test_a_failed_write_leaves_no_folder_and_the_list_unchanged(
     make_context: MakeContext, instance: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    from nexahome.instance import create
-
-    real = create.write_new
+    real = files.create_exclusive
     calls: list[Path] = []
 
-    def flaky(path: Path, data: bytes, created: list[Path]) -> None:
+    def flaky(path: Path, data: bytes, mode: int, created: list[Path] | None = None) -> None:
         calls.append(path)
         if len(calls) == 2:
             raise OSError("disk full")
-        real(path, data, created)
+        real(path, data, mode, created)
 
-    monkeypatch.setattr(create, "write_new", flaky)
+    monkeypatch.setattr(files, "create_exclusive", flaky)
     code, ctx = run(make_context, instance, "new", "mine")
     assert code == ExitCode.NOT_READY and "disk full" in err(ctx)
     assert not (instance / "stacks" / "mine").exists()

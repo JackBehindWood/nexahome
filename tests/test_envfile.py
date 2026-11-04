@@ -1,3 +1,4 @@
+import os
 import re
 import stat
 from collections.abc import Callable
@@ -107,7 +108,7 @@ def test_a_failed_rewrite_leaves_the_env_untouched_and_no_temporary_file(tmp_pat
     def broken(source: object, target: object) -> None:
         raise OSError("disk full")
 
-    monkeypatch.setattr(envfile.os, "replace", broken)
+    monkeypatch.setattr(os, "replace", broken)
     with pytest.raises(OSError, match="disk full"):
         envfile.prepare(directory, make=counter())
     assert (directory / ".env").read_text() == "KEY=GENERATE\n"

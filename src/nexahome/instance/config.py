@@ -6,12 +6,11 @@ not write it; this schema has three value types, so the writer is a few lines he
 
 from __future__ import annotations
 
-import os
 import re
 from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
-from nexahome import __version__
+from nexahome import __version__, files
 from nexahome.errors import ExitCode, NexaHomeError, editor_fix
 from nexahome.defaults import CONFIG_MAX_BYTES, INSTANCE_SCHEMA, PUBLIC_FILE_MODE
 from nexahome.instance import CONFIG_NAME
@@ -97,19 +96,9 @@ def read(directory: Path) -> Settings | None:
 def write(directory: Path, stacks: Sequence[str]) -> None:
     """Replace nexahome.toml with `stacks` (names already validated), keeping created_by. All or nothing: the new text
     is written beside the file and renamed over it."""
-    import tempfile
-
     try:
         current = read(directory)
     except NexaHomeError:
         current = None  # a file that cannot be read is replaced whole; that is how `config set` repairs it
     text = render(stacks, current.created_by if current and current.created_by else None)
-    descriptor, temporary = tempfile.mkstemp(dir=directory, prefix=f".{CONFIG_NAME}.")
-    try:
-        with os.fdopen(descriptor, "w") as handle:
-            handle.write(text)
-        os.chmod(temporary, PUBLIC_FILE_MODE)
-        os.replace(temporary, directory / CONFIG_NAME)
-    except BaseException:
-        Path(temporary).unlink(missing_ok=True)
-        raise
+    files.replace_atomically(directory / CONFIG_NAME, text, PUBLIC_FILE_MODE)

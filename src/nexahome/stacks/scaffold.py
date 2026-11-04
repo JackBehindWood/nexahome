@@ -13,6 +13,8 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
+from nexahome import files
+from nexahome.defaults import PUBLIC_FILE_MODE
 from nexahome.errors import NexaHomeError
 
 if TYPE_CHECKING:
@@ -80,7 +82,7 @@ def _render(filename: str, text: str, name: str, port: int, has_make: bool) -> s
 
 def new_stack(ctx: Context, instance: Path, name: str) -> NewStack:
     """Create stacks/<name> from the bundled template. Never overwrites; if anything fails, what this call made is removed."""
-    from nexahome.instance import CONFIG_NAME, REINSTALL, bundle, config, create
+    from nexahome.instance import CONFIG_NAME, REINSTALL, bundle, config
     from nexahome.stacks import ownership
 
     _check_name(name, "new")
@@ -98,17 +100,17 @@ def new_stack(ctx: Context, instance: Path, name: str) -> NewStack:
     listed = (instance / CONFIG_NAME).is_file()
     created: list[Path] = []
     try:
-        create.make_directory(folder, created)
+        files.make_directory(folder, created)
         for file, text in texts.items():
-            create.write_new(folder / file, text.encode(), created)
+            files.create_exclusive(folder / file, text.encode(), PUBLIC_FILE_MODE, created)
         if listed:
             settings = config.read(instance)
             config.write(instance, [*(settings.stacks if settings else ()), name])
     except OSError as error:
-        create.remove_created(created)
+        files.remove_created(created)
         raise NexaHomeError(f"stacks new stopped and removed what it had made: {error}", f"nexahome stacks new {name}") from error
     except BaseException:
-        create.remove_created(created)
+        files.remove_created(created)
         raise
     return NewStack(folder, port, listed)
 
@@ -131,12 +133,12 @@ def remove_stack(ctx: Context, instance: Path, name: str, assume_yes: bool) -> b
         raise NexaHomeError(f"{name} is part of NexaHome and is not removed here; to stop using it, change the list", "nexahome config get stacks")
     if not (folder / "compose.yaml").is_file():
         raise NexaHomeError(f"no such stack: {name}", "nexahome stacks")
-    files: list[str] = []
+    doomed: list[str] = []
     for where, folders, names in os.walk(folder, followlinks=False):
         for entry in [*folders, *names]:
             if os.path.islink(os.path.join(where, entry)):
                 raise NexaHomeError(f"{shown} contains a link ({entry}); remove will not follow or delete it", f"ls -la {shown}")
-        files += [str(Path(where, entry).relative_to(instance)) for entry in names]
+        doomed += [str(Path(where, entry).relative_to(instance)) for entry in names]
     if folder.is_symlink():
         raise NexaHomeError(f"{shown} is a link; remove will not follow it", f"ls -la {shown}")
     compose_file = folder / "compose.yaml"
@@ -149,7 +151,7 @@ def remove_stack(ctx: Context, instance: Path, name: str, assume_yes: bool) -> b
     if name in listed and not remaining:
         raise NexaHomeError(f"{shown} is the only stack in nexahome.toml, and the list cannot be empty", "nexahome config set stacks hello")
     print(f"This deletes {shown} and everything in it:", file=ctx.out)
-    for file in sorted(files):
+    for file in sorted(doomed):
         print(f"  {file}", file=ctx.out)
     if state == "unknown":
         print("Docker did not answer, so nexahome could not tell whether it is running. Stop it first if it is.", file=ctx.out)

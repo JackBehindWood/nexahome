@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from nexahome import cli
+from nexahome import cli, files
 from nexahome.errors import ExitCode
 from nexahome.instance import REINSTALL, bundle, create, manifest
 from nexahome.runner import SubprocessRunner
@@ -123,25 +123,25 @@ def test_init_refuses_and_writes_nothing(make_context: MakeContext, make_checkou
 def test_a_failed_write_removes_only_what_this_run_made(monkeypatch: pytest.MonkeyPatch, make_context: MakeContext, tmp_path: Path) -> None:
     root = tmp_path / "made"
     root.mkdir()  # exists and empty: init may fill it, and must leave it standing
-    real, calls = create.write_new, []
+    real, calls = files.create_exclusive, []
 
-    def failing(path: Path, data: bytes, created: list[Path]) -> None:
+    def failing(path: Path, data: bytes, mode: int, created: list[Path] | None = None) -> None:
         calls.append(path)
         if len(calls) == 5:
             raise OSError(28, "No space left on device")
-        real(path, data, created)
+        real(path, data, mode, created)
 
-    monkeypatch.setattr(create, "write_new", failing)
+    monkeypatch.setattr(files, "create_exclusive", failing)
     code, ctx = init(make_context, root)
     assert code == ExitCode.NOT_READY and "No space left" in err(ctx) and f"Next: nexahome init {root}" in err(ctx)
     assert root.is_dir() and listing(root) == []
 
 
 def test_a_failed_write_removes_a_folder_it_created(monkeypatch: pytest.MonkeyPatch, make_context: MakeContext, tmp_path: Path) -> None:
-    def failing(path: Path, data: bytes, created: list[Path]) -> None:
+    def failing(path: Path, data: bytes, mode: int, created: list[Path] | None = None) -> None:
         raise OSError(13, "Permission denied")
 
-    monkeypatch.setattr(create, "write_new", failing)
+    monkeypatch.setattr(files, "create_exclusive", failing)
     assert init(make_context, tmp_path / "x" / "made")[0] == ExitCode.NOT_READY
     assert not (tmp_path / "x").exists()
 
