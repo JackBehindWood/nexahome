@@ -4,7 +4,7 @@ name: nexahome-identity
 # edge at id.<NEXAHOME_DOMAIN>:<EDGE_PORT>.
 services:
   identity:
-    image: ghcr.io/pocket-id/pocket-id:v2.18.0-distroless
+    image: ghcr.io/pocket-id/pocket-id:v2.19.2-distroless
     user: "65532:65532"
     read_only: true
     cap_drop: [ALL]
