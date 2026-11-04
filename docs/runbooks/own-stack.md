@@ -16,7 +16,7 @@ docker compose -f stacks/notes/compose.yaml up -d --wait   # `nexahome up` will 
 
 ## What you get
 
-`stacks/<name>/` holds `compose.yaml`, `.env.example` and `README.md`, renamed for your stack (project `nexahome-<name>`, variable `<NAME>_PORT`, the smallest port from 8081 up that no other stack in this folder uses; it does not check whether another program on the machine already holds it, so a port clash shows up at `up`: change `<NAME>_PORT` in `.env`). `nexahome stacks` lists it with owner `user`; the stacks that came with the package say `package`. The rules your `compose.yaml` must meet are in the [Compose policy](../constraints.md#compose-policy) and [ADR 0007](../adr/0007-stack-contract.md); this page does not repeat them. The READMEs of the stacks that came with the package (`identity`, `edge`, `backup` and the rest) are not copied into your folder, because their links point into the project's `docs/`; read them under `stacks/<name>/README.md` in the project repository.
+`stacks/<name>/` holds `compose.yaml`, `.env.example` and `README.md`, renamed for your stack (project `nexahome-<name>`, variable `<NAME>_PORT`, the smallest port from 8081 up that no other stack in this folder uses and that nothing on 127.0.0.1 holds when you run `new`; a program that starts later can still clash, and then `up` fails: change `<NAME>_PORT` in `.env`). `nexahome stacks` lists it with owner `user`; the stacks that came with the package say `package`. The rules your `compose.yaml` must meet are in the [Compose policy](../constraints.md#compose-policy) and [ADR 0007](../adr/0007-stack-contract.md); this page does not repeat them. The READMEs of the stacks that came with the package (`identity`, `edge`, `backup` and the rest) are not copied into your folder, because their links point into the project's `docs/`; read them under `stacks/<name>/README.md` in the project repository.
 
 ## Rules of the road
 
@@ -38,4 +38,4 @@ It refuses a running stack (stop it with the `docker compose ... down` line it p
 
 Linux, and a reader who has never used Compose. Run on a macOS arm64 engine on 2026-11-04 (throwaway Colima profile): `init`, `stacks new`, `check`, `env` (about 1 s each), `up` (unhealthy, see above), `remove` refusing a running stack and a package stack, `remove` after `down`, a failing `check` ending in `Next: edit <file>`. See [the session log](../session-log.md).
 
-Changelog: 0.1 (2026-11-04): engine run: the starter is unhealthy as shipped, port wording, what was run; 0.1 (2026-11-04): says where the package stacks' READMEs are (A-04); 0.1 (2026-11-04): first version (Goal 3).
+Changelog: 0.1 (2026-11-04): `new` skips ports held on the host (T2); 0.1 (2026-11-04): engine run: the starter is unhealthy as shipped, port wording, what was run; 0.1 (2026-11-04): says where the package stacks' READMEs are (A-04); 0.1 (2026-11-04): first version (Goal 3).

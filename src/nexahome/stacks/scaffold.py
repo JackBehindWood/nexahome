@@ -43,7 +43,10 @@ def _check_name(name: str, verb: str) -> None:
 
 
 def _free_port(instance: Path) -> int:
-    """The smallest port from 8081 that no other stack uses as a `${VAR:-port}` default (the template does not count)."""
+    """The smallest port from 8081 that no other stack uses as a `${VAR:-port}` default (the template does not count)
+    and that nothing on this host is listening on."""
+    from nexahome.release import net
+
     used: set[int] = set()
     for compose in home.stacks_dir(instance).glob("*/compose.yaml"):
         if compose.parent.name == "_template":
@@ -53,7 +56,7 @@ def _free_port(instance: Path) -> int:
         except (OSError, UnicodeDecodeError):
             continue
     port = FIRST_PORT
-    while port in used:
+    while port in used or net.port_is_busy(port):
         port += 1
     return port
 

@@ -24,6 +24,20 @@ MakeContext = Callable[..., Context]
 
 
 @pytest.fixture
+def real_ports() -> None:
+    """Ask for this fixture to let `stacks new` probe the real host ports."""
+
+
+@pytest.fixture(autouse=True)
+def host_ports_are_free(monkeypatch: pytest.MonkeyPatch, request: pytest.FixtureRequest) -> None:
+    """A test never depends on what is listening on the machine running it: every port reads as free."""
+    if "real_ports" not in request.fixturenames:
+        from nexahome.release import net
+
+        monkeypatch.setattr(net, "port_is_busy", lambda port: False)
+
+
+@pytest.fixture
 def make_host(tmp_path: Path) -> MakeHost:
     def make(
         system: str = "linux",

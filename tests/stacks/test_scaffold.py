@@ -105,6 +105,30 @@ def test_the_second_stack_gets_the_next_free_port(make_context: MakeContext, ins
     assert ports == ["8081", "8082"]
 
 
+def test_new_skips_ports_that_are_bound_on_the_host(make_context: MakeContext, instance: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """T2: another program on 8081 and 8082 (not a stack of ours) must not receive the new stack."""
+    from nexahome.release import net
+
+    monkeypatch.setattr(net, "port_is_busy", lambda port: port in (8081, 8082))
+    code, ctx = run(make_context, instance, "new", "one")
+    assert code == ExitCode.OK, err(ctx)
+    assert "MINE" not in (instance / "stacks" / "one" / "compose.yaml").read_text()
+    assert "ONE_PORT=8083" in (instance / "stacks" / "one" / ".env.example").read_text()
+    assert "http://127.0.0.1:8083/" in out(ctx)
+
+
+@pytest.mark.parametrize("address", ["127.0.0.1", "0.0.0.0"])
+def test_the_port_probe_sees_a_real_listener(real_ports: None, address: str) -> None:
+    import socket
+
+    from nexahome.release import net
+
+    with socket.socket() as listener:
+        listener.bind((address, 0))
+        listener.listen()
+        assert net.port_is_busy(listener.getsockname()[1]) is True
+
+
 @pytest.mark.parametrize("name", ["Mine", "_mine", "a/b", "..", "has space", ""])
 def test_new_refuses_a_bad_name_with_one_next_command(make_context: MakeContext, instance: Path, name: str) -> None:
     code, ctx = run(make_context, instance, "new", name)
