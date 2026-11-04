@@ -12,11 +12,11 @@ nexahome env                           # creates stacks/notes/.env and generates
 docker compose -f stacks/notes/compose.yaml up -d --wait   # `nexahome up` will replace this line
 ```
 
-`new` prints these lines for your stack, with its port. The generated stack runs as it is (a tiny web server answering on `127.0.0.1`), so you can see it work before you change anything. Then replace the image and settings in `stacks/notes/compose.yaml` with your service and run `nexahome check` again.
+`new` prints these lines for your stack, with its port. The generated stack is a placeholder (a tiny web server with nothing to serve): on an engine, `up -d --wait` reports it **unhealthy** and `curl` answers 404, because the empty volume has no page and its health check expects one. This is a known fault of the starter, not of your setup. Replace the image and settings in `stacks/notes/compose.yaml` with your service first, then run `nexahome check` and the `up` line.
 
 ## What you get
 
-`stacks/<name>/` holds `compose.yaml`, `.env.example` and `README.md`, renamed for your stack (project `nexahome-<name>`, variable `<NAME>_PORT`, the smallest free port from 8081 up). `nexahome stacks` lists it with owner `user`; the stacks that came with the package say `package`. The rules your `compose.yaml` must meet are in the [Compose policy](../constraints.md#compose-policy) and [ADR 0007](../adr/0007-stack-contract.md); this page does not repeat them. The READMEs of the stacks that came with the package (`identity`, `edge`, `backup` and the rest) are not copied into your folder, because their links point into the project's `docs/`; read them under `stacks/<name>/README.md` in the project repository.
+`stacks/<name>/` holds `compose.yaml`, `.env.example` and `README.md`, renamed for your stack (project `nexahome-<name>`, variable `<NAME>_PORT`, the smallest port from 8081 up that no other stack in this folder uses; it does not check whether another program on the machine already holds it, so a port clash shows up at `up`: change `<NAME>_PORT` in `.env`). `nexahome stacks` lists it with owner `user`; the stacks that came with the package say `package`. The rules your `compose.yaml` must meet are in the [Compose policy](../constraints.md#compose-policy) and [ADR 0007](../adr/0007-stack-contract.md); this page does not repeat them. The READMEs of the stacks that came with the package (`identity`, `edge`, `backup` and the rest) are not copied into your folder, because their links point into the project's `docs/`; read them under `stacks/<name>/README.md` in the project repository.
 
 ## Rules of the road
 
@@ -36,6 +36,6 @@ It refuses a running stack (stop it with the `docker compose ... down` line it p
 
 ## Not checked yet
 
-Starting, stopping and removing a stack on a running engine, Linux, and the time a first-time reader needs. See [the session log](../session-log.md) for what was run.
+Linux, and a reader who has never used Compose. Run on a macOS arm64 engine on 2026-11-04 (throwaway Colima profile): `init`, `stacks new`, `check`, `env` (about 1 s each), `up` (unhealthy, see above), `remove` refusing a running stack and a package stack, `remove` after `down`, a failing `check` ending in `Next: edit <file>`. See [the session log](../session-log.md).
 
-Changelog: 0.1 (2026-11-04): says where the package stacks' READMEs are (A-04); 0.1 (2026-11-04): first version (Goal 3).
+Changelog: 0.1 (2026-11-04): engine run: the starter is unhealthy as shipped, port wording, what was run; 0.1 (2026-11-04): says where the package stacks' READMEs are (A-04); 0.1 (2026-11-04): first version (Goal 3).

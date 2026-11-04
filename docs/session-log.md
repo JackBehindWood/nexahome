@@ -25,10 +25,22 @@ Last replaced 2026-11-04 (end of the Goal 3 follow-up). Entries end with a point
 - Watch security alerts on GitHub for `pocket-id/pocket-id`, `caddyserver/caddy`, `gethomepage/homepage`, `TwiN/gatus`.
 
 **Open work**
-- Drill leftovers: Colima profile `drill` is stopped (`colima delete drill` frees its disk if you want it gone); the scratch copy is deleted. The Pocket ID self-restart is not diagnosed: the 45-minute watch was skipped at your request (0 restarts in the first 4 minutes only).
+- Drill leftovers: Colima profile `drill` is stopped (`colima delete drill` frees its disk if you want it gone). A second throwaway profile and `~/nexahome-pm-scratch` from the pre-mini session are listed in the final message for your yes to delete. The Pocket ID self-restart watch on v2.19.2: see the pre-mini entry (started 2026-11-04).
+- Starter stack from `nexahome stacks new` is unhealthy as shipped (local card K1); fix before the first tag.
 - Dependabot parsing is shown for `portal`, `identity`, `gatus` and `pip`; not yet for `github-actions`, `hello`, `actual`, `backup`, `edge`, `_template`; the `dev` and `check` dependency groups are unproven until a Dependabot pull request appears after a push.
 - Decide with the first tag: `[project.urls] Latest release` in `pyproject.toml` (wheels have no update feed until it exists). macOS `F_FULLFSYNC` is not used (`fcntl` is POSIX-only and a test forbids it); `files.replace_atomically` uses `os.fsync`.
 - Audit rows left for PK7 or later: S-21, S-26, S-30 and package rows P-07, P-11, P-12, P-14, P-16, P-18 to P-22, P-25 to P-27 (local audit notes).
+
+## 2026-11-04: pre-mini session (Goal 3 on an engine, update proof, briefs)
+
+**Done**
+- First engine run of Goal 3 (throwaway Colima profile): `init`, `stacks new`, `check`, `env`, `remove` and their refusals work; found the generated starter is unhealthy (404), a new stack's port is not probed on the host, and `stacks` always prints "Docker did not answer" (the one-shot `backup` row).
+- `nexahome update` proven against a loopback fake feed: 9 cases plus the `Latest release` project-URL path; no code change needed; two display findings (`v` prefix, checksum `Next:`).
+- Pocket ID v2.19.2 45-minute watch started (0 restarts in the first 10 minutes; result in local `.claude/tmp/pocketid-watch.tsv`); Homepage v2.7.0 drilled healthy (103 MiB).
+- Local outputs in `.claude/tmp`: stack inventory (no dev stack, keep the bundle), decision briefs, mini arrival checklist, v0.2.0 notes and tag-day list, readiness audit, elevation proposals, cards K1 to K7.
+**Doc changes and why:** `docs/runbooks/own-stack.md`: the starter is a placeholder that reports unhealthy, port wording, what was run (engine findings; no label changed).
+**Next:** card K1 (starter fix) and the contributor starter pack; `dev` into `main` on your yes; Dependabot 27 merge, 29 and 30 after 2026-11-10. **Open:** merge Dependabot 25 only after the portal is seen in a browser with the edge (K6).
+**Verified:** `make check` 0; 514 passed; `tests/test_docs.py` 70 passed; engine steps and update cases run with output kept locally. **Not verified:** the full 45-minute watch at close, Linux, the mini, CI on macOS and arm64, real GitHub release downloads.
 
 ## 2026-11-04: Goal 3 follow-up (audit rows, shared code, tests mirror, codebase docs)
 
