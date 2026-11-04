@@ -27,7 +27,8 @@ from nexahome.defaults import (
 from nexahome.errors import ExitCode, NexaHomeError
 from nexahome.release.net import NetworkError
 
-RETRY = "nexahome update --available"
+RETRY = "nexahome update --available"  # reads the feed again: right when the feed itself was unreadable
+AGAIN = "nexahome update"  # a whole new download, checksum and install: right when a transient step failed
 
 
 class Release(NamedTuple):
@@ -86,25 +87,32 @@ def latest_release(ctx: Context) -> Release:
     return Release(version, assets)
 
 
+def _show_feed(ctx: Context) -> str:
+    """The command that prints the release the feed describes, for a release that is malformed (repeating the check reads the same feed)."""
+    import shlex
+
+    return f"curl -sS {shlex.quote(update_source(ctx) or '')}"
+
+
 def _download(ctx: Context, release: Release, directory: Path) -> Path:
     import hmac
 
     wheels = [name for name in release.assets if name.startswith("nexahome-") and name.endswith(".whl")]
     if len(wheels) != 1 or "SHA256SUMS" not in release.assets:
-        raise NexaHomeError("the release has no single wheel with a SHA256SUMS file; nothing was installed", RETRY)
+        raise NexaHomeError("the release has no single wheel with a SHA256SUMS file; nothing was installed", _show_feed(ctx))
     name = wheels[0]
     if Path(name).name != name:
-        raise NexaHomeError("the release names its wheel with a path; nothing was installed", RETRY)
+        raise NexaHomeError("the release names its wheel with a path; nothing was installed", _show_feed(ctx))
     path = directory / name
     try:
         sums = ctx.fetch(release.assets["SHA256SUMS"], timeout=FEED_TIMEOUT, max_bytes=FEED_MAX_BYTES).decode(errors="replace")
         actual = ctx.download(release.assets[name], path, timeout=WHEEL_TIMEOUT, max_bytes=WHEEL_MAX_BYTES)  # streamed, hashed
     except NetworkError as error:
-        raise NexaHomeError(f"could not download the release: {error}", RETRY) from error
+        raise NexaHomeError(f"could not download the release: {error}", AGAIN) from error
     expected = next((line.split()[0] for line in sums.splitlines() if line.split()[-1:] in ([name], ["*" + name])), "")
     if not hmac.compare_digest(actual, expected.lower()):
         path.unlink(missing_ok=True)
-        raise NexaHomeError(f"{name} does not match its SHA256SUMS entry; nothing was installed", "nexahome update")  # downloads again
+        raise NexaHomeError(f"{name} does not match its SHA256SUMS entry; nothing was installed", AGAIN)
     return path
 
 
@@ -119,7 +127,7 @@ def _install(ctx: Context, wheel: Path, address: str) -> None:
     done = ctx.runner.run(argv, timeout=INSTALL_TIMEOUT)
     if not done.ok:
         detail = (done.stderr.strip().splitlines() or ["no message"])[-1]
-        raise NexaHomeError(f"the installer failed: {detail}", RETRY)
+        raise NexaHomeError(f"the installer failed: {detail}", AGAIN)
 
 
 def update(ctx: Context, *, available_only: bool, as_json: bool, assume_yes: bool) -> int:

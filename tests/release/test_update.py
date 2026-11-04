@@ -186,12 +186,20 @@ def test_an_incomplete_release_installs_nothing(make_context: MakeContext, asset
     installer = Installer()
     ctx, _ = make(make_context, {**GOOD, FEED_URL: feed(assets=assets)}, installer)
     assert cli.main(["update", "--yes"], ctx) == ExitCode.NOT_READY and installer.calls == []
+    assert text(ctx, "err").endswith(f"Next: curl -sS {FEED_URL}\n")  # T4: repeating --available reads the same feed; this shows what it lists
 
 
 def test_an_installer_failure_is_reported_with_its_last_line(make_context: MakeContext) -> None:
     ctx, _ = make(make_context, GOOD, Installer(install_ok=False))
     assert cli.main(["update", "--yes"], ctx) == ExitCode.NOT_READY
     assert "the installer failed: no space left" in text(ctx, "err")
+    assert text(ctx, "err").endswith("Next: nexahome update\n")  # a fresh, verified run; never an install from the address (no checksum)
+
+
+def test_a_failed_wheel_download_ends_in_a_new_verified_run(make_context: MakeContext) -> None:
+    ctx, _ = make(make_context, {**GOOD, WHEEL_URL: NetworkError("connection reset")}, Installer())
+    assert cli.main(["update", "--yes"], ctx) == ExitCode.NOT_READY
+    assert "could not download the release: connection reset" in text(ctx, "err") and text(ctx, "err").endswith("Next: nexahome update\n")
 
 
 def test_a_development_install_is_left_to_git_and_not_asked(monkeypatch: pytest.MonkeyPatch, make_context: MakeContext) -> None:
