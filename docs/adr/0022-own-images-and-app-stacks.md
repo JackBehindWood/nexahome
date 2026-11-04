@@ -43,7 +43,7 @@ Other runtimes (Node, Go, Rust, C++, static, worker, accelerator): a profile is 
 2. *Stage 1, only after a second hand copy shows the rename friction.* `nexahome stacks new <name> --from <profile>`: copies the profile and renames project, service, volume and variables. Standard library only, logic outside `commands/`, imported inside `run` (ADR 0021).
 3. *Not planned: a `build` command.* `docker compose up --build` exists; if nothing is built, nothing breaks.
 
-**Where it applies.** App stacks live in the repository, so they belong to the fork path (customisers, [ADR 0020](0020-instance-install-and-release-model.md)). ADR 0020 says runners "add unnamed stacks" but package-owned `stacks/` has no place for them; this ADR does not settle that and records the direction chosen in ADR 0020 (a user-owned folder or `compose.override.yaml`). An app's source is public here: placeholders and dummy data only; its data lives in its volume.
+**Where it applies.** App stacks live in the repository, so they belong to the fork path (customisers, [ADR 0020](0020-instance-install-and-release-model.md)). ADR 0020 says runners "add unnamed stacks"; the built design puts them in `stacks/<name>` beside the package's, owned by name (`nexahome stacks new`), so this ADR adds no new place for them. An app's source is public here: placeholders and dummy data only; its data lives in its volume.
 
 ## Consequences
 Easier: a new language is a template and two Dependabot entries, not package code or an ADR edit; the same checks run for every profile; the owner's apps start from a hardened base. Harder: each profile is upkeep (a weekly pull request source, a Dockerfile to read); a merged base-image bump changes nothing running until the stack is rebuilt (`up --build`).

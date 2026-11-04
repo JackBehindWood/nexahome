@@ -17,7 +17,7 @@ Each has a check that fails when the rule is broken.
 | PK-F2 | A call imports its own command only. Commands are found from file names and loaded by name; help is the only call that loads all of them | `tests/test_startup.py`; `tests/test_registry.py` (names match modules) |
 | PK-F3 | Heavy standard-library modules are imported inside the function that needs them, never at module level (allowlist in the test, each entry justified) | `tests/test_packaging.py::test_heavy_modules_are_imported_inside_functions` |
 | PK-F4 | No work at import time: importing `nexahome` imports nothing; importing `nexahome.commands` loads no command; no I/O, subprocess or environment read happens before the command line is parsed | `tests/test_startup.py` |
-| PK-F5 | Independent slow calls (a `docker` process each) run side by side, results in input order, bounded workers, threads only when there is more than one | `tests/test_commands.py`, `tests/test_doctor.py` (order, errors); timing recipe |
+| PK-F5 | Independent slow calls (a `docker` process each) run side by side, results in input order, bounded workers, threads only when there is more than one | `tests/test_parallel.py`, `tests/test_stacks.py`, `tests/test_doctor.py` (order, errors); timing recipe |
 | PK-F6 | Memory stays at the interpreter's own plus a few hundred KiB for every call; large data is streamed in fixed pieces, never held whole; every read from outside has a size limit | `/usr/bin/time -l` recipe; `tests/test_net.py::test_a_big_download_does_not_load_the_file_into_memory` (20 MiB file, under 2 MiB of Python memory) |
 | PK-F7 | An optimisation needs a measurement before and after; a regression is caught by a test, not by memory | this ADR's table; the tests above |
 
