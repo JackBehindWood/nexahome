@@ -225,7 +225,7 @@ jobs:
           HOME="$RUNNER_TEMP/user" nexahome init | tee "$RUNNER_TEMP/init.out"
           cd "$RUNNER_TEMP/user/nexahome"
           test -f nexahome.toml && test -f .nexahome/manifest.json
-          test -z "$(find . -name .env -o -name README.md -o -name data)"
+          test -z "$(find . -name .env -o \( -name README.md -not -path './stacks/_template/*' \) -o -name data)"  # the template's README ships on purpose: `stacks new` copies it
           nexahome check
           code=0; HOME="$RUNNER_TEMP/user" nexahome init || code=$?
           [ "$code" = 3 ] || { echo "::error::a second init must refuse with exit 3, got $code"; exit 1; }
