@@ -27,8 +27,7 @@ def test_stacks_lists_enabled_and_state(make_checkout: MakeCheckout, make_contex
         "actual  yes      package  stopped",
         "backup  no       package  unknown",
         "edge    yes      package  running",
-        STATE_UNKNOWN,
-    ]
+    ]  # T3: the one-shot backup row is always "unknown"; that alone is no reason to say Docker did not answer
 
 
 def test_stacks_without_an_unknown_state_has_no_footer(make_checkout: MakeCheckout, make_context: MakeContext) -> None:
@@ -37,6 +36,13 @@ def test_stacks_without_an_unknown_state_has_no_footer(make_checkout: MakeChecko
     ctx = make_context(cwd=checkout, runner=FakeRunner({ps_q(checkout, "edge"): RunResult(0, "abc123\n")}))
     assert cli.main(["stacks"], ctx) == ExitCode.OK
     assert "unknown" not in out(ctx)
+
+
+def test_a_service_row_unknown_still_gets_the_footer_beside_the_backup_row(make_checkout: MakeCheckout, make_context: MakeContext) -> None:
+    checkout = make_checkout({"actual": None, "backup": None, "edge": None})
+    ctx = make_context(cwd=checkout, runner=FakeRunner({ps_q(checkout, "edge"): RunResult(0, "abc123\n")}))  # actual: no answer
+    assert cli.main(["stacks"], ctx) == ExitCode.OK
+    assert out(ctx).splitlines()[-1] == STATE_UNKNOWN
 
 
 def test_stacks_says_why_a_state_is_unknown(make_checkout: MakeCheckout, make_context: MakeContext) -> None:

@@ -78,6 +78,9 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
     print(f"{'stack':<{width}}  enabled  owner    state", file=ctx.out)
     for row in rows:
         print(f"{row['name']:<{width}}  {'yes' if row['enabled'] else 'no':<7}  {row['owner']:<7}  {row['state']}", file=ctx.out)
-    if "unknown" in states:  # A-07: say why, in words, once
+    from nexahome.defaults import NON_SERVICE_STACKS
+
+    # A-07: say why, in words, once. The one-shot backup tool is "unknown" even when Docker is up, so it does not count.
+    if any(state == "unknown" for name, state in zip(names, states, strict=True) if name not in NON_SERVICE_STACKS):
         print("state unknown: Docker did not answer; start it, or run: nexahome doctor", file=ctx.out)
     return ExitCode.OK
