@@ -50,8 +50,6 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
             print(result.error, file=ctx.err)
         failures += len(result.problems) + (result.error is not None)
     if failures:  # A-08: every failure ends in one command
-        import shlex
-
         first = next(result for result in results if result.problems or result.error)
-        print(f"Next: {editor_fix(shlex.quote(str(first.compose)))}", file=ctx.err)
+        print(f"Next: {editor_fix(ctx.display(first.compose))}", file=ctx.err)
     return ExitCode.FAILED if failures else ExitCode.OK
