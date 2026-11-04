@@ -198,13 +198,23 @@ def test_no_source_configured(make_context: MakeContext) -> None:
 
 @pytest.mark.parametrize(
     "answer",
-    [NetworkError("connection refused"), b"not json", b"[]", b'{"tag_name": "latest"}', b'{"assets": []}'],
-    ids=["unreachable", "not json", "wrong shape", "unreadable tag", "no tag"],
+    [b"not json", b"[]", b'{"tag_name": "latest"}', b'{"assets": []}'],
+    ids=["not json", "wrong shape", "unreadable tag", "no tag"],
 )
 def test_a_bad_feed_is_an_error_that_retries_with_available(make_context: MakeContext, answer: bytes | Exception) -> None:
     ctx, _ = make(make_context, {FEED_URL: answer})
     assert cli.main(["update", "--available"], ctx) == ExitCode.NOT_READY
     assert text(ctx, "err").endswith("Next: nexahome update --available\n")
+
+
+@pytest.mark.parametrize("command", [["update", "--available"], ["update"]])
+def test_an_unreachable_feed_next_step_is_not_the_command_that_just_failed(make_context: MakeContext, command: list[str]) -> None:
+    """A-03: offline, repeating the command repeats the failure; the next step tests the connection to the feed."""
+    import shlex
+
+    ctx, _ = make(make_context, {FEED_URL: NetworkError("connection refused")})
+    assert cli.main(command, ctx) == ExitCode.NOT_READY
+    assert text(ctx, "err").endswith(f"Next: curl -sSI {shlex.quote(FEED_URL)}\n")
 
 
 def test_a_download_failure_installs_nothing(make_context: MakeContext) -> None:

@@ -76,7 +76,10 @@ def latest_release(ctx: Context) -> Release:
         assets = {str(a["name"]): str(a["browser_download_url"]) for a in feed.get("assets", [])}
         versions.parse(version)
     except NetworkError as error:
-        raise NexaHomeError(f"could not read the update source: {error}", RETRY) from error
+        import shlex  # only this failure quotes the address
+
+        # Repeating the failed command repeats the failure; this one shows whether the feed can be reached at all.
+        raise NexaHomeError(f"could not read the update source: {error}", f"curl -sSI {shlex.quote(source)}") from error
     except (ValueError, KeyError, TypeError, AttributeError) as error:
         raise NexaHomeError(f"the update source did not answer with a release I can read ({error})", RETRY) from error
     return Release(version, assets)
