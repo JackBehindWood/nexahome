@@ -4,7 +4,7 @@ Newest first; each entry follows the template in the session-end skill and has a
 
 ## Pending owner actions (the one current list)
 
-Last replaced 2026-11-04 (end of DR3). Entries end with a pointer here instead of their own list.
+Last replaced 2026-11-04 (end of the engine session). Entries end with a pointer here instead of their own list.
 
 **Decide**
 - Still open from DR2: register row 80 repeats row 81 (merge it or mark it historical); a runner guide and release notes after `v0.2.0`; the build for a runner's own stacks (`stacks.d/` or a Compose override, [ADR 0020](adr/0020-instance-install-and-release-model.md) and [0022](adr/0022-own-images-and-app-stacks.md)).
@@ -16,7 +16,7 @@ Last replaced 2026-11-04 (end of DR3). Entries end with a pointer here instead o
 
 **Git**
 - Pull request 31 is merged into `dev` (2026-11-03). Next: `dev` into `main` by pull request (your yes).
-- Dependabot (into `main`): 26 merged. 29 and 30 are green but wait until this branch reaches `main` (30 will conflict on the deleted `requirements-dev.txt`; 29 may on `pyproject.toml`; not verified). 25 and 27 await review (red `platforms` is the abandoned macOS leg); 28 (pocket-id) held.
+- Dependabot (into `main`): 26 merged. 27 (Gatus v5.38.0) drilled and safe to merge: no migration, rollback by tag ([runbook](runbooks/dependabot-update.md)). 28 (Pocket ID v2.19.2) stays held on your call: it runs a one-way migration, so rollback is a restore, never the old tag. 29 and 30 are green but wait until this branch reaches `main` (30 will conflict on the deleted `requirements-dev.txt`; 29 may on `pyproject.toml`; not verified). 25 and 27 await review (red `platforms` is the abandoned macOS leg); 28 (pocket-id) held.
 
 **Security hygiene**
 - Keep `ENCRYPTION_KEY` and the restic password in a password manager (the repository is on the same disk: a drill, not protection); keep the ntfy topic secret.
@@ -25,9 +25,19 @@ Last replaced 2026-11-04 (end of DR3). Entries end with a pointer here instead o
 - Watch security alerts on GitHub for `pocket-id/pocket-id`, `caddyserver/caddy`, `gethomepage/homepage`, `TwiN/gatus`.
 
 **Open work**
-- Diagnose the Pocket ID self-restart; optional admin-only sign-in for the health view.
+- Drill leftovers: Colima profile `drill` is stopped (`colima delete drill` frees its disk if you want it gone); the scratch copy is deleted. The Pocket ID self-restart is not diagnosed: the 45-minute watch was skipped at your request (0 restarts in the first 4 minutes only).
 - Dependabot parsing is shown for `portal`, `identity`, `gatus` and `pip`; not yet for `github-actions`, `hello`, `actual`, `backup`, `edge`, `_template`; the `dev` and `check` dependency groups are unproven until a Dependabot pull request appears after a push.
 - Audit rows left for PK7 or later: S-21, S-26, S-30 and package rows P-07, P-11, P-12, P-14, P-16, P-18 to P-22, P-25 to P-27 (local audit notes).
+
+## 2026-11-04: engine drills (Gatus v5.38.0, Pocket ID v2.19.2, Dependabot runbook)
+
+**Done**
+- Gatus v5.37.0 to v5.38.0 on a throwaway Colima profile `drill` (your `default` profile untouched, still stopped): healthy, `make smoke` green, history kept (6 to 9 results), 7.0 MiB idle (6.8 before), 0 restarts; back to v5.37.0 healthy, history kept. No migration.
+- Pocket ID v2.18.0 to v2.19.2: healthy, smoke green, issuer correct, cross-origin POST refused (403), 12 MiB idle (16 before). It runs migration `08-management.sql`; v2.18.0 then refuses the data ("downgrades are not allowed") and restart-loops. Rollback by `make restore` gave a fingerprint equal to the pre-bump one.
+- New [Dependabot runbook](runbooks/dependabot-update.md); Goal 3 requirements and interface note written locally, nothing built.
+**Doc changes and why:** `docs/runbooks/dependabot-update.md` new and listed in `docs/README.md`; ADR 0013 row 6 and the roadmap P3 line now carry the drill evidence instead of "no newer tag" (your instruction; no label changed).
+**Next:** the Goal 3 session (audit and own stacks); `dev` into `main` on your yes. **Open:** the Pocket ID self-restart (the 45-minute watch on v2.19.2 was skipped at the owner's request; 0 restarts in about 4 minutes only, so v2.19 is neither cleared nor blamed).
+**Verified:** the drills above, with commands run. **Not verified:** the 45-minute restart watch (skipped), a passkey login (fresh instance), a same-origin POST (my guessed endpoint gave 404), Linux, the mini, `make check` and `tests/test_docs.py` (see the final message).
 
 ## 2026-11-04: DR3 (edit batch for the accepted DR2 findings)
 
