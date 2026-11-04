@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from nexahome import platform as host_platform
+from nexahome.defaults import PROBE_TIMEOUT
 from nexahome.docker import compose, engine
 from nexahome.report import Check, Status
 
@@ -17,7 +18,6 @@ if TYPE_CHECKING:
 
     from nexahome.context import Context
 
-PROBE_TIMEOUT = 10  # seconds; a stuck VM must not hang the command
 
 
 def _skip(check_id: str, needs: str) -> Check:

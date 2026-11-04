@@ -1,0 +1,5 @@
+# Blank issues stay allowed: a question or an idea needs no form.
+# Security reports are not issues: SECURITY.md in the repository root says how to report privately.
+# GitHub offers "Report a vulnerability" in this chooser by itself while private reporting is on. There is no
+# contact_links entry because GitHub accepts only an absolute URL there, which would name the owner's account.
+blank_issues_enabled: true

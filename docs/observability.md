@@ -1,32 +1,32 @@
 # Observability and operations
 
-Version 0.1 · Last reviewed 2026-11-02
+Version 0.1 · Last reviewed 2026-11-04
 
-How we see what is running. Today there is one demo stack on one laptop, so the approach is deliberately minimal.
+How we see what is running. The approach is deliberately minimal while the stacks run on one host.
 
 ## Decoupling rule
 
 Critical services (DNS, storage, core AI) never depend on monitoring or any dashboard to work. Monitoring may be down without anything else breaking.
 
-## Phase 0: laptop only (current)
+## Current: laptop only, Gatus as the health view
 
-No monitoring suite. State comes from:
+No monitoring suite beyond Gatus ([ADR 0013](adr/0013-health-view.md)). State comes from:
 
 - Container health checks, required on every service ([Compose policy](constraints.md#compose-policy)).
 - `make ps` (or `docker compose ps` in the stack directory): a service is healthy when its status says `healthy`.
 - `docker compose logs` for one stack at a time.
 
-Leave phase 0 when a second real service exists or when something broke unnoticed. A real service means one that holds data or that someone uses, not the `hello` demo.
+Move past this setup when something breaks unnoticed or the host is always on. A real service means one that holds data or that someone uses, not the `hello` demo.
 
 ## What we want to see
 
-| Signal | Question it answers | Phase 0 source |
+| Signal | Question it answers | Source today |
 | :--- | :--- | :--- |
 | Health | Is each service up and responding? | health checks, `make ps` |
 | Logs | Why did it fail? | `docker compose logs` |
 | Backups | Did the last backup run and can it be restored? | restore drill ([architecture](architecture.md#data-backup-and-restore)) |
 | Deployment state | Which version of which stack is running? | image tags in `compose.yaml`, Git commit |
-| Notifications | Who tells me something broke? | None in phase 0. The health tool can send a webhook alert (proven locally); a real channel waits for an always-on host and must not be a paid service |
+| Notifications | Who tells me something broke? | ntfy, opt-in and off by default ([ADR 0013](adr/0013-health-view.md)); a webhook alert was proven locally; a real channel waits for an always-on host and must not be a paid service |
 
 ## Tool shortlist
 
@@ -45,4 +45,4 @@ Hostnames and addresses must not be published. Keep the real inventory in a giti
 | Power | `<UPS or none>` |
 | Backup | `<last verified restore date>` |
 
-Changelog: 0.1 (2026-11-02): ADR 0013 called decided (PK2); 0.1 (2026-10-26): shortlist result (Gatus), notifications row; 0.1 (2026-10-21): version renamed from 1.0 (pre-release project); 0.1 (2026-10-20): notifications signal added; reduced to the decoupling rule, a testable phase 0, a shortlist and an inventory template; dashboard and portal aspirations removed.
+Changelog: 0.1 (2026-11-04): stack count and "Phase 0" wording removed (DR3); 0.1 (2026-11-03): stack count, Gatus as the health view and the ntfy notifier brought up to date (PK6c); 0.1 (2026-11-02): ADR 0013 called decided (PK2); 0.1 (2026-10-26): shortlist result (Gatus), notifications row; 0.1 (2026-10-21): version renamed from 1.0 (pre-release project); 0.1 (2026-10-20): notifications signal added; reduced to the decoupling rule, a testable phase 0, a shortlist and an inventory template; dashboard and portal aspirations removed.

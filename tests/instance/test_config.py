@@ -13,20 +13,11 @@ from nexahome.errors import ExitCode, NexaHomeError
 from nexahome.instance import config
 from nexahome.runner import RunResult
 
-from conftest import DOCKER_HEALTHY, FakeRunner, MakeCheckout, MakeContext, MakeHost
-from test_instance import make_instance
-
-
-def out(ctx: object) -> str:
-    return ctx.out.getvalue()  # type: ignore[attr-defined]
-
-
-def err(ctx: object) -> str:
-    return ctx.err.getvalue()  # type: ignore[attr-defined]
+from conftest import DOCKER_HEALTHY, FakeRunner, MakeCheckout, MakeContext, MakeHost, err, make_instance, out
 
 
 @pytest.fixture
-def instance(tmp_path: Path) -> Path:
+def instance(tmp_path: Path) -> Path:  # overrides conftest's real-init `instance`: a small one, written by hand
     root = make_instance(tmp_path / "made", ("hello", "actual", "edge", "identity"))
     (root / "nexahome.toml").write_text(config.render(("hello",)))  # four stacks exist, one is enabled, as after init
     return root
@@ -85,6 +76,8 @@ def test_a_wrong_setting_or_value_is_refused_with_exit_2_and_changes_nothing(
     [
         ("stacks = [", "not valid TOML"),
         ('schema = "one"\nstacks = ["hello"]\n', "schema must be a number"),
+        ('schema = 0\nstacks = ["hello"]\n', "schema must be a number"),
+        ('schema = -5\nstacks = ["hello"]\n', "schema must be a number"),
         ('schema = 1\nstacks = ["hello"]\ncolour = "red"\n', "unknown key colour"),
         ('schema = 1\nstacks = "hello"\n', "stacks a list"),
         ("schema = 1\nstacks = []\n", "at least one stack"),
@@ -163,11 +156,12 @@ def test_doctor_checks_the_mount_for_an_instance_outside_the_home_directory(make
     host = make_host(system="macos", home=user_home)
     inside = make_instance(user_home / "nexahome")
     outside = make_instance(tmp_path / "elsewhere")
-    runner = FakeRunner({**DOCKER_HEALTHY, ("docker", "info", "--format", "{{.ServerVersion}}"): RunResult(0, "27.1.0\n")})
-    ok = cli.main(["doctor", "--json"], make_context(host=host, cwd=inside, runner=runner))
+    runner = FakeRunner(DOCKER_HEALTHY)
+    fine = make_context(host=host, cwd=inside, runner=runner)
+    cli.main(["doctor", "--json"], fine)
     warn = make_context(host=host, cwd=outside, runner=runner)
     cli.main(["doctor", "--json"], warn)
-    assert ok in (ExitCode.OK, ExitCode.NOT_READY)
+    assert '"id": "mount"' in out(fine) and '"status": "warn"' not in out(fine)  # P-30: the inside case was never checked
     assert '"id": "mount"' in out(warn) and '"status": "warn"' in out(warn) and 'mv ' in out(warn)
 
 

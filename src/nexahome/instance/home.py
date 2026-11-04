@@ -12,9 +12,28 @@ if TYPE_CHECKING:
 DEFAULT_NAME = "nexahome"  # under the home directory, which the Colima VM mounts
 
 
+def stacks_dir(instance: Path) -> Path:
+    """Where the stacks of an instance are. The one place that spells the layout."""
+    return instance / "stacks"
+
+
+def stack_dir(instance: Path, name: str) -> Path:
+    return stacks_dir(instance) / name
+
+
+def has_makefile(directory: Path) -> bool:
+    """A git clone, or anything `make` can drive (an instance made by `nexahome init` has no Makefile)."""
+    return (directory / "Makefile").is_file()
+
+
+def has_settings(directory: Path) -> bool:
+    """Made by `nexahome init`: it holds nexahome.toml, which names the stacks this host runs."""
+    return (directory / CONFIG_NAME).is_file()
+
+
 def is_instance(directory: Path) -> bool:
     """An instance made by `nexahome init` (holds nexahome.toml) or a git clone (stacks/ and a Makefile)."""
-    return (directory / CONFIG_NAME).is_file() or ((directory / "stacks").is_dir() and (directory / "Makefile").is_file())
+    return has_settings(directory) or (stacks_dir(directory).is_dir() and has_makefile(directory))
 
 
 def find(cwd: Path, explicit: str | None, user_home: Path) -> Path | None:
@@ -27,4 +46,4 @@ def find(cwd: Path, explicit: str | None, user_home: Path) -> Path | None:
         if is_instance(directory):
             return directory
     default = user_home / DEFAULT_NAME
-    return default if (default / CONFIG_NAME).is_file() else None
+    return default if has_settings(default) else None

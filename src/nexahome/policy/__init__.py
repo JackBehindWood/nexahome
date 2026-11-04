@@ -1,1 +1,1 @@
-"""Repository policy checks, ported from scripts/ (library only; the hooks still run the scripts until PK5)."""
+"""Repository policy checks: the Compose policy and the personal-data scan. `nexahome check` and the pre-commit hook call them."""

@@ -10,20 +10,12 @@ from pathlib import Path
 
 import pytest
 
-from nexahome import cli
+from nexahome import cli, files
 from nexahome.errors import ExitCode
-from nexahome.instance import bundle, create, manifest
+from nexahome.instance import REINSTALL, bundle, create, manifest
 from nexahome.runner import SubprocessRunner
 
-from conftest import REPO, FakeRunner, MakeCheckout, MakeContext, has_compose
-
-
-def out(ctx: object) -> str:
-    return ctx.out.getvalue()  # type: ignore[attr-defined]
-
-
-def err(ctx: object) -> str:
-    return ctx.err.getvalue()  # type: ignore[attr-defined]
+from conftest import REPO, FakeRunner, MakeCheckout, MakeContext, err, has_compose, out
 
 
 def listing(root: Path) -> list[str]:
@@ -33,6 +25,13 @@ def listing(root: Path) -> list[str]:
 def init(make_context: MakeContext, target: Path, **options: object) -> tuple[int, object]:
     ctx = make_context(cwd=target.parent, runner=FakeRunner(), **options)  # type: ignore[arg-type]
     return cli.main(["init", str(target)], ctx), ctx
+
+
+def test_the_summary_counts_services_and_names_the_backup_tool_it_also_copied(make_context: MakeContext, tmp_path: Path) -> None:
+    code, ctx = init(make_context, tmp_path / "made")
+    services = [p for p in (REPO / "stacks").iterdir() if p.is_dir() and p.name not in ("_template", "backup")]  # P-28
+    # A-11: `nexahome stacks` lists the backup tool too, so the summary says it is there
+    assert code == ExitCode.OK and f": {len(services)} stacks (plus the backup tool)," in out(ctx)
 
 
 def test_the_stacks_are_found_without_a_wheel_or_a_makefile() -> None:
@@ -46,7 +45,7 @@ def test_init_copies_what_the_wheel_ships_and_nothing_else(make_context: MakeCon
     _, files = bundle.walk(bundle.location())  # type: ignore[arg-type]
     expected = {f"stacks/{name}" for name in files} | {"nexahome.toml", ".nexahome/manifest.json"}
     assert {p.relative_to(root).as_posix() for p in root.rglob("*") if p.is_file()} == expected
-    assert not [p for p in root.rglob("*") if p.name == ".env" or p.name == "README.md" or p.name == "data"]
+    assert not [p for p in root.rglob("*") if p.name == ".env" or p.name == "data" or (p.name == "README.md" and p.parent.name != "_template")]
     assert "Next: cd " in out(ctx) and "nexahome doctor" in out(ctx)
 
 
@@ -116,25 +115,25 @@ def test_init_refuses_and_writes_nothing(make_context: MakeContext, make_checkou
 def test_a_failed_write_removes_only_what_this_run_made(monkeypatch: pytest.MonkeyPatch, make_context: MakeContext, tmp_path: Path) -> None:
     root = tmp_path / "made"
     root.mkdir()  # exists and empty: init may fill it, and must leave it standing
-    real, calls = create._write, []
+    real, calls = files.create_exclusive, []
 
-    def failing(path: Path, data: bytes, created: list[Path]) -> None:
+    def failing(path: Path, data: bytes, mode: int, created: list[Path] | None = None) -> None:
         calls.append(path)
         if len(calls) == 5:
             raise OSError(28, "No space left on device")
-        real(path, data, created)
+        real(path, data, mode, created)
 
-    monkeypatch.setattr(create, "_write", failing)
+    monkeypatch.setattr(files, "create_exclusive", failing)
     code, ctx = init(make_context, root)
     assert code == ExitCode.NOT_READY and "No space left" in err(ctx) and f"Next: nexahome init {root}" in err(ctx)
     assert root.is_dir() and listing(root) == []
 
 
 def test_a_failed_write_removes_a_folder_it_created(monkeypatch: pytest.MonkeyPatch, make_context: MakeContext, tmp_path: Path) -> None:
-    def failing(path: Path, data: bytes, created: list[Path]) -> None:
+    def failing(path: Path, data: bytes, mode: int, created: list[Path] | None = None) -> None:
         raise OSError(13, "Permission denied")
 
-    monkeypatch.setattr(create, "_write", failing)
+    monkeypatch.setattr(files, "create_exclusive", failing)
     assert init(make_context, tmp_path / "x" / "made")[0] == ExitCode.NOT_READY
     assert not (tmp_path / "x").exists()
 
@@ -158,7 +157,8 @@ def test_the_home_setting_names_the_folder(make_context: MakeContext, tmp_path: 
 def test_init_without_bundled_stacks_ends_in_one_command(monkeypatch: pytest.MonkeyPatch, make_context: MakeContext, tmp_path: Path) -> None:
     monkeypatch.setattr(bundle, "location", lambda: None)
     code, ctx = init(make_context, tmp_path / "made")
-    assert code == ExitCode.NOT_READY and err(ctx).endswith("Next: uv tool install --reinstall nexahome\n") and not (tmp_path / "made").exists()
+    assert code == ExitCode.NOT_READY and err(ctx).endswith(f"Next: {REINSTALL}\n") and not (tmp_path / "made").exists()
+    assert "reinstall nexahome" not in REINSTALL  # P-01: no PyPI project of this name is ours; install from the wheel
 
 
 def test_the_filter_keeps_local_secrets_and_readmes_out(tmp_path: Path) -> None:

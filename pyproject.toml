@@ -32,9 +32,10 @@ path = "src/nexahome/__init__.py"
 [tool.hatch.build.targets.wheel]
 # The stacks ship as package data (ADR 0020). Plain include and sources, not force-include: only these
 # honour .gitignore and exclude, so a local .env or data/ directory cannot reach a wheel. Stack READMEs
-# stay out because their relative links into docs/ would break.
-include = ["src/nexahome", "stacks"]
-exclude = ["stacks/**/README.md"]
+# stay out because their relative links into docs/ would break; the template's has none and `nexahome stacks new`
+# copies it, so it ships (the CI wheel assertion checks exactly that one).
+include = ["src/nexahome", "/stacks"]  # anchored: a bare "stacks" also matches tests/stacks/
+exclude = ["stacks/**/README.md", "!stacks/_template/README.md", "src/nexahome/README.md"]
 
 [tool.hatch.build.targets.wheel.sources]
 "src" = ""
@@ -42,6 +43,17 @@ exclude = ["stacks/**/README.md"]
 
 [tool.hatch.build.targets.sdist]
 include = ["/src", "/stacks", "/tests", "/LICENSE", "/pyproject.toml"]
+
+[dependency-groups]
+# Tools, pinned, installed into the gitignored .venv (ADR 0003). One source: Dependabot reads this table.
+# `check`: what `make check` and the hooks run, so everyone who uses the repo's checks (a deploy checkout too) has it.
+check = [
+    "pre-commit==4.7.0",
+    "pre-commit-hooks==6.0.0",
+    "detect-secrets==1.5.0",
+]
+# `dev`: only for running the package tests (`make setup-dev`).
+dev = ["pytest==9.1.1"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

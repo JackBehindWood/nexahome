@@ -4,16 +4,17 @@ This is the file part of `make up` (the Makefile stays the caller until the run 
 never returned for printing; only key names are.
 """
 
-import os
 import re
 from collections.abc import Callable
 from pathlib import Path
 from typing import NamedTuple
 
+from nexahome import files
+from nexahome.defaults import PRIVATE_FILE_MODE, SECRET_LENGTH
+
 PLACEHOLDER = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)=CHANGE_ME", re.MULTILINE)
-GENERATE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)=GENERATE$", re.MULTILINE)
+GENERATE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)=GENERATE(?=\r?$)", re.MULTILINE)
 ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-SECRET_LENGTH = 48
 
 
 def placeholders(text: str) -> list[str]:
@@ -52,26 +53,6 @@ class EnvResult(NamedTuple):
     pending: tuple[str, ...]  # keys still CHANGE_ME: the user must set them
 
 
-def _write_new(path: Path, text: str) -> None:
-    """Create a private file; never overwrite."""
-    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-    with os.fdopen(fd, "w") as handle:
-        handle.write(text)
-
-
-def _replace_private(path: Path, text: str) -> None:
-    import tempfile
-
-    fd, temporary = tempfile.mkstemp(dir=path.parent, prefix=".env.")  # created mode 600
-    try:
-        with os.fdopen(fd, "w") as handle:
-            handle.write(text)
-        os.replace(temporary, path)
-    except BaseException:
-        Path(temporary).unlink(missing_ok=True)
-        raise
-
-
 def prepare(stack_dir: Path, *, dry_run: bool = False, make: Callable[[], str] = new_secret) -> EnvResult | None:
     """Create .env from .env.example when absent, then generate secrets once no CHANGE_ME is left.
 
@@ -84,7 +65,7 @@ def prepare(stack_dir: Path, *, dry_run: bool = False, make: Callable[[], str] =
     elif example.is_file():
         created, text = True, example.read_text()
         if not dry_run:
-            _write_new(env, text)
+            files.create_exclusive(env, text.encode(), PRIVATE_FILE_MODE)  # private, never overwrites
     else:
         return None
     pending = placeholders(text)
@@ -92,5 +73,5 @@ def prepare(stack_dir: Path, *, dry_run: bool = False, make: Callable[[], str] =
     if not pending and GENERATE.search(text):
         text, generated = generate_secrets(text, make)
         if not dry_run:
-            _replace_private(env, text)
+            files.replace_atomically(env, text, PRIVATE_FILE_MODE)
     return EnvResult(env, created, tuple(generated), tuple(pending))

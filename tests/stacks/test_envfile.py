@@ -1,3 +1,4 @@
+import os
 import re
 import stat
 from collections.abc import Callable
@@ -28,6 +29,11 @@ def test_generate_secrets_replaces_only_generate_lines() -> None:
     new, keys = envfile.generate_secrets(text, counter())
     assert new == "KEY=secret1\nOTHER=keep\nNOT=GENERATE_x\nLAST=secret2"
     assert keys == ["KEY", "LAST"]
+
+
+def test_generate_secrets_also_fills_a_line_that_ends_in_carriage_return() -> None:
+    new, keys = envfile.generate_secrets("KEY=GENERATE\r\nOTHER=keep\r\n", counter())  # P-17: CRLF from WSL or a Windows editor
+    assert new == "KEY=secret1\r\nOTHER=keep\r\n" and keys == ["KEY"]
 
 
 def test_real_secrets_are_long_alphanumeric_and_differ() -> None:
@@ -102,7 +108,7 @@ def test_a_failed_rewrite_leaves_the_env_untouched_and_no_temporary_file(tmp_pat
     def broken(source: object, target: object) -> None:
         raise OSError("disk full")
 
-    monkeypatch.setattr(envfile.os, "replace", broken)
+    monkeypatch.setattr(os, "replace", broken)
     with pytest.raises(OSError, match="disk full"):
         envfile.prepare(directory, make=counter())
     assert (directory / ".env").read_text() == "KEY=GENERATE\n"

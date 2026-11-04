@@ -2,13 +2,13 @@
 
 A modular, self-hosted homelab platform: local AI, development tools, storage, networking and home automation. Built to be reproducible, secure and easy to adapt to your own hardware.
 
-**Status:** early foundation. Seven stacks run on a laptop: a demo (`hello`), Actual Budget (`actual`, a local expense tracker; use dummy data until backups are proven), `backup`, `edge`, `identity`, `portal` and `gatus`. CI (secret scan and `make check`) runs on every push and pull request to `main` and `dev`; see the [session log](docs/session-log.md).
+**Status:** early foundation. The stacks run on a laptop: a demo (`hello`), Actual Budget (`actual`, a local expense tracker; use dummy data until backups are proven), `backup`, `edge`, `identity`, `portal` and `gatus`. CI runs on every push and pull request; the latest result is in the [session log](docs/session-log.md).
 
 ## Quick start
 
 Two ways in. Both need a Docker CLI with Compose and a running engine: on Linux, Docker Engine runs directly; on macOS the project uses [Colima](docs/adr/0004-colima-runtime.md), started once per boot (`colima start --cpu 2 --memory 2 --disk 20`); on Windows use WSL2, which counts as Linux, best effort and not tested in CI ([ADR 0019](docs/adr/0019-platform-support-and-ci-matrix.md)).
 
-### Run NexaHome as shipped (no clone)
+### Run NexaHome as shipped (needs the wheel)
 
 For anyone who wants the stacks as they are. You need Python 3.13 or newer, or [`uv`](https://docs.astral.sh/uv/), which fetches it. There is no release yet, so the wheel comes from a clone (`uv build --wheel`, then `dist/`) until the first tag; replace the file name below with yours.
 
@@ -33,7 +33,7 @@ nexahome env                              # creates each .env, generates secrets
 docker compose -f stacks/actual/compose.yaml up -d --wait
 ```
 
-The `docker compose` lines are the manual form of `make up` and `make down`, which need a clone; a `nexahome up` will replace them. Backup, restore, smoke checks and deploy are also still Makefile targets, so they need a clone for now. The stacks in `~/nexahome/stacks` belong to the package: do not edit them. Your changes go in each stack's `.env` (a `compose.override.yaml` is not read by the manual commands above, because they name the file with `-f`; it arrives with `nexahome up`). Anything that edits the three files that list every named app (the edge `Caddyfile`, the portal `services.yaml`, the Gatus targets) means forking the repository, the second way in.
+The `docker compose` lines are a manual form of `make up` and `make down` (which need a clone) without its `.env` handling; a `nexahome up` will replace them. Backup, restore, smoke checks and deploy are also still Makefile targets, so they need a clone for now. The stacks that came in the package belong to it: do not edit them. Your own stacks sit beside them ([make your own stack](docs/runbooks/own-stack.md)). Your changes to a package stack go in its `.env` (a `compose.override.yaml` is read by the manual commands above only if you add `-f stacks/<name>/compose.override.yaml` after the first `-f`, because they name the file with `-f`; `nexahome check` reads it for you). Anything that edits the three files that list every named app (the edge `Caddyfile`, the portal `services.yaml`, the Gatus targets) means forking the repository, the second way in.
 
 ### Fork it, contribute, or run the full tooling (clone)
 
@@ -67,13 +67,15 @@ nexahome doctor             # diagnose this machine; every problem ends in one c
 nexahome env                # create each stack's .env and generate its secrets (add --dry-run to look first)
 nexahome init [DIR]         # make a new instance from the stacks inside the package (see Quick start)
 nexahome config             # show nexahome.toml; `config set stacks NAME...` chooses the stacks an instance runs
-nexahome stacks             # which stacks exist, which this host runs, whether they are running
+nexahome stacks             # which stacks exist, who owns them, which this host runs, whether they are running
+nexahome stacks new NAME    # make a stack of your own from the template; `stacks remove NAME` deletes it
 nexahome status             # health of the stacks and how recent the backup is
+nexahome logs [STACK]       # the last lines of a stack's logs (--tail N, --follow); no STACK shows every stack in turn
 nexahome check              # the Compose policy over the stacks
 nexahome update --available # is a newer release out? (there is none yet)
 ```
 
-`make setup` prepares the tool itself (the virtual environment); `nexahome env` prepares the stacks (their `.env` files). `nexahome --help` lists every command and `nexahome <command> --help` its options. Without activating the environment, call `.venv/bin/nexahome`. Which folder it works on: `--home DIR` (given before the command), else `$NEXAHOME_HOME`, else the nearest folder above you that holds `nexahome.toml` (or, in a clone, `stacks/` and a Makefile), else `~/nexahome` when that holds a `nexahome.toml`. `doctor`, `stacks` and `update --available` also take `--json` for scripts (schema 1, described in `src/nexahome/report.py`). It is not on PyPI and has no release yet; `make test` runs its tests ([CONTRIBUTING](CONTRIBUTING.md#the-nexahome-package)).
+`make setup` prepares the tool itself (the virtual environment); `nexahome env` prepares the stacks (their `.env` files). `nexahome update` needs `NEXAHOME_UPDATE_URL` until the first release. `nexahome --help` lists every command and `nexahome <command> --help` its options. Without activating the environment, call `.venv/bin/nexahome`. Which folder it works on: `--home DIR` (given before the command), else `$NEXAHOME_HOME`, else the nearest folder above you that holds `nexahome.toml` (or, in a clone, `stacks/` and a Makefile), else `~/nexahome` when that holds a `nexahome.toml`. `doctor`, `stacks` and `update --available` also take `--json` for scripts (schema 1, described in `src/nexahome/report.py`). It is not on PyPI and has no release yet; `make test` runs its tests ([CONTRIBUTING](CONTRIBUTING.md#the-nexahome-package)).
 
 Exit codes, the same for every command:
 
@@ -94,6 +96,8 @@ Each stack's `.env` and the `data/` directory are local only and gitignored. Not
 
 ## Back up, restore, update
 
+The Makefile targets below need a clone; an installed instance has no backup command yet.
+
 ```sh
 make backup-init          # once: creates the encrypted repository and a password file
 make backup               # saves every stack's data (stops each for a few seconds)
@@ -110,7 +114,9 @@ Save a copy of the password file (`.config/restic-password`) somewhere other tha
 - `docs/` documentation: start at the [documentation index](docs/README.md)
 - `stacks/<name>/` one deployable unit each: `compose.yaml`, `.env.example`, README; `stacks/_template/` is the starting point for a new one
 - `src/nexahome/` and `tests/` the `nexahome` command and its tests
-- `scripts/` the backup, smoke, deploy and setup scripts (the checks behind `make check` live in the `nexahome` package)
+- `scripts/` the backup, smoke, deploy and setup scripts: shell glue that runs where the package cannot, a list that shrinks as commands move into the package ([which goes where](docs/codebase.md#script-or-package))
+
+How the general design differs from the owner's reference deployment: [architecture](docs/architecture.md#general-design-and-the-reference-deployment).
 
 ## Contributing
 

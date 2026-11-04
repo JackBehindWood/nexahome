@@ -10,8 +10,8 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-MAX_FILE_BYTES = 1024 * 1024  # a stack file is configuration; anything bigger is not ours to copy
 SKIP_NAMES = frozenset({"README.md", ".env", "data", "__pycache__"})  # READMEs stay on GitHub (their links break here)
+TEMPLATE_README = ("_template", "README.md")  # the one README that ships: `nexahome stacks new` copies it (it has no links)
 SECRET_SUFFIXES = (".pem", ".key", ".p12", ".kdbx")
 
 
@@ -42,5 +42,6 @@ def walk(root: Path) -> tuple[list[str], list[str]]:
         names[:] = sorted(n for n in names if wanted(n))
         relative = Path(folder).relative_to(root)
         directories += [(relative / n).as_posix() for n in names]
-        files += [(relative / n).as_posix() for n in sorted(filenames) if wanted(n) and not os.path.islink(os.path.join(folder, n))]
+        keep = [n for n in sorted(filenames) if wanted(n) or (relative.as_posix(), n) == TEMPLATE_README]
+        files += [(relative / n).as_posix() for n in keep if not os.path.islink(os.path.join(folder, n))]
     return sorted(directories), sorted(files)

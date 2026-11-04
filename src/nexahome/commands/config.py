@@ -20,7 +20,7 @@ NAME = "config"
 
 
 def register(subparsers: Subparsers) -> None:
-    parser = subparsers.add_parser(NAME, help="show or change the settings in nexahome.toml", description=__doc__.split("\n")[0])
+    parser = subparsers.add_parser(NAME, help="show or change the settings in nexahome.toml", description=(__doc__ or NAME).split("\n")[0])
     parser.add_argument("action", nargs="?", choices=("list", "get", "set"), default="list", help="list (the default), get KEY, or set KEY VALUE...")
     parser.add_argument("key", nargs="?", metavar="KEY", help="a setting: stacks (settable), schema and created_by (read-only)")
     parser.add_argument("values", nargs="*", metavar="VALUE", help="for set: the new value, for stacks one or more stack names")
@@ -28,19 +28,20 @@ def register(subparsers: Subparsers) -> None:
 
 
 def run(args: argparse.Namespace, ctx: Context) -> int:
-    from nexahome.errors import NexaHomeError
-    from nexahome.instance import CONFIG_NAME, config
+    from nexahome.errors import NexaHomeError, editor_fix
+    from nexahome.instance import CONFIG_NAME, config, home
 
-    root = ctx.require_checkout()
-    if not (root / CONFIG_NAME).is_file():
+    root = ctx.require_instance()
+    if not home.has_settings(root):
         raise NexaHomeError(
             f"{ctx.display(root)} is a git clone: its stacks are listed in .config/stacks, which the Makefile reads, not in {CONFIG_NAME}",
-            "${EDITOR:-vi} .config/stacks",
+            editor_fix(".config/stacks"),
         )
     if args.action == "set":
         return _set(args, ctx, root)
     settings = config.read(root)
-    assert settings is not None  # the file exists, checked above
+    if settings is None:  # the file exists, checked above; `assert` would vanish under `python -O`
+        raise NexaHomeError("nexahome.toml disappeared while it was being read", "nexahome doctor")
     shown = {"schema": str(settings.schema), "created_by": settings.created_by, "stacks": " ".join(settings.stacks)}
     if args.action == "get":
         if args.key not in shown:

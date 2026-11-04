@@ -1,6 +1,8 @@
-"""Flag personal or environment-specific data in text files (port of scripts/check_personal_data.py).
+"""Flag personal or environment-specific data in text files.
 
-Flags private IPv4 addresses, home-directory paths with a user name, `.local` hostnames, and any term
+Flags private IPv4 addresses, home-directory paths with a user name (Unix and Windows), `.local`, `.lan` and
+`.home.arpa` hostnames, email addresses (`noreply@...` and GitHub's `users.noreply.github.com` are the addresses this
+repository publishes on purpose), and any term
 in the optional, gitignored `.personal-denylist` (one per line, case-insensitive). A line containing
 `personal-data: ok` is allowed.
 """
@@ -15,6 +17,11 @@ PATTERNS = {
     ),
     "home directory path with a user name": re.compile(r"/(?:Users|home)/[A-Za-z0-9][A-Za-z0-9._-]*"),
     "local hostname": re.compile(r"\b[a-z0-9-]+\.local\b(?!\.(?:md|json))", re.IGNORECASE),
+    "home network hostname": re.compile(r"\b[a-z0-9-]+\.(?:lan|home\.arpa)\b", re.IGNORECASE),
+    "Windows home directory path with a user name": re.compile(r"\b[A-Za-z]:[\\/]+Users[\\/]+[A-Za-z0-9][A-Za-z0-9._ -]*", re.IGNORECASE),
+    "email address": re.compile(
+        r"\b(?!noreply@)[A-Za-z0-9._%+-]+@(?!users\.noreply\.github\.com\b)[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}\b"
+    ),
 }
 ALLOW_MARKER = "personal-data: ok"
 DENYLIST = Path(".personal-denylist")

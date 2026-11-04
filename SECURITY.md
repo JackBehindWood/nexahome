@@ -6,7 +6,11 @@ Do not open a public issue with details. Use "Report a vulnerability" in this re
 
 ## Scope
 
-The code, configuration and documents in this repository. Your own deployment, hardware and network are your responsibility.
+The code, configuration and documents in this repository, including the `nexahome` command and how `nexahome update` downloads and verifies a release. Your own deployment, hardware and network are your responsibility.
+
+## Supported versions
+
+The latest release; until the first release exists (none yet), `main`. Fixes land there, with no backports.
 
 ## Response
 

@@ -26,6 +26,12 @@ def test_nothing_imports_posix_only_modules() -> None:
     assert [p.name for p in SOURCES if POSIX_ONLY_IMPORTS.search(p.read_text())] == []
 
 
+def test_the_package_never_names_a_script() -> None:
+    """`scripts/` is glue that runs when the package cannot (docs/codebase.md, "Script or package?"): calls go from the
+    Makefile to a script, never from the package to one."""
+    assert [str(p.relative_to(PACKAGE)) for p in SOURCES if "scripts/" in p.read_text()] == []
+
+
 def test_no_shell_is_ever_used() -> None:
     assert [p.name for p in SOURCES if "shell=True" in p.read_text() or "os.system" in p.read_text()] == []
 

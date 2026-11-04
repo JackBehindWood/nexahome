@@ -1,3 +1,5 @@
+"""Which stacks exist and which a host runs (`nexahome.stacks.catalogue`)."""
+
 from pathlib import Path
 
 from nexahome.stacks import catalogue as stacks

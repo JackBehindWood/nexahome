@@ -17,6 +17,10 @@ GOOD: dict[str, Any] = {
     "healthcheck": {"test": ["CMD", "true"]},
     "restart": "unless-stopped",
     "ports": [{"host_ip": "127.0.0.1", "published": "8080"}],
+    "user": "65532:65532",
+    "cap_drop": ["ALL"],
+    "security_opt": ["no-new-privileges:true"],
+    "read_only": True,
 }
 
 
@@ -40,6 +44,24 @@ SERVICES: list[tuple[str, dict[str, Any], str]] = [
     ("extra capability", service(cap_add=["SYS_ADMIN", "NET_BIND_SERVICE"]), "cap_add ['SYS_ADMIN'] is not allowed"),
     ("allowed capability", service(cap_add=["NET_BIND_SERVICE"]), ""),
     ("docker socket", service(volumes=[{"source": "/var/run/docker.sock"}]), "Docker socket must not be mounted"),
+    ("digest only is pinned", service(image="example/app@sha256:" + "a" * 64), ""),
+    ("tag and digest", service(image="example/app:1.2.3@sha256:" + "a" * 64), ""),
+    ("no user", service(user=None), "must run as a non-root user"),
+    ("root by name", service(user="root"), "must run as a non-root user"),
+    ("root by id", service(user="0:0"), "must run as a non-root user"),
+    ("named user", service(user="nobody"), ""),
+    ("capabilities kept", service(cap_drop=None), "cap_drop: [ALL]"),
+    ("some capabilities dropped", service(cap_drop=["NET_RAW"]), "cap_drop: [ALL]"),
+    ("new privileges allowed", service(security_opt=None), "no-new-privileges"),
+    ("writable root", service(read_only=None), "read_only: true"),
+    ("host pid", service(pid="host"), "pid: host is not allowed"),
+    ("host ipc", service(ipc="host"), "ipc: host is not allowed"),
+    ("host user namespace", service(userns_mode="host"), "userns_mode: host is not allowed"),
+    ("another container's network", service(network_mode="container:db"), "network_mode container:db is not allowed"),
+    ("another service's network", service(network_mode="service:db"), "network_mode service:db is not allowed"),
+    ("seccomp off", service(security_opt=["no-new-privileges:true", "seccomp=unconfined"]), "unconfined"),
+    ("apparmor off", service(security_opt=["no-new-privileges:true", "apparmor:unconfined"]), "unconfined"),
+    ("a device", service(devices=[{"source": "/dev/mem", "target": "/dev/mem"}]), "devices are not allowed"),
     ("one-shot job", service(healthcheck=None, restart=None, labels={"nexahome.oneshot": "true"}), ""),
     ("one-shot still needs a tag", service(image="job", labels={"nexahome.oneshot": "true"}), "pinned tag"),
 ]
@@ -98,6 +120,29 @@ def test_check_stack_runs_compose_config_with_the_example_env(tmp_path: Path) ->
         runner = FakeRunner({argv_for(stack, *extra): RunResult(0, config)})
         result = compose.check_stack(runner, stack)
         assert result.lines() == [f"{stack}: ok"] and runner.calls == [argv_for(stack, *extra)]
+
+
+def test_an_override_file_is_part_of_what_is_checked_and_what_runs(tmp_path: Path) -> None:
+    stack = make_stack(tmp_path, False)
+    (stack.parent / "compose.override.yaml").write_text("")  # `docker compose` in the stack folder reads it, so `check` must too (P-02)
+    override = stack.parent / "compose.override.yaml"
+    config = json.dumps({"name": "nexahome-demo", "services": {"app": service(privileged=True)}})
+    argv = ("docker", "compose", "-f", str(stack), "-f", str(override), "config", "--format", "json")
+    runner = FakeRunner({argv: RunResult(0, config)})
+    assert compose.check_stack(runner, stack).lines() == [f"{stack}: app: privileged is not allowed"] and runner.calls == [argv]
+    from nexahome.docker import compose as docker_compose
+
+    assert docker_compose.file_argv(stack)[:6] == ["docker", "compose", "-f", str(stack), "-f", str(override)]
+
+
+def test_a_required_variable_without_a_default_gets_a_placeholder_for_the_check(tmp_path: Path) -> None:
+    stack = make_stack(tmp_path, True)  # D-K: scripts/backup.sh sets these; `${VAR:?}` would stop `config` otherwise
+    stack.write_text("services:\n  a:\n    volumes:\n      - ${NEXAHOME_DIR:?set by a script}:/x\n      - ${DEFINED:?no}:/y\n")
+    (stack.parent / ".env.example").write_text("# NEXAHOME_DIR=/commented\nDEFINED=1\n")
+    argv = ("env", "NEXAHOME_DIR=/nexahome-check/NEXAHOME_DIR", *argv_for(stack, "--env-file", str(stack.parent / ".env.example")))
+    config = json.dumps({"name": "nexahome-demo", "services": {"app": service()}})
+    runner = FakeRunner({argv: RunResult(0, config)})
+    assert compose.check_stack(runner, stack).lines() == [f"{stack}: ok"] and runner.calls == [argv]
 
 
 def test_check_stack_reports_problems_with_the_original_line_format(tmp_path: Path) -> None:

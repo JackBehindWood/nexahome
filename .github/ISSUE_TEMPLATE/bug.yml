@@ -1,0 +1,56 @@
+name: Bug report
+description: Something in NexaHome does not work as documented
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. This is a public issue: remove home paths, host names, IP addresses, e-mail addresses and anything secret before you paste. A security problem is not an issue: see SECURITY.md in the repository.
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened, and what did you expect?
+      description: Include the exact command you ran and the last lines it printed.
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Output of `nexahome doctor --json`
+      description: Read it before you paste it and remove personal details.
+      render: json
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Output of `nexahome --version`
+    validations:
+      required: true
+  - type: dropdown
+    id: system
+    attributes:
+      label: Operating system
+      options:
+        - macOS (Apple silicon)
+        - macOS (Intel)
+        - Linux
+        - Windows with WSL2 (best effort)
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: system-version
+    attributes:
+      label: Operating system version
+      placeholder: for example 15.1 or Ubuntu 24.04
+  - type: dropdown
+    id: install
+    attributes:
+      label: How did you install NexaHome?
+      options:
+        - Wheel with uv
+        - Wheel with pip
+        - Clone of the repository (make setup)
+        - Other
+    validations:
+      required: true

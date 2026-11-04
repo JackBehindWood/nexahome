@@ -11,7 +11,7 @@ from nexahome import __version__, cli, commands
 from nexahome.commands._base import Subparsers
 from nexahome.errors import ExitCode, NexaHomeError
 
-from conftest import MakeContext, MakeHost
+from conftest import MakeCheckout, MakeContext, MakeHost
 
 
 def install_command(monkeypatch: pytest.MonkeyPatch, run: Callable[[argparse.Namespace, object], int]) -> None:
@@ -60,6 +60,29 @@ def test_error_prints_fail_and_next_and_uses_its_exit_code(
     assert ctx.err.getvalue() == "FAIL  engine is down\nNext: colima start\n"  # type: ignore[attr-defined]
 
 
+@pytest.mark.parametrize("error", [PermissionError(13, "Permission denied", "nexahome.toml"), UnicodeDecodeError("utf-8", b"\xff", 0, 1, "invalid start byte")])
+def test_a_file_error_ends_in_one_command_not_a_traceback(
+    monkeypatch: pytest.MonkeyPatch, make_context: MakeContext, error: Exception
+) -> None:
+    def run(args: argparse.Namespace, ctx: object) -> int:
+        raise error
+
+    install_command(monkeypatch, run)
+    ctx = make_context()
+    assert cli.main(["dummy"], ctx) == ExitCode.NOT_READY
+    text = ctx.err.getvalue()  # type: ignore[attr-defined]
+    assert text.startswith("FAIL  ") and text.endswith("Next: nexahome doctor\n") and "Traceback" not in text
+
+
+def test_the_debug_setting_keeps_the_traceback(monkeypatch: pytest.MonkeyPatch, make_context: MakeContext) -> None:
+    def run(args: argparse.Namespace, ctx: object) -> int:
+        raise PermissionError(13, "Permission denied", "nexahome.toml")
+
+    install_command(monkeypatch, run)
+    with pytest.raises(PermissionError):
+        cli.main(["dummy"], make_context(env={"NEXAHOME_DEBUG": "1"}))
+
+
 def test_error_without_a_fix_is_refused() -> None:
     with pytest.raises(ValueError):
         NexaHomeError("broken", " ")
@@ -99,6 +122,11 @@ def test_main_reads_sys_argv_and_the_real_context_by_default(monkeypatch: pytest
     assert __version__ in capsys.readouterr().out
 
 
+def test_the_command_runs_without_docstrings() -> None:
+    done = subprocess.run([sys.executable, "-OO", "-m", "nexahome", "--help"], capture_output=True, text=True, check=False)  # P-23
+    assert done.returncode == 0 and "doctor" in done.stdout and "Traceback" not in done.stderr
+
+
 def test_python_dash_m_works() -> None:
     done = subprocess.run([sys.executable, "-m", "nexahome", "--version"], capture_output=True, text=True, check=False)
     assert (done.returncode, done.stdout.strip()) == (0, f"nexahome {__version__}")
@@ -133,3 +161,35 @@ def test_version_to_a_closed_pipe_is_quiet_too(tmp_path: Path) -> None:
     done = subprocess.run([sys.executable, "-m", "nexahome", "--version"], stdout=write_end, stderr=subprocess.PIPE, text=True, cwd=tmp_path, check=False)
     os.close(write_end)
     assert (done.returncode, done.stderr) == (141, "")
+
+
+# --- A-06: --home works after the command too ---------------------------------------------------------------
+@pytest.mark.parametrize(
+    ("arguments", "lifted"),
+    [
+        (["stacks", "--home", "x"], ["--home", "x", "stacks"]),
+        (["stacks", "--home=x"], ["--home=x", "stacks"]),
+        (["stacks", "new", "n", "--home", "x"], ["--home", "x", "stacks", "new", "n"]),
+        (["--home", "x", "stacks"], ["--home", "x", "stacks"]),
+        (["stacks"], ["stacks"]),
+        (["stacks", "--home"], ["stacks", "--home"]),  # no value: left for argparse to report
+        (["config", "set", "--", "--home", "x"], ["config", "set", "--", "--home", "x"]),  # after `--` it is a value
+    ],
+)
+def test_home_is_lifted_in_front_of_the_command(arguments: list[str], lifted: list[str]) -> None:
+    assert cli._lift_home(arguments) == lifted
+
+
+@pytest.mark.parametrize("home_option", [["--home", "repo"], ["--home=repo"]])
+def test_home_after_the_command_selects_the_folder(
+    make_checkout: MakeCheckout, make_context: MakeContext, tmp_path: Path, home_option: list[str]
+) -> None:
+    make_checkout({"demo": None})  # tmp_path/repo
+    ctx = make_context(cwd=tmp_path)
+    assert cli.main(["stacks", *home_option], ctx) == ExitCode.OK
+    assert "demo" in ctx.out.getvalue()  # type: ignore[attr-defined]
+
+
+def test_home_without_a_value_is_a_usage_error(make_context: MakeContext) -> None:
+    ctx = make_context()
+    assert cli.main(["stacks", "--home"], ctx) == ExitCode.USAGE

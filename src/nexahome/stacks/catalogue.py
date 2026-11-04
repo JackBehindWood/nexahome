@@ -2,36 +2,35 @@
 
 from pathlib import Path
 
-from nexahome.instance import CONFIG_NAME
-
-CORE = ("edge", "identity")  # started first, as the Makefile does
-NOT_SERVICES = ("_template", "backup")  # the template, and the one-shot backup tool
+from nexahome.defaults import CORE_STACKS, NON_SERVICE_STACKS
+from nexahome.instance import home
 
 
-def all_stacks(checkout: Path) -> list[str]:
+
+def all_stacks(instance: Path) -> list[str]:
     """Every directory under stacks/ with a compose.yaml, except the template."""
-    found = sorted(d.name for d in (checkout / "stacks").iterdir() if (d / "compose.yaml").is_file())
+    found = sorted(d.name for d in home.stacks_dir(instance).iterdir() if (d / "compose.yaml").is_file())
     return [name for name in found if name != "_template"]
 
 
-def enabled(checkout: Path) -> list[str]:
+def enabled(instance: Path) -> list[str]:
     """The stacks this host runs: the list in nexahome.toml (an instance), else the names in .config/stacks (a clone,
     this host only) if it lists any, else every stack except the template and the backup tool; core stacks first."""
     names: list[str] = []
-    if (checkout / CONFIG_NAME).is_file():  # an instance made by `nexahome init`: its settings name the stacks
+    if home.has_settings(instance):  # an instance made by `nexahome init`: its settings name the stacks
         from nexahome.instance import config
 
-        settings = config.read(checkout)
+        settings = config.read(instance)
         names = list(settings.stacks) if settings else []
     else:
         try:
-            names = (checkout / ".config" / "stacks").read_text().split()
+            names = (instance / ".config" / "stacks").read_text().split()
         except OSError:
             pass
     if not names:
-        names = [n for n in all_stacks(checkout) if n not in NOT_SERVICES]
-    return [n for n in names if n in CORE] + [n for n in names if n not in CORE]
+        names = [n for n in all_stacks(instance) if n not in NON_SERVICE_STACKS]
+    return [n for n in names if n in CORE_STACKS] + [n for n in names if n not in CORE_STACKS]
 
 
-def compose_file(checkout: Path, name: str) -> Path:
-    return checkout / "stacks" / name / "compose.yaml"
+def compose_file(instance: Path, name: str) -> Path:
+    return home.stack_dir(instance, name) / "compose.yaml"

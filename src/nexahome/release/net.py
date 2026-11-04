@@ -1,4 +1,4 @@
-"""The only module that talks to the network. Only `nexahome update` uses it, and only when it is run.
+"""The only module that talks to the network (and asks the host which loopback ports are taken). `nexahome update` fetches through it, and `stacks new` probes ports through it, each only when run.
 
 HTTPS only (plain HTTP is allowed to the local machine, for a mirror or a test), a time and size limit on every
 request, no credentials, and no data about the user: the request carries the tool name and version only.
@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from nexahome import __version__
+from nexahome.defaults import DOWNLOAD_CHUNK_BYTES
 
 if TYPE_CHECKING:
     from http.client import HTTPMessage, HTTPResponse
@@ -24,6 +25,19 @@ if TYPE_CHECKING:
 
 
 LOOPBACK = ("127.0.0.1", "localhost", "::1")
+
+
+def port_is_busy(port: int) -> bool:
+    """True when something on this host already holds the port on 127.0.0.1 (where stacks publish). A port that cannot
+    be tested counts as busy, so the caller picks another one."""
+    import socket
+
+    with socket.socket() as probe:
+        try:
+            probe.bind(("127.0.0.1", port))
+        except OSError:
+            return True
+    return False
 
 
 class NetworkError(Exception):
@@ -43,6 +57,7 @@ def check_url(url: str) -> None:
 
 def _open(url: str, timeout: float) -> HTTPResponse:
     """Open an address. Every redirect is checked too; the caller closes the response."""
+    import http.client
     import urllib.error
     import urllib.request
 
@@ -62,7 +77,7 @@ def _open(url: str, timeout: float) -> HTTPResponse:
     except urllib.error.HTTPError as error:
         error.close()  # it holds the response body open
         raise NetworkError(f"the server answered HTTP {error.code}") from error
-    except (urllib.error.URLError, OSError, ValueError) as error:
+    except (urllib.error.URLError, http.client.HTTPException, OSError, ValueError) as error:
         raise NetworkError(str(getattr(error, "reason", error))) from error
     return response
 
@@ -91,7 +106,7 @@ def http_download(url: str, destination: Path, *, timeout: float, max_bytes: int
     written = 0
     try:
         with _open(url, timeout) as response, destination.open("wb") as out:
-            while piece := response.read(65536):
+            while piece := response.read(DOWNLOAD_CHUNK_BYTES):
                 written += len(piece)
                 if written > max_bytes:
                     raise NetworkError(f"the download is larger than the {max_bytes} byte limit")

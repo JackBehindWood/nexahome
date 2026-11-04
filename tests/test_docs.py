@@ -1,6 +1,7 @@
 """The documentation set stays true to the repository (PK-A1): headers, links, labels, commands, Dependabot."""
 
 import re
+import warnings
 from pathlib import Path
 
 import pytest
@@ -14,7 +15,7 @@ HEADERED = sorted([*DOCS.glob("*.md"), *(DOCS / "runbooks").glob("*.md")])
 HEADERED = [p for p in HEADERED if p.name != "session-log.md"]
 LABELS = re.compile(r"\b(?:Confirmed|Proposed)\b")  # "Open" is also an ordinary verb, so it is not checked
 LABEL_HOMES = {"project.md", "session-log.md", "README.md"}  # README.md states the rule itself
-ROOT_DOCS = [REPO / name for name in ("README.md", "CONTRIBUTING.md", "SECURITY.md")]  # CLAUDE.md is local only
+ROOT_DOCS = [REPO / name for name in ("README.md", "CONTRIBUTING.md", "SECURITY.md", "CODE_OF_CONDUCT.md", "scripts/README.md", "src/nexahome/README.md", "stacks/README.md")]  # CLAUDE.md is local only
 MARKDOWN = sorted([*ROOT_DOCS, *DOCS.rglob("*.md"), *(REPO / "stacks").glob("*/README.md")])
 # ADRs and the log record what was planned, rejected or cut, so they may name commands that do not exist.
 CURRENT = [p for p in MARKDOWN if p.parent != DOCS / "adr" and p.name != "session-log.md"]
@@ -84,5 +85,37 @@ def test_documented_make_and_nexahome_commands_exist() -> None:
 def test_every_stack_has_a_dependabot_entry() -> None:
     config = (REPO / ".github" / "dependabot.yml").read_text()
     covered = set(re.findall(r"directory: /stacks/([\w-]+)", config))
-    stacks = {p.parent.name for p in (REPO / "stacks").glob("*/compose.yaml") if p.parent.name != "_template"}
+    stacks = {p.parent.name for p in (REPO / "stacks").glob("*/compose.yaml")}
     assert stacks - covered == set()
+
+
+def test_every_adr_is_listed_in_the_adr_index() -> None:
+    index = (DOCS / "adr" / "README.md").read_text()
+    missing = [p.name for p in sorted((DOCS / "adr").glob("[0-9][0-9][0-9][0-9]-*.md")) if p.name not in index]
+    assert missing == [], f"add a row to docs/adr/README.md for: {', '.join(missing)}"
+
+
+LOG_WARN, LOG_MAX = 220, 300  # lines; the log stays a log, not an archive (git keeps the full text)
+
+
+@pytest.mark.filterwarnings("default")  # the project turns warnings into errors; this one must only be shown
+def test_session_log_stays_within_its_line_budget() -> None:
+    lines = len((DOCS / "session-log.md").read_text().splitlines())
+    if lines > LOG_WARN:
+        warnings.warn(f"docs/session-log.md has {lines} lines (budget {LOG_WARN}); collapse the older entries into 'Earlier entries'", stacklevel=1)
+    assert lines <= LOG_MAX, f"docs/session-log.md has {lines} lines (maximum {LOG_MAX}); collapse entries older than the newest 8 into one line each"
+
+
+def test_codebase_doc_names_every_module() -> None:
+    """The module map in docs/codebase.md lists every top-level module, every package and, one by one, the modules of the
+    packages whose table row names them (a module was missing from it once, so this keeps it from drifting again)."""
+    source = REPO / "src" / "nexahome"
+    if not source.is_dir():
+        pytest.skip("the source is not in this tree")
+    text = (DOCS / "codebase.md").read_text()
+    wanted = [path.stem for path in source.glob("*.py") if not path.stem.startswith("__")]
+    wanted += [f"{path.name}/" for path in source.iterdir() if path.is_dir() and path.name != "__pycache__"]
+    for package in ("instance", "stacks", "release"):
+        wanted += [path.stem for path in (source / package).glob("*.py") if not path.stem.startswith("__")]
+    missing = sorted(name for name in wanted if f"`{name}`" not in text)
+    assert not missing, f"docs/codebase.md does not name: {', '.join(missing)}"

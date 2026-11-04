@@ -4,7 +4,7 @@
 * **Date:** 2026-10-21 (amended 2026-10-23)
 
 ## Context
-Backups must treat every stack alike (found by the `nexahome.backup` label, [ADR 0007](0007-stack-contract.md)), be encrypted, deduplicated, verifiable, and live on the host, outside the Colima VM (`colima delete` would take data and backup together). Nothing may be installed on the host ([ADR 0003](0003-project-local-tooling.md)). The register row "Backup tool" is Open; restic was the shortlist.
+Backups must treat every stack alike (found by the `nexahome.backup` label, [ADR 0007](0007-stack-contract.md)), be encrypted, deduplicated, verifiable, and live on the host, outside the Colima VM (`colima delete` would take data and backup together). Nothing may be installed on the host ([ADR 0003](0003-project-local-tooling.md)). The register row "Backup tool" is Confirmed: restic was chosen after the drill (see Decision).
 
 ## Decision
 Use restic 0.19.1 from the official `restic/restic` image (arm64 and amd64 published), defined in `stacks/backup/compose.yaml` so `make check` and Dependabot cover the pin. It is a one-shot job: `--network none`, `cap_drop: ALL`, `no-new-privileges`, read-only root, volumes mounted read-only, a fixed host name (restic matches the previous snapshot by host name; without it every run looks full). One snapshot per stack, tagged `stack=<name>`, containing its labelled volumes and its `.env`. Each stack is stopped, copied and started again; `restic check` ends every run. Retention is manual.
