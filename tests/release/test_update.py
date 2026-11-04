@@ -93,7 +93,7 @@ def test_available_says_so_and_installs_nothing(make_context: MakeContext) -> No
     installer = Installer()
     ctx, network = make(make_context, GOOD, installer)
     assert cli.main(["update", "--available"], ctx) == ExitCode.OK
-    assert text(ctx) == f"update available: {__version__} -> v9.9.0\nRun: nexahome update\n"
+    assert text(ctx) == f"update available: {__version__} -> 9.9.0\nRun: nexahome update\n"
     assert network.asked == [FEED_URL] and installer.calls == []
 
 
@@ -102,7 +102,19 @@ def test_available_when_up_to_date_and_as_json(make_context: MakeContext) -> Non
     assert cli.main(["update", "--available"], ctx) == ExitCode.OK and text(ctx) == f"up to date ({__version__})\n"
     ctx2, _ = make(make_context, GOOD)
     cli.main(["update", "--available", "--json"], ctx2)
-    assert json.loads(text(ctx2)) == {"schema": 1, "installed": __version__, "latest": "v9.9.0", "available": True}
+    assert json.loads(text(ctx2)) == {"schema": 1, "installed": __version__, "latest": "9.9.0", "available": True}
+
+
+@pytest.mark.parametrize("tag", ["v9.9.0", "9.9.0"])
+def test_the_feed_tag_is_shown_without_its_v_everywhere(make_context: MakeContext, tag: str) -> None:
+    """T4: GitHub tags are `vX.Y.Z`; the version people compare with `nexahome --version` has no `v`."""
+    ctx, _ = make(make_context, {**GOOD, FEED_URL: feed(tag=tag)}, Installer())
+    assert cli.main(["update", "--available"], ctx) == ExitCode.OK and "v9.9.0" not in text(ctx) and "-> 9.9.0" in text(ctx)
+    ctx, _ = make(make_context, {**GOOD, FEED_URL: feed(tag=tag)}, Installer())
+    assert cli.main(["update", "--yes"], ctx) == ExitCode.OK and "v9.9.0" not in text(ctx) and "-> 9.9.0." in text(ctx)
+    ctx, _ = make(make_context, {FEED_URL: feed(tag=tag)})
+    cli.main(["update", "--available", "--json"], ctx)
+    assert json.loads(text(ctx))["latest"] == "9.9.0"
 
 
 def test_update_checks_first_and_stops_when_current(make_context: MakeContext) -> None:
@@ -116,11 +128,11 @@ def test_update_asks_and_installs_the_verified_wheel_with_pip(make_context: Make
     installer, questions = Installer(), []
     ctx, _ = make(make_context, GOOD, installer, ask=lambda q: questions.append(q) or True)
     assert cli.main(["update"], ctx) == ExitCode.OK
-    assert questions == [f"Update nexahome from {__version__} to v9.9.0? [y/N] "]
+    assert questions == [f"Update nexahome from {__version__} to 9.9.0? [y/N] "]
     assert installer.calls[0] == (sys.executable, "-m", "pip", "--version")
     assert installer.calls[1][:6] == (sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "--quiet")
     assert installer.installed_bytes == WHEEL
-    assert text(ctx).endswith(f"updated nexahome {__version__} -> v9.9.0. Check with: nexahome --version\n")
+    assert text(ctx).endswith(f"updated nexahome {__version__} -> 9.9.0. Check with: nexahome --version\n")
 
 
 def test_without_pip_it_uses_the_uv_tool_environment(make_context: MakeContext) -> None:
@@ -161,6 +173,7 @@ def test_a_wrong_checksum_installs_nothing(make_context: MakeContext) -> None:
     ctx, _ = make(make_context, {**GOOD, WHEEL_URL: WHEEL + b"tampered"}, installer)
     assert cli.main(["update", "--yes"], ctx) == ExitCode.NOT_READY
     assert "does not match its SHA256SUMS entry; nothing was installed" in text(ctx, "err") and installer.calls == []
+    assert text(ctx, "err").endswith("Next: nexahome update\n")  # T4: repeating `--available` would not download again
 
 
 @pytest.mark.parametrize(

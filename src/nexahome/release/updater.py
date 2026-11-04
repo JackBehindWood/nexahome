@@ -75,6 +75,7 @@ def latest_release(ctx: Context) -> Release:
         version = str(feed["tag_name"])
         assets = {str(a["name"]): str(a["browser_download_url"]) for a in feed.get("assets", [])}
         versions.parse(version)
+        version = version.strip().removeprefix("v")  # GitHub tags are "v0.2.0"; every display and the JSON show "0.2.0"
     except NetworkError as error:
         import shlex  # only this failure quotes the address
 
@@ -103,7 +104,7 @@ def _download(ctx: Context, release: Release, directory: Path) -> Path:
     expected = next((line.split()[0] for line in sums.splitlines() if line.split()[-1:] in ([name], ["*" + name])), "")
     if not hmac.compare_digest(actual, expected.lower()):
         path.unlink(missing_ok=True)
-        raise NexaHomeError(f"{name} does not match its SHA256SUMS entry; nothing was installed", RETRY)
+        raise NexaHomeError(f"{name} does not match its SHA256SUMS entry; nothing was installed", "nexahome update")  # downloads again
     return path
 
 
