@@ -39,7 +39,7 @@ Last replaced 2026-11-04 (end of DR3). Entries end with a pointer here instead o
 - README, `docs/README.md`, architecture, observability, codebase, constraints, roadmap, CONTRIBUTING: DR2 S items and the one-owner changes. `docs/architecture.md` keeps the heading "Remote access" because ADR 0015 links its anchor.
 - New `docs/adr/README.md` and two tests (ADR index, log budget 220 warn and 300 fail). The local session-end skill has the new template, compaction step and CI rule.
 **Next:** the engine session (Gatus v5.38 and Pocket ID v2.19.2 drills, Dependabot runbook; needs your yes to start Colima), then an audit of `src/nexahome`, `tests/`, `stacks/` and `scripts/` for regular users, including making their own stack from the command.
-**Verified:** `make check` 0; `tests/test_docs.py` 65 passed (log 149 lines, under the 220 warning; the fail path shown in a scratch copy); 0 bad anchors; SECURITY.md read against the repo (private reporting enabled, anchor resolves; it does not mention the installed package or `update`, left for you). **Not verified:** GitHub rendering, the timed runner path, engine, mini.
+**Verified:** `make check` 0; `tests/test_docs.py` 65 passed (log 149 lines, under the 220 warning; the fail path shown in a scratch copy); 0 bad anchors; SECURITY.md read against the repo (private reporting enabled, anchor resolves) and given a scope line for `nexahome update` and a supported-versions section. **Not verified:** GitHub rendering, the timed runner path, engine, mini.
 
 ## 2026-11-04: DR2 (edit batch, audit of the other docs, log shape)
 
