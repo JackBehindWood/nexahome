@@ -4,11 +4,12 @@ Newest first; each entry follows the template in the session-end skill and has a
 
 ## Pending owner actions (the one current list)
 
-Last replaced 2026-11-04 (end of the Goal 3 follow-up). Entries end with a pointer here instead of their own list.
+Last replaced 2026-11-04 (end of the contributor session). Entries end with a pointer here instead of their own list.
 
 **Decide**
 - Still open from DR2: register row 80 repeats row 81 (merge it or mark it historical); release notes after `v0.2.0`.
-- `feat/packaging` is on `origin`; its DR2, DR3, Goal 3 and Goal 3 follow-up commits are not pushed. Push and a pull request into `dev` on your yes (pull request 32 is open and green on Linux amd64); delete the branch only after it is merged.
+- `feat/packaging` is pushed; pull request 32 into `dev` is open and green on Linux amd64 (head `51387e1`). Merge it on your yes; delete the branch only after it is merged.
+- Contributor pack: create the six starter-task issues and choose the README top block from `.claude/tmp/drafts/` (your words); after a push, open "New issue" on GitHub to see both forms render; set the repository description and topics yourself.
 - Other Proposed register rows (documentation conventions, repository layout, task runner, security baseline, roles, three Packaging rows); review ADRs 0014 to 0020, the SSH runbook and the packaging design. None promoted.
 - [ADR 0022](adr/0022-own-images-and-app-stacks.md) (own images and application stacks) is Proposed: your five answers are recorded in it; promote only on your explicit yes. The ADR 0007 amendment (profiles) and ADR 0020's open gap wait for that.
 - GitHub: Dependabot alerts and security updates are disabled for the repository (Settings, Code security); the account setting "Block command line pushes that expose my email"; optional SSH-signed commits.
@@ -25,18 +26,30 @@ Last replaced 2026-11-04 (end of the Goal 3 follow-up). Entries end with a point
 - Watch security alerts on GitHub for `pocket-id/pocket-id`, `caddyserver/caddy`, `gethomepage/homepage`, `TwiN/gatus`.
 
 **Open work**
-- Drill leftovers: Colima profile `drill` is stopped (`colima delete drill` frees its disk if you want it gone). A second throwaway profile and `~/nexahome-pm-scratch` from the pre-mini session are listed in the final message for your yes to delete. The Pocket ID self-restart watch on v2.19.2: see the pre-mini entry (started 2026-11-04).
-- Starter stack from `nexahome stacks new` is unhealthy as shipped (local card K1); fix before the first tag.
+- Colima: only `default` (stopped) remains; `drill` and the scratch folders were deleted at your yes. The Pocket ID self-restart is explained for v2.19.2 (laptop sleep, see the pre-mini entry); whether v2.18.0 does the same and whether an awake host never restarts are not tested.
+- The starter from `nexahome stacks new` is fixed and was run healthy on an engine; no CI job runs it yet (CI is yours). No written rule yet for when a `--json` schema integer rises.
 - Dependabot parsing is shown for `portal`, `identity`, `gatus` and `pip`; not yet for `github-actions`, `hello`, `actual`, `backup`, `edge`, `_template`; the `dev` and `check` dependency groups are unproven until a Dependabot pull request appears after a push.
 - Decide with the first tag: `[project.urls] Latest release` in `pyproject.toml` (wheels have no update feed until it exists). macOS `F_FULLFSYNC` is not used (`fcntl` is POSIX-only and a test forbids it); `files.replace_atomically` uses `os.fsync`.
 - Audit rows left for PK7 or later: S-21, S-26, S-30 and package rows P-07, P-11, P-12, P-14, P-16, P-18 to P-22, P-25 to P-27 (local audit notes).
+
+## 2026-11-04: contributor starter pack, small fixes, `nexahome logs`
+
+**Done**
+- Fixes, each with a test that failed first: `stacks new` skips ports held on 127.0.0.1 (T2, probe in `release/net.py`); `stacks` says "state unknown" only for a service row (T3); `update` shows the tag without `v` and every failure hint changes something (T4); the starter from `stacks new` serves a page and ends healthy (K1, run on an engine).
+- `nexahome logs [STACK] [--tail N] [--follow]`: host `docker compose logs` wrapper (`stacks/logs.py`, `Runner.stream`); run on an engine (tail, all stacks, Ctrl-C exits 130, refusals).
+- Community files: `CODE_OF_CONDUCT.md` (Covenant 2.1 by reference, private route in SECURITY.md), issue forms `bug` and `stack-proposal`, `config.yml` without `contact_links` (GitHub needs an absolute URL, which would name the owner's account).
+- "Script or package?" in `docs/codebase.md`, a test that the package never names a script (no script moved), and a short README in `scripts/`, `src/nexahome/` and `stacks/`, each a pointer to its owner.
+- Drafts only in `.claude/tmp/drafts/`; Colima `drill` and scratch folders deleted at your yes; pushed to pull request 32.
+**Doc changes and why:** `docs/codebase.md`, `add-a-stack.md` (stable interfaces, step 0), `own-stack.md` (port probe, healthy starter), README (logs, scripts line), the three folder READMEs (link-checked by `test_docs.py`; the one in `src/nexahome/` is excluded from the wheel in `pyproject.toml`), CONTRIBUTING and `docs/README.md` links; no ADR or label changed (the ADR 0018 pointer was declined).
+**Next:** merge pull request 32 into `dev` on your yes; then `dev` into `main`. **Open:** whether the forms render on GitHub; the schema-integer rule.
+**Verified:** `make check` 0; 543 passed on 3.14.7 (541 on 3.13.3 before the last two commits); `tests/test_docs.py` 71; CI green on pull request 32 at `51387e1` (Linux amd64, 3.13 and 3.14, `gate`); engine runs of `logs`, the port probe and the starter. **Not verified:** GitHub rendering of the forms, Linux by hand, the starter in CI, macOS and arm64 CI (skipped on a pull request into `dev`), the mini.
 
 ## 2026-11-04: pre-mini session (Goal 3 on an engine, update proof, briefs)
 
 **Done**
 - First engine run of Goal 3 (throwaway Colima profile): `init`, `stacks new`, `check`, `env`, `remove` and their refusals work; found the generated starter is unhealthy (404), a new stack's port is not probed on the host, and `stacks` always prints "Docker did not answer" (the one-shot `backup` row).
 - `nexahome update` proven against a loopback fake feed: 9 cases plus the `Latest release` project-URL path; no code change needed; two display findings (`v` prefix, checksum `Next:`).
-- Pocket ID v2.19.2 45-minute watch started (0 restarts in the first 10 minutes; result in local `.claude/tmp/pocketid-watch.tsv`); Homepage v2.7.0 drilled healthy (103 MiB).
+- Pocket ID v2.19.2 45-minute watch: 2 restarts, each about 1 to 1.5 minutes after the laptop woke from idle sleep (exit 0, no OOM; its own health check says "host is not registered" and it exits; `unless-stopped` restarts it in under a second, data intact, 11 to 14 MiB). Cause is a sleeping VM, not a crash; the same on v2.18.0 is not tested. Homepage v2.7.0 drilled healthy (103 MiB).
 - Local outputs in `.claude/tmp`: stack inventory (no dev stack, keep the bundle), decision briefs, mini arrival checklist, v0.2.0 notes and tag-day list, readiness audit, elevation proposals, cards K1 to K7.
 **Doc changes and why:** `docs/runbooks/own-stack.md`: the starter is a placeholder that reports unhealthy, port wording, what was run (engine findings; no label changed).
 **Next:** card K1 (starter fix) and the contributor starter pack; `dev` into `main` on your yes; Dependabot 27 merge, 29 and 30 after 2026-11-10. **Open:** merge Dependabot 25 only after the portal is seen in a browser with the edge (K6).
