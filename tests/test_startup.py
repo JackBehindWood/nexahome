@@ -35,6 +35,7 @@ BUDGET: dict[str, tuple[list[str], set[str]]] = {
     "config": (["config"], HEAVY - ARGPARSE_COST - RUNNER | others("config")),
     "--home DIR config": (["--home", "x", "config"], HEAVY - ARGPARSE_COST - RUNNER | others("config")),  # P-05: the option does not load every command
     "--home=DIR config": (["--home=x", "config"], HEAVY - ARGPARSE_COST - RUNNER | others("config")),
+    "config --home DIR": (["config", "--home", "x"], HEAVY - ARGPARSE_COST - RUNNER | others("config")),  # A-06: after the command it loads nothing more
     "stacks": (["stacks"], HEAVY - ARGPARSE_COST - RUNNER | others("stacks") | {"nexahome.stacks.scaffold"}),  # the list never loads the writer
     "stacks new": (["stacks", "new", "x"], HEAVY - ARGPARSE_COST - RUNNER | others("stacks")),
     "status": (["status"], HEAVY - ARGPARSE_COST - RUNNER | others("status")),

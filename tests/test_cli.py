@@ -11,7 +11,7 @@ from nexahome import __version__, cli, commands
 from nexahome.commands._base import Subparsers
 from nexahome.errors import ExitCode, NexaHomeError
 
-from conftest import MakeContext, MakeHost
+from conftest import MakeCheckout, MakeContext, MakeHost
 
 
 def install_command(monkeypatch: pytest.MonkeyPatch, run: Callable[[argparse.Namespace, object], int]) -> None:
@@ -161,3 +161,35 @@ def test_version_to_a_closed_pipe_is_quiet_too(tmp_path: Path) -> None:
     done = subprocess.run([sys.executable, "-m", "nexahome", "--version"], stdout=write_end, stderr=subprocess.PIPE, text=True, cwd=tmp_path, check=False)
     os.close(write_end)
     assert (done.returncode, done.stderr) == (141, "")
+
+
+# --- A-06: --home works after the command too ---------------------------------------------------------------
+@pytest.mark.parametrize(
+    ("arguments", "lifted"),
+    [
+        (["stacks", "--home", "x"], ["--home", "x", "stacks"]),
+        (["stacks", "--home=x"], ["--home=x", "stacks"]),
+        (["stacks", "new", "n", "--home", "x"], ["--home", "x", "stacks", "new", "n"]),
+        (["--home", "x", "stacks"], ["--home", "x", "stacks"]),
+        (["stacks"], ["stacks"]),
+        (["stacks", "--home"], ["stacks", "--home"]),  # no value: left for argparse to report
+        (["config", "set", "--", "--home", "x"], ["config", "set", "--", "--home", "x"]),  # after `--` it is a value
+    ],
+)
+def test_home_is_lifted_in_front_of_the_command(arguments: list[str], lifted: list[str]) -> None:
+    assert cli._lift_home(arguments) == lifted
+
+
+@pytest.mark.parametrize("home_option", [["--home", "repo"], ["--home=repo"]])
+def test_home_after_the_command_selects_the_folder(
+    make_checkout: MakeCheckout, make_context: MakeContext, tmp_path: Path, home_option: list[str]
+) -> None:
+    make_checkout({"demo": None})  # tmp_path/repo
+    ctx = make_context(cwd=tmp_path)
+    assert cli.main(["stacks", *home_option], ctx) == ExitCode.OK
+    assert "demo" in ctx.out.getvalue()  # type: ignore[attr-defined]
+
+
+def test_home_without_a_value_is_a_usage_error(make_context: MakeContext) -> None:
+    ctx = make_context()
+    assert cli.main(["stacks", "--home"], ctx) == ExitCode.USAGE

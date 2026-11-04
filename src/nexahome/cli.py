@@ -32,6 +32,27 @@ def build_parser(selected: "Sequence[Command]") -> "argparse.ArgumentParser":
     return parser
 
 
+def _lift_home(arguments: "Sequence[str]") -> list[str]:
+    """Move every `--home DIR` or `--home=DIR` to the front, so the option works after the command too (Mercurial and
+    git users expect either place). Words after `--` are values and stay; a `--home` with no value stays and argparse says so."""
+    lifted: list[str] = []
+    kept: list[str] = []
+    rest = list(arguments)
+    position = 0
+    while position < len(rest):
+        word = rest[position]
+        if word == "--":
+            kept += rest[position:]
+            break
+        if word == "--home" and position + 1 < len(rest):
+            lifted += rest[position : position + 2]
+            position += 2
+            continue
+        (lifted if word.startswith("--home=") else kept).append(word)
+        position += 1
+    return [*lifted, *kept]
+
+
 def _command_name(arguments: "Sequence[str]") -> str | None:
     """The first word that is not the leading `--home` option, so `--home DIR config` loads `config` alone."""
     rest = list(arguments)
@@ -62,6 +83,7 @@ def main(argv: Sequence[str] | None = None, ctx: Context | None = None) -> int:
     from nexahome.defaults import ENV_DEBUG, ENV_HOME  # after the `--version` fast path: that call never pays for it
 
     # A named command is loaded alone; help, errors and an empty command line need every command's description.
+    arguments = _lift_home(arguments)
     name = _command_name(arguments)
     selected = [commands.load(name)] if name in commands.names() else commands.load_all()
     parser = build_parser(selected)
