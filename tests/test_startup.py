@@ -15,7 +15,7 @@ HEAVY = {
 # argparse imports shutil (terminal width) and, on Python 3.14, dataclasses and inspect (via _colorize) as soon as a
 # parser exists; that is the interpreter's cost, not ours
 ARGPARSE_COST = {"dataclasses", "inspect", "shutil"} if sys.version_info >= (3, 14) else {"shutil"}
-COMMANDS = ("check", "config", "doctor", "env", "init", "stacks", "status", "update")
+COMMANDS = ("check", "config", "doctor", "env", "init", "logs", "stacks", "status", "update")
 RUNNER = {"subprocess"}  # the real context builds the process runner, so a run of any command pays for it
 
 
@@ -38,6 +38,7 @@ BUDGET: dict[str, tuple[list[str], set[str]]] = {
     "config --home DIR": (["config", "--home", "x"], HEAVY - ARGPARSE_COST - RUNNER | others("config")),  # A-06: after the command it loads nothing more
     "stacks": (["stacks"], HEAVY - ARGPARSE_COST - RUNNER | others("stacks") | {"nexahome.stacks.scaffold"}),  # the list never loads the writer
     "stacks new": (["stacks", "new", "x"], HEAVY - ARGPARSE_COST - RUNNER | others("stacks")),
+    "logs": (["logs"], HEAVY - ARGPARSE_COST - RUNNER | others("logs")),
     "status": (["status"], HEAVY - ARGPARSE_COST - RUNNER | others("status")),
     "check": (["check"], HEAVY - ARGPARSE_COST - RUNNER - {"json", "shlex"} | others("check")),
     "env": (["env"], HEAVY - ARGPARSE_COST - RUNNER | others("env")),

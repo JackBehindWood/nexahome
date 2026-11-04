@@ -54,14 +54,20 @@ def make_host(tmp_path: Path) -> MakeHost:
 class FakeRunner:
     """Answers by exact argv; anything not listed behaves like a program that is not installed."""
 
-    def __init__(self, responses: dict[tuple[str, ...], RunResult] | None = None) -> None:
+    def __init__(self, responses: dict[tuple[str, ...], RunResult] | None = None, streams: dict[tuple[str, ...], int] | None = None) -> None:
         self.responses = responses or {}
         self.calls: list[tuple[str, ...]] = []
+        self.streams = streams or {}  # exit codes of `stream` calls, by exact argv
+        self.streamed: list[tuple[str, ...]] = []
 
     def run(self, argv: Sequence[str], *, timeout: float) -> RunResult:
         key = tuple(argv)
         self.calls.append(key)
         return self.responses.get(key, RunResult(127, missing=True))
+
+    def stream(self, argv: Sequence[str]) -> int:
+        self.streamed.append(tuple(argv))
+        return self.streams.get(tuple(argv), 127)
 
 
 @pytest.fixture

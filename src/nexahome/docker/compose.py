@@ -43,6 +43,12 @@ def ps(ctx: Context, compose: Path) -> RunResult:
     return ctx.runner.run([*file_argv(compose), "ps"], timeout=DOCKER_TIMEOUT)
 
 
+def logs_argv(compose: Path, *, tail: int, follow: bool) -> list[str]:
+    """`docker compose logs` for one stack: the last `tail` lines of every service, and with `follow` the new ones too."""
+    argv = [*file_argv(compose), "logs", "--tail", str(tail)]
+    return [*argv, "--follow"] if follow else argv
+
+
 def network_command() -> str:
     """Create the shared network unless it exists, as `make up` does."""
     from nexahome.docker import EDGE_NETWORK

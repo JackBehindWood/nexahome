@@ -70,6 +70,7 @@ nexahome config             # show nexahome.toml; `config set stacks NAME...` ch
 nexahome stacks             # which stacks exist, who owns them, which this host runs, whether they are running
 nexahome stacks new NAME    # make a stack of your own from the template; `stacks remove NAME` deletes it
 nexahome status             # health of the stacks and how recent the backup is
+nexahome logs [STACK]       # the last lines of a stack's logs (--tail N, --follow); no STACK shows every stack in turn
 nexahome check              # the Compose policy over the stacks
 nexahome update --available # is a newer release out? (there is none yet)
 ```

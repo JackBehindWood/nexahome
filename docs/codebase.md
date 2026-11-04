@@ -12,7 +12,7 @@ The code is in `src/nexahome/`, tests in `tests/` ([ADR 0018](adr/0018-code-pack
 | :-- | :-- |
 | `docker/` | everything about the Docker CLI: `engine`, `compose`, the three Docker `doctor` probes, the shared network name. No other module writes a `docker` command line. |
 | `instance/` | where an instance is and where its stacks are (`home`), the stacks inside the package (`bundle`), what `init` does (`create`), `nexahome.toml` (`config`), the file hashes (`manifest`) |
-| `stacks/` | which stacks exist and run (`catalogue`), who owns them (`ownership`), making and removing a user's own (`scaffold`), their `.env` files (`envfile`) |
+| `stacks/` | which stacks exist and run (`catalogue`), who owns them (`ownership`), making and removing a user's own (`scaffold`), their `.env` files (`envfile`), the logs of the ones this host runs (`logs`) |
 | `release/` | the network and releases: `net` (the only module that may import a network module), `versions`, `updater` |
 | `platform/`, `policy/` | what differs by operating system; the Compose and personal-data policy |
 | top level | `cli`, `context`, `errors`, `defaults` (the constants: file modes, stack lists, limits), `files` (creating and replacing files), `runner`, `parallel`, `report`, `diagnosis`, `backup_info` |
@@ -69,4 +69,4 @@ The principle is **pay for what you use**: a call costs only what it needs, in s
 
 `make test` enforces the checklist: `tests/test_startup.py` lists the modules each call imports in a fresh process, and `tests/test_packaging.py` rejects heavy top-level imports. If a new command truly needs a heavy module, add it to its own function and add the call to the budget in `test_startup.py`; add to the allowlist in `test_packaging.py` only with a reason next to the entry.
 
-Changelog: 0.1 (2026-11-04): "Script or package?" section and a test that the package never names a script; 0.1 (2026-11-04): tests mirror the package folders (Goal 3 follow-up); 0.1 (2026-11-04): `defaults` and `files` in the module map, reuse owners and tests layout, a test keeps the map complete (Goal 3 follow-up); 0.1 (2026-11-04): `stacks/` row names `ownership` and `scaffold` (Goal 3); 0.1 (2026-11-04): checklist names `run_waiting` (DR3); 0.1 (2026-11-03): moved here from CONTRIBUTING so the code guide has one owner (PK6f, owner's yes).
+Changelog: 0.1 (2026-11-04): `stacks/logs` in the module map (`nexahome logs`); 0.1 (2026-11-04): "Script or package?" section and a test that the package never names a script; 0.1 (2026-11-04): tests mirror the package folders (Goal 3 follow-up); 0.1 (2026-11-04): `defaults` and `files` in the module map, reuse owners and tests layout, a test keeps the map complete (Goal 3 follow-up); 0.1 (2026-11-04): `stacks/` row names `ownership` and `scaffold` (Goal 3); 0.1 (2026-11-04): checklist names `run_waiting` (DR3); 0.1 (2026-11-03): moved here from CONTRIBUTING so the code guide has one owner (PK6f, owner's yes).
