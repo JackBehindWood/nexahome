@@ -69,7 +69,7 @@ Last replaced 2026-11-04 (end of the contributor session). Entries end with a po
 ## 2026-11-04: Goal 3 (first-run audit and your own stacks)
 
 **Done**
-- Requirements G1 to G11 and a 16-row first-run audit (local `.claude/tmp/goal3-requirements.md`, `goal3-audit.md`). Location decided with the owner: a runner's stack sits in `stacks/<name>`, ownership is by name (bundle or manifest); `stacks.d/` rejected because the backup job mounts `stacks/` only.
+- Requirements G1 to G11 and a 16-row first-run audit (local notes, not tracked). Location decided with the owner: a runner's stack sits in `stacks/<name>`, ownership is by name (bundle or manifest); `stacks.d/` rejected because the backup job mounts `stacks/` only.
 - `nexahome stacks new NAME` and `stacks remove NAME`, an `owner` column and JSON key in `stacks` (`stacks/ownership.py`, `stacks/scaffold.py`); `check` names a missing Compose plugin and ends failures in `Next: edit <file>`; template texts fit a runner; `new` enables the stack in `nexahome.toml`.
 - `_template/README.md` now ships in the wheel and in instances (pyproject exclude, `bundle.walk`, one CI line; the owner approved the CI change).
 **Doc changes and why:** new `docs/runbooks/own-stack.md` (runner path); `add-a-stack.md` audience line; README command list and the "do not edit" sentence; docs index; `docs/codebase.md` layout row. ADR 0020 line 23, ADR 0022 line 46 and register row 98 still say `stacks.d/` or override: not edited, they wait for your yes.
@@ -100,7 +100,7 @@ Last replaced 2026-11-04 (end of the contributor session). Entries end with a po
 
 ## 2026-11-04: DR2 (edit batch, audit of the other docs, log shape)
 
-**Done:** DR1 answers applied (28 edits, labels unchanged); `/docs-audit` over README, CONTRIBUTING and `docs/*.md`; log measurements and design (local `.claude/tmp/dr2-report.md`).
+**Done:** DR1 answers applied (28 edits, labels unchanged); `/docs-audit` over README, CONTRIBUTING and `docs/*.md`; log measurements and design (local notes, not tracked).
 **Doc changes and why**
 - Confirmed ADRs 0011, 0013, 0021: dead `check_compose.py` name, `[CONTRIBUTING]` label, `diagnosis.py` pool (clerical, owner's yes). ADR 0009 and its register row: Actual is the permanent reference client.
 - Proposed ADRs 0014, 0016 to 0019: macOS 27, `nexahome check`, past-tense Context, the `uv` contradiction, a dated CI results line in 0019. ADR 0020 and 0022: direction for a runner's own stacks, not decided. ADR 0022 trimmed to two Python profiles.
@@ -110,7 +110,7 @@ Last replaced 2026-11-04 (end of the contributor session). Entries end with a po
 
 ## 2026-11-04: DR1 (audit of ADRs and runbooks, read-only)
 
-**Done:** `/docs-audit` over 23 ADRs and 5 runbooks (local `.claude/tmp/dr1-report.md`). About 45 findings, no broken link or wrong label.
+**Done:** `/docs-audit` over 23 ADRs and 5 runbooks (local notes, not tracked). About 45 findings, no broken link or wrong label.
 **Main findings:** stale facts in Proposed ADRs (macOS 27 reported, `check_compose.py` named after PK5, ADR 0018 Context in the past tense, a fused bullet in ADR 0019, `PK-P3` defined twice); the same in Confirmed 0011, 0013, 0021 (report only); ADR 0013's "no newer Gatus tag" out of date (v5.38.0); ADR 0022 over-built; no Dependabot runbook; `add-a-stack.md` assumes a clone.
 **Doc changes and why:** none to ADRs or runbooks (read-first session). Owner goal recorded in local memory: NexaHome usable by others, the Mac mini the reference deployment.
 **Next:** your answers, then DR2. **Verified:** `make check` 0, `tests/test_docs.py` 62 passed, `make -n` of 12 runbook targets. **Not verified:** engine-dependent runbook commands (Colima not started), anything on the mini, Pocket ID v2.19 and Gatus v5.38 behaviour.

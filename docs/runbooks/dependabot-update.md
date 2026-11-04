@@ -6,7 +6,7 @@ Version 0.1 · Last reviewed 2026-11-04
 
 The pull request only changes a tag. Merging it changes nothing that runs: you start the new version yourself, after a backup, and you can undo it. Replace `<stack>` and `<old-tag>` below.
 
-1. **Read the release notes first.** The pull request body quotes them. Look for: a database or settings migration, removed or renamed environment variables, new defaults that change who may sign in or what leaves the machine. Check the release date upstream: the "cooldown could not be applied" warning on a pull request means Dependabot did not know it. Hold the pull request (see the end) if a note says a migration is one-way.
+1. **Read the release notes first.** The pull request body quotes them. Look for: a database or settings migration, removed or renamed environment variables, new defaults that change who may sign in or what leaves the machine. Check the release date upstream: the "cooldown could not be applied" warning on a pull request means Dependabot did not know it. Hold a version published less than two weeks ago (project rule). Hold the pull request (see the end) if a note says a migration is one-way.
 2. **Back up with the stack stopped** (a running database changes while it is copied):
 
    ```sh
@@ -26,7 +26,7 @@ The pull request only changes a tag. Merging it changes nothing that runs: you s
    docker stats --no-stream
    ```
 
-   Open the stack's page through the edge. Compare memory with the figure in the stack's README; a limit hit shows as a restart (`docker inspect -f '{{.RestartCount}}' <container>`; smoke fails on a restart).
+   Open the stack's page through the edge. Compare memory with the figure in the stack's README; a limit hit shows as a restart (`docker inspect -f '{{.RestartCount}}' <container>`; smoke fails on a restart). On a laptop that sleeps, Pocket ID v2.19.2 exits and restarts about a minute after wake (exit 0, data intact, no limit hit); the evidence is in the [session log](../session-log.md), pre-mini entry of 2026-11-04.
 5. **Merge the pull request** only when steps 2 to 4 pass and you have used the app once.
 
 ## Roll back
@@ -50,4 +50,4 @@ Keep it open and note why when: the release notes describe a one-way migration a
 
 Rehearse on a separate engine first when the data matters: `colima start drill` uses its own volumes and networks, so a copy of the repository there cannot touch your running stacks (set `DOCKER_CONTEXT=colima-drill`; keep the copy under your home directory, because the VM does not mount `/tmp`).
 
-Changelog: 0.1 (2026-11-04): first version, from the Gatus v5.38.0 and Pocket ID v2.19.2 drills.
+Changelog: 0.1 (2026-11-04): first version, from the Gatus v5.38.0 and Pocket ID v2.19.2 drills; 0.1 (2026-11-04): two-week rule and the Pocket ID wake restart.
