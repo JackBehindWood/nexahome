@@ -4,20 +4,20 @@ Newest first; each entry follows the template in the session-end skill and has a
 
 ## Pending owner actions (the one current list)
 
-Last replaced 2026-11-04 (end of the contributor session). Entries end with a pointer here instead of their own list.
+Last replaced 2026-11-04 (end of the git cleanup session). Entries end with a pointer here instead of their own list.
 
 **Decide**
 - Still open from DR2: register row 80 repeats row 81 (merge it or mark it historical); release notes after `v0.2.0`.
-- `feat/packaging` is pushed; pull request 32 into `dev` is open and green on Linux amd64 (head `51387e1`). Merge it on your yes; delete the branch only after it is merged.
-- Contributor pack: create the six starter-task issues and choose the README top block from `.claude/tmp/drafts/` (your words); after a push, open "New issue" on GitHub to see both forms render; set the repository description and topics yourself.
+- Pull requests 32 (into `dev`) and 33 (`dev` into `main`) are merged and `feat/packaging` is deleted. The first tag needs a small release-prep pull request first (`[project.urls]` with the real owner and repo, your yes; `CHANGELOG.md` v0.2.0 from the local notes), then `dev` into `main`; say when the tag is near.
+- Contributor pack: create four starter-task issues (the starter fix and the update hints are done; drop `actual` from the RAM one) and choose the README top block from `.claude/tmp/drafts/` (your words); after a push, open "New issue" on GitHub to see both forms render; set the repository description and topics yourself.
 - Other Proposed register rows (documentation conventions, repository layout, task runner, security baseline, roles, three Packaging rows); review ADRs 0014 to 0020, the SSH runbook and the packaging design. None promoted.
 - [ADR 0022](adr/0022-own-images-and-app-stacks.md) (own images and application stacks) is Proposed: your five answers are recorded in it; promote only on your explicit yes. The ADR 0007 amendment (profiles) and ADR 0020's open gap wait for that.
 - GitHub: Dependabot alerts and security updates are disabled for the repository (Settings, Code security); the account setting "Block command line pushes that expose my email"; optional SSH-signed commits.
 - Open choices: digest pinning; paid tier versus the open-source rule; keep `hello` on the edge and in the portal; ruff or a type checker (not now; revisit if a lint or typing bug slips through).
 
 **Git**
-- Pull request 31 is merged into `dev` (2026-11-03). Next: `dev` into `main` by pull request (your yes).
-- Dependabot (into `main`): 26 merged. 27 (Gatus v5.38.0) drilled and safe to merge: no migration, rollback by tag ([runbook](runbooks/dependabot-update.md)). 28 (Pocket ID v2.19.2) stays held on your call: it runs a one-way migration, so rollback is a restore, never the old tag. 29 and 30 are green but wait until this branch reaches `main` (30 will conflict on the deleted `requirements-dev.txt`; 29 may on `pyproject.toml`; not verified). 25 and 27 await review (red `platforms` is the abandoned macOS leg); 28 (pocket-id) held.
+- `main` and `dev` are level apart from merge commits (pull request 33 merged 2026-11-04; CI green on `secrets`, `checks`, `gate` and the macOS and arm64 legs).
+- Dependabot (into `main`), two-week rule from the upstream release date: 25 Homepage eligible 2026-11-06 (view tiles in a browser first, card K6); 30 pytest 2026-11-10 (expect a conflict on the deleted `requirements-dev.txt`: close it and let Dependabot reopen); 27 Gatus and 29 hatchling 2026-11-11; 28 Pocket ID held on your call (released 2026-11-02; one-way migration, rollback is a restore). Red `platforms` is the abandoned macOS leg. [Runbook](runbooks/dependabot-update.md).
 
 **Security hygiene**
 - Keep `ENCRYPTION_KEY` and the restic password in a password manager (the repository is on the same disk: a drill, not protection); keep the ntfy topic secret.
@@ -29,8 +29,17 @@ Last replaced 2026-11-04 (end of the contributor session). Entries end with a po
 - Colima: only `default` (stopped) remains; `drill` and the scratch folders were deleted at your yes. The Pocket ID self-restart is explained for v2.19.2 (laptop sleep, see the pre-mini entry); whether v2.18.0 does the same and whether an awake host never restarts are not tested.
 - The starter from `nexahome stacks new` is fixed and was run healthy on an engine; no CI job runs it yet (CI is yours). No written rule yet for when a `--json` schema integer rises.
 - Dependabot parsing is shown for `portal`, `identity`, `gatus` and `pip`; not yet for `github-actions`, `hello`, `actual`, `backup`, `edge`, `_template`; the `dev` and `check` dependency groups are unproven until a Dependabot pull request appears after a push.
-- Decide with the first tag: `[project.urls] Latest release` in `pyproject.toml` (wheels have no update feed until it exists). macOS `F_FULLFSYNC` is not used (`fcntl` is POSIX-only and a test forbids it); `files.replace_atomically` uses `os.fsync`.
+- Decide with the first tag: `[project.urls] Latest release` in `pyproject.toml` (wheels have no update feed until it exists); the tagged commit on `main` must already hold it. macOS `F_FULLFSYNC` is not used (`fcntl` is POSIX-only and a test forbids it); `files.replace_atomically` uses `os.fsync`.
 - Audit rows left for PK7 or later: S-21, S-26, S-30 and package rows P-07, P-11, P-12, P-14, P-16, P-18 to P-22, P-25 to P-27 (local audit notes).
+
+## 2026-11-04: git cleanup and docs from local notes
+
+**Done**
+- Pull request 32 merged into `dev`, then `dev` into `main` as pull request 33 (GitHub "update branch" first, since `main` is protected and `dev` lacked two `main` commits); `feat/packaging` deleted locally and on origin after `git branch --merged` listed it.
+- Read the 11 local notes: most are recommendations or snapshots whose owners already hold the facts, so they stay local; Dependabot dates re-read against the two-week rule.
+**Doc changes and why:** ADR 0022 (Proposed) gains the finding that edge, portal and Gatus configs name each app by hand; `dependabot-update.md` gains the two-week rule and the Pocket ID wake restart; three log pointers to moved local notes reworded (labels unchanged).
+**Next:** release-prep pull request and first tag when you say so; Session B (scripts and package seam). **Open:** whether the two-week rule covers image bumps; 27 is not eligible until 2026-11-11 although the old Pending text said merge.
+**Verified:** `make check` 0; `tests/test_docs.py` 74; CI on pull request 33 green incl. macOS and arm64. **Not verified:** Linux by hand, the mini, the modify/delete conflict on Dependabot 30.
 
 ## 2026-11-04: contributor starter pack, small fixes, `nexahome logs`
 
