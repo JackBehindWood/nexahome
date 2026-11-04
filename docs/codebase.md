@@ -24,6 +24,15 @@ The code is in `src/nexahome/`, tests in `tests/` ([ADR 0018](adr/0018-code-pack
 - **A system (macOS, Linux, ...):** a module in `platform/` and one line in `SYSTEMS`. Only `nexahome.platform` may read the operating system; a test enforces it.
 - **A repository check:** `policy/` holds the Compose policy and personal-data checks. The pre-commit hook runs `python -m nexahome.policy.personal_data` and `make check` runs `nexahome check`; the scripts they replaced are gone, and the tests hold their recorded output. The wheel ships `stacks/` as `nexahome/_stacks` (plain `include` and `sources` in `pyproject.toml`, not `force-include`, which would also ship a local `.env`).
 
+## Script or package?
+
+The default home for new code is the package: it is tested, typed and portable. A file goes in `scripts/` only when it must run where the package cannot, and the reasons are in [ADR 0018](adr/0018-code-package-and-language-strategy.md):
+
+- **Before the package is installed.** `scripts/setup.sh` checks the Python version and creates the environment the package is installed into. It stays shell.
+- **Run-path glue the package has not taken over yet:** `backup.sh`, `smoke.sh` and `deploy.sh`. This list only shrinks. Each script leaves with its port to the package (stage 4 of the ADR, after the Mac mini's B2 session), a test against the original, and its Makefile target becomes a one-line shim. Until then they are not extended.
+
+A script is POSIX `sh`, passes ShellCheck (CI runs it), is about 30 lines, parses no JSON or TOML and repeats no logic the package has. Its header says which of the two reasons applies. `backup.sh` (251 lines) and `smoke.sh` (157) are over that size because they predate the package; they are the ports above. Calls go one way: `make` runs scripts and `nexahome`; a script may install or start the package but does not use its logic; the package never names a script (`tests/test_packaging.py` checks it).
+
 ## Reuse before you write
 
 One owner per fact. Before writing a second copy of any of these, search for the literal and use the owner:
@@ -60,4 +69,4 @@ The principle is **pay for what you use**: a call costs only what it needs, in s
 
 `make test` enforces the checklist: `tests/test_startup.py` lists the modules each call imports in a fresh process, and `tests/test_packaging.py` rejects heavy top-level imports. If a new command truly needs a heavy module, add it to its own function and add the call to the budget in `test_startup.py`; add to the allowlist in `test_packaging.py` only with a reason next to the entry.
 
-Changelog: 0.1 (2026-11-04): tests mirror the package folders (Goal 3 follow-up); 0.1 (2026-11-04): `defaults` and `files` in the module map, reuse owners and tests layout, a test keeps the map complete (Goal 3 follow-up); 0.1 (2026-11-04): `stacks/` row names `ownership` and `scaffold` (Goal 3); 0.1 (2026-11-04): checklist names `run_waiting` (DR3); 0.1 (2026-11-03): moved here from CONTRIBUTING so the code guide has one owner (PK6f, owner's yes).
+Changelog: 0.1 (2026-11-04): "Script or package?" section and a test that the package never names a script; 0.1 (2026-11-04): tests mirror the package folders (Goal 3 follow-up); 0.1 (2026-11-04): `defaults` and `files` in the module map, reuse owners and tests layout, a test keeps the map complete (Goal 3 follow-up); 0.1 (2026-11-04): `stacks/` row names `ownership` and `scaffold` (Goal 3); 0.1 (2026-11-04): checklist names `run_waiting` (DR3); 0.1 (2026-11-03): moved here from CONTRIBUTING so the code guide has one owner (PK6f, owner's yes).

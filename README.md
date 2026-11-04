@@ -113,7 +113,7 @@ Save a copy of the password file (`.config/restic-password`) somewhere other tha
 - `docs/` documentation: start at the [documentation index](docs/README.md)
 - `stacks/<name>/` one deployable unit each: `compose.yaml`, `.env.example`, README; `stacks/_template/` is the starting point for a new one
 - `src/nexahome/` and `tests/` the `nexahome` command and its tests
-- `scripts/` the backup, smoke, deploy and setup scripts (the checks behind `make check` live in the `nexahome` package)
+- `scripts/` the backup, smoke, deploy and setup scripts: shell glue that runs where the package cannot, a list that shrinks as commands move into the package ([which goes where](docs/codebase.md#script-or-package))
 
 How the general design differs from the owner's reference deployment: [architecture](docs/architecture.md#general-design-and-the-reference-deployment).
 
