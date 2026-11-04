@@ -16,7 +16,7 @@ docker compose -f stacks/notes/compose.yaml up -d --wait   # `nexahome up` will 
 
 ## What you get
 
-`stacks/<name>/` holds `compose.yaml`, `.env.example` and `README.md`, renamed for your stack (project `nexahome-<name>`, variable `<NAME>_PORT`, the smallest free port from 8081 up). `nexahome stacks` lists it with owner `user`; the stacks that came with the package say `package`. The rules your `compose.yaml` must meet are in the [Compose policy](../constraints.md#compose-policy) and [ADR 0007](../adr/0007-stack-contract.md); this page does not repeat them.
+`stacks/<name>/` holds `compose.yaml`, `.env.example` and `README.md`, renamed for your stack (project `nexahome-<name>`, variable `<NAME>_PORT`, the smallest free port from 8081 up). `nexahome stacks` lists it with owner `user`; the stacks that came with the package say `package`. The rules your `compose.yaml` must meet are in the [Compose policy](../constraints.md#compose-policy) and [ADR 0007](../adr/0007-stack-contract.md); this page does not repeat them. The READMEs of the stacks that came with the package (`identity`, `edge`, `backup` and the rest) are not copied into your folder, because their links point into the project's `docs/`; read them under `stacks/<name>/README.md` in the project repository.
 
 ## Rules of the road
 
@@ -38,4 +38,4 @@ It refuses a running stack (stop it with the `docker compose ... down` line it p
 
 Starting, stopping and removing a stack on a running engine, Linux, and the time a first-time reader needs. See [the session log](../session-log.md) for what was run.
 
-Changelog: 0.1 (2026-11-04): first version (Goal 3).
+Changelog: 0.1 (2026-11-04): says where the package stacks' READMEs are (A-04); 0.1 (2026-11-04): first version (Goal 3).

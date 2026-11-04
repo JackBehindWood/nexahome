@@ -104,3 +104,18 @@ def test_session_log_stays_within_its_line_budget() -> None:
     if lines > LOG_WARN:
         warnings.warn(f"docs/session-log.md has {lines} lines (budget {LOG_WARN}); collapse the older entries into 'Earlier entries'", stacklevel=1)
     assert lines <= LOG_MAX, f"docs/session-log.md has {lines} lines (maximum {LOG_MAX}); collapse entries older than the newest 8 into one line each"
+
+
+def test_codebase_doc_names_every_module() -> None:
+    """The module map in docs/codebase.md lists every top-level module, every package and, one by one, the modules of the
+    packages whose table row names them (a module was missing from it once, so this keeps it from drifting again)."""
+    source = REPO / "src" / "nexahome"
+    if not source.is_dir():
+        pytest.skip("the source is not in this tree")
+    text = (DOCS / "codebase.md").read_text()
+    wanted = [path.stem for path in source.glob("*.py") if not path.stem.startswith("__")]
+    wanted += [f"{path.name}/" for path in source.iterdir() if path.is_dir() and path.name != "__pycache__"]
+    for package in ("instance", "stacks", "release"):
+        wanted += [path.stem for path in (source / package).glob("*.py") if not path.stem.startswith("__")]
+    missing = sorted(name for name in wanted if f"`{name}`" not in text)
+    assert not missing, f"docs/codebase.md does not name: {', '.join(missing)}"

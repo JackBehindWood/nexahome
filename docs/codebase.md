@@ -11,11 +11,11 @@ The code is in `src/nexahome/`, tests in `tests/` ([ADR 0018](adr/0018-code-pack
 | Package | Holds |
 | :-- | :-- |
 | `docker/` | everything about the Docker CLI: `engine`, `compose`, the three Docker `doctor` probes, the shared network name. No other module writes a `docker` command line. |
-| `instance/` | where an instance is (`home`), the stacks inside the package (`bundle`), what `init` does (`create`), `nexahome.toml` (`config`), the file hashes (`manifest`) |
+| `instance/` | where an instance is and where its stacks are (`home`), the stacks inside the package (`bundle`), what `init` does (`create`), `nexahome.toml` (`config`), the file hashes (`manifest`) |
 | `stacks/` | which stacks exist and run (`catalogue`), who owns them (`ownership`), making and removing a user's own (`scaffold`), their `.env` files (`envfile`) |
 | `release/` | the network and releases: `net` (the only module that may import a network module), `versions`, `updater` |
 | `platform/`, `policy/` | what differs by operating system; the Compose and personal-data policy |
-| top level | `cli`, `context`, `errors`, `runner`, `parallel`, `report`, `diagnosis`, `backup_info` |
+| top level | `cli`, `context`, `errors`, `defaults` (the constants: file modes, stack lists, limits), `files` (creating and replacing files), `runner`, `parallel`, `report`, `diagnosis`, `backup_info` |
 
 ## Extending it
 
@@ -23,6 +23,27 @@ The code is in `src/nexahome/`, tests in `tests/` ([ADR 0018](adr/0018-code-pack
 - **A `doctor` check:** a function `(ctx, prior) -> Check | None`, one `(id, function)` entry in `PROBES` in `diagnosis.py` (the Docker probes live in `docker/probes.py`), and a row in `tests/test_doctor.py`. A `warn` or `fail` needs a fix command; check ids are never renamed. Probes run side by side; reading `prior[...]` waits for that probe. The JSON schema is described once, in `nexahome/report.py`.
 - **A system (macOS, Linux, ...):** a module in `platform/` and one line in `SYSTEMS`. Only `nexahome.platform` may read the operating system; a test enforces it.
 - **A repository check:** `policy/` holds the Compose policy and personal-data checks. The pre-commit hook runs `python -m nexahome.policy.personal_data` and `make check` runs `nexahome check`; the scripts they replaced are gone, and the tests hold their recorded output. The wheel ships `stacks/` as `nexahome/_stacks` (plain `include` and `sources` in `pyproject.toml`, not `force-include`, which would also ship a local `.env`).
+
+## Reuse before you write
+
+One owner per fact. Before writing a second copy of any of these, search for the literal and use the owner:
+
+| Fact | Owner |
+| :-- | :-- |
+| The fix line that opens a file in the editor | `errors.editor_fix(shown)` (the only place that spells `${EDITOR:-vi}`) |
+| A path in a message or command: relative to the working directory, shell-quoted | `Context.display` |
+| Where the stacks of an instance are, and whether a folder is a clone (has a Makefile) or was made by `init` (has `nexahome.toml`) | `instance.home`: `stacks_dir`, `stack_dir`, `has_makefile`, `has_settings`. Never write `instance / "stacks"` |
+| Creating or replacing a file, with its mode | `nexahome.files`: `create_exclusive` (never overwrites), `replace_atomically`, `make_directory`. Modes are in `defaults` (`PRIVATE_FILE_MODE` for secrets, `PUBLIC_FILE_MODE` otherwise) |
+| A run that creates several files and must undo itself on failure | `with files.Rollback(created, "what", fix):` removes only what that run made and turns an `OSError` into a `NexaHomeError` |
+| A `docker` command line | `docker.engine`, `docker.compose` |
+
+## Tests
+
+- One test file per command (`test_check.py`, `test_env.py`, `test_stacks.py`, `test_status.py`, and so on) and one per module with logic of its own (`test_files.py`, `test_envfile.py`).
+- Shared in `tests/conftest.py`: `make_context` (injected host, runner and environment; `out(ctx)` and `err(ctx)` read what a command printed), `FakeRunner` (answers by exact argv), `fake_docker` (a `docker` script on `PATH`), `make_checkout` (a clone), `make_instance` (a folder as `init` leaves it, by hand) and the `instance` fixture (a real `nexahome init`; a test module may override it with a smaller one). Do not define `out`, `err` or a checkout builder in a test file.
+- Guards: `test_startup.py` (the modules each call imports), `test_packaging.py` (layering, lazy imports, annotations), `test_docs.py` (links, headers, and that the table above names every module).
+- Test a failure path by patching the one shared function (for example `files.create_exclusive`), not the file system.
+- Run `make test`, and on Python 3.13 as well as the newest: 3.13 evaluates annotations eagerly.
 
 ## Keeping the command fast
 
@@ -38,4 +59,4 @@ The principle is **pay for what you use**: a call costs only what it needs, in s
 
 `make test` enforces the checklist: `tests/test_startup.py` lists the modules each call imports in a fresh process, and `tests/test_packaging.py` rejects heavy top-level imports. If a new command truly needs a heavy module, add it to its own function and add the call to the budget in `test_startup.py`; add to the allowlist in `test_packaging.py` only with a reason next to the entry.
 
-Changelog: 0.1 (2026-11-04): `stacks/` row names `ownership` and `scaffold` (Goal 3); 0.1 (2026-11-04): checklist names `run_waiting` (DR3); 0.1 (2026-11-03): moved here from CONTRIBUTING so the code guide has one owner (PK6f, owner's yes).
+Changelog: 0.1 (2026-11-04): `defaults` and `files` in the module map, reuse owners and tests layout, a test keeps the map complete (Goal 3 follow-up); 0.1 (2026-11-04): `stacks/` row names `ownership` and `scaffold` (Goal 3); 0.1 (2026-11-04): checklist names `run_waiting` (DR3); 0.1 (2026-11-03): moved here from CONTRIBUTING so the code guide has one owner (PK6f, owner's yes).
