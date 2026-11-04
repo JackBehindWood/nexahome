@@ -8,8 +8,13 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from nexahome.defaults import PUBLIC_DIR_MODE
+from nexahome.errors import NexaHomeError
+
+if TYPE_CHECKING:
+    from types import TracebackType
 
 
 def make_directory(path: Path, created: list[Path]) -> None:
@@ -58,3 +63,25 @@ def remove_created(created: list[Path]) -> None:
             path.unlink() if path.is_file() else path.rmdir()
         except OSError:
             pass
+
+
+class Rollback:
+    """`with Rollback(created, "init", fix):` around the writes of one run. On any error it removes what `created` lists;
+    an OSError (disk full, no permission) becomes a NexaHomeError that names `what` and ends in `fix`; any other error
+    passes through unchanged. A plain class, not `contextlib`, so no import is paid for."""
+
+    __slots__ = ("created", "what", "fix")
+
+    def __init__(self, created: list[Path], what: str, fix: str) -> None:
+        self.created, self.what, self.fix = created, what, fix
+
+    def __enter__(self) -> Rollback:
+        return self
+
+    def __exit__(self, kind: type[BaseException] | None, error: BaseException | None, trace: TracebackType | None) -> bool:
+        if error is None:
+            return False
+        remove_created(self.created)
+        if isinstance(error, OSError):
+            raise NexaHomeError(f"{self.what} stopped and removed what it had made: {error}", self.fix) from error
+        return False

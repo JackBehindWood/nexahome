@@ -100,19 +100,13 @@ def new_stack(ctx: Context, instance: Path, name: str) -> NewStack:
     texts = {file: _render(file, (source / "_template" / file).read_text(), name, port, has_make) for file in TEMPLATE_FILES}
     listed = home.has_settings(instance)
     created: list[Path] = []
-    try:
+    with files.Rollback(created, "stacks new", f"nexahome stacks new {name}"):
         files.make_directory(folder, created)
         for file, text in texts.items():
             files.create_exclusive(folder / file, text.encode(), PUBLIC_FILE_MODE, created)
         if listed:
             settings = config.read(instance)
             config.write(instance, [*(settings.stacks if settings else ()), name])
-    except OSError as error:
-        files.remove_created(created)
-        raise NexaHomeError(f"stacks new stopped and removed what it had made: {error}", f"nexahome stacks new {name}") from error
-    except BaseException:
-        files.remove_created(created)
-        raise
     return NewStack(folder, port, listed)
 
 

@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from nexahome import files
+from nexahome.errors import NexaHomeError
 
 
 def mode(path: Path) -> int:
@@ -67,3 +68,38 @@ def test_remove_created_removes_files_and_folders_newest_first_and_ignores_what_
     (tmp_path / "a" / "f").unlink()  # already gone: must not stop the rest
     files.remove_created(created)
     assert not (tmp_path / "a").exists()
+
+
+# --- Rollback: what a failed create-many-files run does -----------------------------------------------------
+def test_rollback_removes_what_the_run_made_and_lets_other_errors_through(tmp_path: Path) -> None:
+    created: list[Path] = []
+    with pytest.raises(ValueError, match="boom"), files.Rollback(created, "thing", "fix"):
+        files.make_directory(tmp_path / "a", created)
+        files.create_exclusive(tmp_path / "a" / "f", b"x", 0o644, created)
+        raise ValueError("boom")
+    assert not (tmp_path / "a").exists()
+
+
+def test_rollback_turns_an_oserror_into_one_message_and_one_fix(tmp_path: Path) -> None:
+    created: list[Path] = []
+    with pytest.raises(NexaHomeError) as raised, files.Rollback(created, "init", "nexahome init x"):
+        files.create_exclusive(tmp_path / "f", b"x", 0o644, created)
+        raise OSError(28, "No space left on device")
+    assert raised.value.message == "init stopped and removed what it had made: [Errno 28] No space left on device"
+    assert raised.value.fix == "nexahome init x" and isinstance(raised.value.__cause__, OSError)
+    assert not (tmp_path / "f").exists()
+
+
+def test_rollback_keeps_everything_when_the_block_succeeds(tmp_path: Path) -> None:
+    created: list[Path] = []
+    with files.Rollback(created, "init", "nexahome init x"):
+        files.create_exclusive(tmp_path / "f", b"x", 0o644, created)
+    assert (tmp_path / "f").exists()
+
+
+def test_rollback_cleans_up_on_ctrl_c_and_does_not_swallow_it(tmp_path: Path) -> None:
+    created: list[Path] = []
+    with pytest.raises(KeyboardInterrupt), files.Rollback(created, "init", "nexahome init x"):
+        files.create_exclusive(tmp_path / "f", b"x", 0o644, created)
+        raise KeyboardInterrupt
+    assert not (tmp_path / "f").exists()

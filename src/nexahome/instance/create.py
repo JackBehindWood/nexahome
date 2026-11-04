@@ -59,7 +59,7 @@ def create(root: Path, source: Path, version: str) -> Created:
         raise NexaHomeError("this install's bundled stacks do not include the demo stack", REINSTALL)
     created: list[Path] = []
     hashes: dict[str, str] = {}
-    try:
+    with files.Rollback(created, "init", f"nexahome init {root}"):
         files.make_directory(home.stacks_dir(root), created)
         for name in directories:
             files.make_directory(home.stack_dir(root, name), created)
@@ -72,10 +72,4 @@ def create(root: Path, source: Path, version: str) -> Created:
         files.create_exclusive(root / CONFIG_NAME, config.render(DEFAULT_STACKS).encode(), PUBLIC_FILE_MODE, created)
         files.make_directory(root / ".nexahome", created)
         files.create_exclusive(root / manifest.PATH, manifest.render(version, hashes).encode(), PUBLIC_FILE_MODE, created)
-    except OSError as error:
-        files.remove_created(created)
-        raise NexaHomeError(f"init stopped and removed what it had made: {error}", f"nexahome init {root}") from error
-    except BaseException:
-        files.remove_created(created)
-        raise
     return Created(root, stacks, DEFAULT_STACKS, len(paths))
