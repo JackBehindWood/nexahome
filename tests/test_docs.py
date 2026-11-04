@@ -82,6 +82,27 @@ def test_documented_make_and_nexahome_commands_exist() -> None:
     assert missing == []
 
 
+START_LINE = re.compile(r"docker compose -f stacks/(?P<name>[\w-]+)/compose\.yaml (?P<verb>up|down)(?: -[\w-]+)*")
+NETWORK_LINE = re.compile(r"docker network inspect \S+ >/dev/null 2>&1 \|\| docker network create \S+")
+
+
+def test_start_lines_in_the_docs_are_the_ones_the_package_prints() -> None:
+    """K3: `docker/compose.py` owns the manual start lines that `nexahome env` and `stacks new` print; a doc may repeat one, never reword it."""
+    from nexahome.docker import compose
+
+    wrong = []
+    for path in CURRENT:
+        for n, line in enumerate(path.read_text().splitlines(), 1):
+            for found in START_LINE.finditer(line):
+                owner = compose.up_command if found["verb"] == "up" else compose.down_command
+                if found[0] != owner(found["name"]):
+                    wrong.append(f"{rel(path)}:{n}: {found[0]!r}, the owner prints {owner(found['name'])!r}")
+            for found in NETWORK_LINE.finditer(line):
+                if found[0] != compose.network_command():
+                    wrong.append(f"{rel(path)}:{n}: {found[0]!r}, the owner prints {compose.network_command()!r}")
+    assert wrong == []
+
+
 def test_every_stack_has_a_dependabot_entry() -> None:
     config = (REPO / ".github" / "dependabot.yml").read_text()
     covered = set(re.findall(r"directory: /stacks/([\w-]+)", config))
