@@ -78,4 +78,6 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
     print(f"{'stack':<{width}}  enabled  owner    state", file=ctx.out)
     for row in rows:
         print(f"{row['name']:<{width}}  {'yes' if row['enabled'] else 'no':<7}  {row['owner']:<7}  {row['state']}", file=ctx.out)
+    if "unknown" in states:  # A-07: say why, in words, once
+        print("state unknown: Docker did not answer; start it, or run: nexahome doctor", file=ctx.out)
     return ExitCode.OK
