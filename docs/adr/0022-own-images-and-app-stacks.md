@@ -76,6 +76,8 @@ Easier: a new language is a template and two Dependabot entries, not package cod
 
 **Confirmed items touched.** None edited. [ADR 0007](0007-stack-contract.md) says "a stack is a copy of `stacks/_template/`"; with profiles it becomes "of `stacks/_template/` or a profile", which would be an amendment by reference when this is decided (the owner's yes). The "Go single binary" row in ADR 0018 concerns the package; this ADR carries the app-stack decision.
 
+**Prerequisite found 2026-11-04 (stack inventory).** The edge `Caddyfile`, the portal `services.yaml` and the Gatus `config.yaml` name each bundled app by hand, so removing a bundled stack or adding a profile first needs those three files split into per-stack fragments; until then the bundle stays whole and `hello` stays the only default `init` enables. Reconsider when a bundled stack most users would not want appears, when stacks must ship in separate wheels, or when the wheel size becomes a problem (not measured).
+
 ## Alternatives
 | Option | Verdict |
 | :-- | :-- |
