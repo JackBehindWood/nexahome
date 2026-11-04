@@ -38,7 +38,7 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         raise NexaHomeError("this install carries no stacks to copy", REINSTALL)
     made = create.create(root, source, __version__)
     shown = ctx.display(root)
-    print(f"created {shown}: {sum(1 for name in made.stacks if name not in NON_SERVICE_STACKS)} stacks, {made.files} files; nexahome.toml enables {', '.join(made.enabled)}", file=ctx.out)
+    print(f"created {shown}: {sum(1 for name in made.stacks if name not in NON_SERVICE_STACKS)} stacks (plus the backup tool), {made.files} files; nexahome.toml enables {', '.join(made.enabled)}", file=ctx.out)
     print(f"Next: cd {shown} && nexahome doctor", file=ctx.out)
     print("\nThen start the demo (needs a running Docker engine; `nexahome up` will replace these lines):", file=ctx.out)
     for line in compose.demo_commands(made.enabled[0]):

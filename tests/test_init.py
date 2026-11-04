@@ -35,10 +35,11 @@ def init(make_context: MakeContext, target: Path, **options: object) -> tuple[in
     return cli.main(["init", str(target)], ctx), ctx
 
 
-def test_the_summary_counts_services_not_the_template_or_the_backup_tool(make_context: MakeContext, tmp_path: Path) -> None:
+def test_the_summary_counts_services_and_names_the_backup_tool_it_also_copied(make_context: MakeContext, tmp_path: Path) -> None:
     code, ctx = init(make_context, tmp_path / "made")
     services = [p for p in (REPO / "stacks").iterdir() if p.is_dir() and p.name not in ("_template", "backup")]  # P-28
-    assert code == ExitCode.OK and f": {len(services)} stacks," in out(ctx)
+    # A-11: `nexahome stacks` lists the backup tool too, so the summary says it is there
+    assert code == ExitCode.OK and f": {len(services)} stacks (plus the backup tool)," in out(ctx)
 
 
 def test_the_stacks_are_found_without_a_wheel_or_a_makefile() -> None:
