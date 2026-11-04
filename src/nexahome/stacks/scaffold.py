@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING, NamedTuple
 from nexahome import files
 from nexahome.defaults import PUBLIC_FILE_MODE
 from nexahome.errors import NexaHomeError
+from nexahome.instance import home
 
 if TYPE_CHECKING:
     from nexahome.context import Context
@@ -44,7 +45,7 @@ def _check_name(name: str, verb: str) -> None:
 def _free_port(instance: Path) -> int:
     """The smallest port from 8081 that no other stack uses as a `${VAR:-port}` default (the template does not count)."""
     used: set[int] = set()
-    for compose in (instance / "stacks").glob("*/compose.yaml"):
+    for compose in home.stacks_dir(instance).glob("*/compose.yaml"):
         if compose.parent.name == "_template":
             continue
         try:
@@ -82,22 +83,22 @@ def _render(filename: str, text: str, name: str, port: int, has_make: bool) -> s
 
 def new_stack(ctx: Context, instance: Path, name: str) -> NewStack:
     """Create stacks/<name> from the bundled template. Never overwrites; if anything fails, what this call made is removed."""
-    from nexahome.instance import CONFIG_NAME, REINSTALL, bundle, config
+    from nexahome.instance import REINSTALL, bundle, config
     from nexahome.stacks import ownership
 
     _check_name(name, "new")
     if name in ownership.package_owned(instance):
         raise NexaHomeError(f"{name} is part of NexaHome; choose a name of your own", f"nexahome stacks new {name}-2")
-    folder = instance / "stacks" / name
+    folder = home.stack_dir(instance, name)
     if folder.exists() or folder.is_symlink():
         raise NexaHomeError(f"stacks/{name} already exists; new never overwrites", "nexahome stacks")
     source = bundle.location()
     if source is None or not all((source / "_template" / file).is_file() for file in TEMPLATE_FILES):
         raise NexaHomeError("this install carries no stack template", REINSTALL)
-    has_make = (instance / "Makefile").is_file()
+    has_make = home.has_makefile(instance)
     port = _free_port(instance)
     texts = {file: _render(file, (source / "_template" / file).read_text(), name, port, has_make) for file in TEMPLATE_FILES}
-    listed = (instance / CONFIG_NAME).is_file()
+    listed = home.has_settings(instance)
     created: list[Path] = []
     try:
         files.make_directory(folder, created)
@@ -121,13 +122,13 @@ def remove_stack(ctx: Context, instance: Path, name: str, assume_yes: bool) -> b
     import shutil
 
     from nexahome.docker import compose
-    from nexahome.instance import CONFIG_NAME, config
+    from nexahome.instance import config
     from nexahome.stacks import ownership
 
     _check_name(name, "remove")
-    folder = instance / "stacks" / name
+    folder = home.stack_dir(instance, name)
     shown = ctx.display(folder)
-    if not (instance / CONFIG_NAME).is_file():
+    if not home.has_settings(instance):
         raise NexaHomeError(f"{shown}: remove works in a folder made by nexahome init; this one is a clone", f"rm -r {shown}")
     if name in ownership.package_owned(instance):
         raise NexaHomeError(f"{name} is part of NexaHome and is not removed here; to stop using it, change the list", "nexahome config get stacks")

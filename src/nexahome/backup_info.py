@@ -5,6 +5,7 @@ from collections.abc import Mapping
 from pathlib import Path
 
 from nexahome.defaults import BACKUP_RECENT_SECONDS, ENV_BACKUP_DIR
+from nexahome.instance import home
 from nexahome.stacks import envfile
 
 _UNITS = ("B", "K", "M", "G", "T")
@@ -15,7 +16,7 @@ def repository_dir(instance: Path, env: Mapping[str, str]) -> Path:
     """stacks/backup/.env wins, then $NEXAHOME_BACKUP_DIR, then data/backup (as backup.sh does)."""
     value = None
     try:
-        value = envfile.read_value((instance / "stacks" / "backup" / ".env").read_text(), ENV_BACKUP_DIR)
+        value = envfile.read_value((home.stack_dir(instance, "backup") / ".env").read_text(), ENV_BACKUP_DIR)
     except OSError:
         pass
     chosen = value or env.get(ENV_BACKUP_DIR)

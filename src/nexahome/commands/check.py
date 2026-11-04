@@ -24,9 +24,10 @@ def register(subparsers: Subparsers) -> None:
 def run(args: argparse.Namespace, ctx: Context) -> int:
     from nexahome import platform as host_platform
     from nexahome.errors import NexaHomeError, editor_fix
+    from nexahome.instance import home
     from nexahome.policy import compose
 
-    root = ctx.cwd / args.stacks if args.stacks else (ctx.instance() or ctx.cwd) / "stacks"
+    root = ctx.cwd / args.stacks if args.stacks else home.stacks_dir(ctx.instance() or ctx.cwd)
     try:  # messages read stacks/x/... when the folder is inside the working directory
         shown = root.relative_to(ctx.cwd)
     except ValueError:

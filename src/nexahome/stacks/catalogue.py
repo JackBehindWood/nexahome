@@ -3,13 +3,13 @@
 from pathlib import Path
 
 from nexahome.defaults import CORE_STACKS, NON_SERVICE_STACKS
-from nexahome.instance import CONFIG_NAME
+from nexahome.instance import home
 
 
 
 def all_stacks(instance: Path) -> list[str]:
     """Every directory under stacks/ with a compose.yaml, except the template."""
-    found = sorted(d.name for d in (instance / "stacks").iterdir() if (d / "compose.yaml").is_file())
+    found = sorted(d.name for d in home.stacks_dir(instance).iterdir() if (d / "compose.yaml").is_file())
     return [name for name in found if name != "_template"]
 
 
@@ -17,7 +17,7 @@ def enabled(instance: Path) -> list[str]:
     """The stacks this host runs: the list in nexahome.toml (an instance), else the names in .config/stacks (a clone,
     this host only) if it lists any, else every stack except the template and the backup tool; core stacks first."""
     names: list[str] = []
-    if (instance / CONFIG_NAME).is_file():  # an instance made by `nexahome init`: its settings name the stacks
+    if home.has_settings(instance):  # an instance made by `nexahome init`: its settings name the stacks
         from nexahome.instance import config
 
         settings = config.read(instance)
@@ -33,4 +33,4 @@ def enabled(instance: Path) -> list[str]:
 
 
 def compose_file(instance: Path, name: str) -> Path:
-    return instance / "stacks" / name / "compose.yaml"
+    return home.stack_dir(instance, name) / "compose.yaml"

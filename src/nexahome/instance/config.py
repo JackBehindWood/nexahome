@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, NamedTuple
 from nexahome import __version__, files
 from nexahome.errors import ExitCode, NexaHomeError, editor_fix
 from nexahome.defaults import CONFIG_MAX_BYTES, INSTANCE_SCHEMA, PUBLIC_FILE_MODE
-from nexahome.instance import CONFIG_NAME
+from nexahome.instance import CONFIG_NAME, home
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -51,8 +51,8 @@ def validate_stacks(directory: Path, names: Sequence[object], fix: str, exit_cod
     for name in names:
         if not isinstance(name, str) or not STACK_NAME.fullmatch(name):
             raise NexaHomeError(f"stacks: {name!r} is not a stack name (lower-case letters, digits, - and _)", fix, exit_code)
-        if not (directory / "stacks" / name / "compose.yaml").is_file():
-            raise NexaHomeError(f"stacks: there is no stack called {name!r} in {directory / 'stacks'}", fix, exit_code)
+        if not (home.stack_dir(directory, name) / "compose.yaml").is_file():
+            raise NexaHomeError(f"stacks: there is no stack called {name!r} in {home.stacks_dir(directory)}", fix, exit_code)
         if name not in clean:
             clean.append(name)
     return tuple(clean)

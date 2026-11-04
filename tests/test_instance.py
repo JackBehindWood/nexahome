@@ -19,6 +19,16 @@ def make_instance(root: Path, stacks: tuple[str, ...] = ("demo",)) -> Path:
     return root
 
 
+def test_the_layout_helpers_name_each_fact_once(tmp_path: Path) -> None:
+    assert home.stacks_dir(tmp_path) == tmp_path / "stacks"
+    assert home.stack_dir(tmp_path, "demo") == tmp_path / "stacks" / "demo"
+    assert not home.has_makefile(tmp_path) and not home.has_settings(tmp_path)
+    (tmp_path / "Makefile").write_text("")
+    assert home.has_makefile(tmp_path) and not home.has_settings(tmp_path)
+    (tmp_path / "nexahome.toml").write_text("")
+    assert home.has_settings(tmp_path)
+
+
 def test_what_counts_as_an_instance(make_checkout: MakeCheckout, tmp_path: Path) -> None:
     assert home.is_instance(make_checkout(root=tmp_path / "clone"))  # stacks/ and a Makefile
     assert home.is_instance(make_instance(tmp_path / "made"))  # nexahome.toml
