@@ -97,7 +97,7 @@ def test_a_stack_with_no_log_lines_says_so_and_how_to_check(make_checkout: MakeC
     checkout = make_checkout({"hello": None})
     ctx = make_context(cwd=checkout, runner=FakeRunner({**DOCKER_HEALTHY, logs_argv(checkout, "hello"): RunResult(0, "")}))
     assert cli.main(["logs", "hello"], ctx) == ExitCode.OK
-    assert out(ctx) == "" and "hello: no log lines; is it running? Check with: nexahome stacks" in err(ctx)
+    assert out(ctx) == "" and "hello: no log lines yet; if it should have some, check that it runs: nexahome stacks" in err(ctx)
 
 
 def test_no_stacks_at_all_points_at_the_list(make_checkout: MakeCheckout, make_context: MakeContext) -> None:

@@ -12,7 +12,7 @@ nexahome env                           # creates stacks/notes/.env and generates
 docker compose -f stacks/notes/compose.yaml up -d --wait   # `nexahome up` will replace this line
 ```
 
-`new` prints these lines for your stack, with its port. The generated stack is a placeholder (a tiny web server with nothing to serve): on an engine, `up -d --wait` reports it **unhealthy** and `curl` answers 404, because the empty volume has no page and its health check expects one. This is a known fault of the starter, not of your setup. Replace the image and settings in `stacks/notes/compose.yaml` with your service first, then run `nexahome check` and the `up` line.
+`new` prints these lines for your stack, with its port. The generated stack is a placeholder: a tiny web server that serves one page and logs each request, so `up -d --wait` ends healthy and `curl` answers 200 as it stands. `nexahome logs <name>` shows those request lines. Replace the image and settings in `stacks/notes/compose.yaml` with your service first, then run `nexahome check` and the `up` line.
 
 ## What you get
 
@@ -36,6 +36,6 @@ It refuses a running stack (stop it with the `docker compose ... down` line it p
 
 ## Not checked yet
 
-Linux, and a reader who has never used Compose. Run on a macOS arm64 engine on 2026-11-04 (throwaway Colima profile): `init`, `stacks new`, `check`, `env` (about 1 s each), `up` (unhealthy, see above), `remove` refusing a running stack and a package stack, `remove` after `down`, a failing `check` ending in `Next: edit <file>`. See [the session log](../session-log.md).
+Linux, and a reader who has never used Compose. Run on a macOS arm64 engine on 2026-11-04 (throwaway Colima profile): `init`, `stacks new`, `check`, `env` (about 1 s each), `up` (healthy only after the starter fix, see the changelog), `remove` refusing a running stack and a package stack, `remove` after `down`, a failing `check` ending in `Next: edit <file>`. See [the session log](../session-log.md).
 
-Changelog: 0.1 (2026-11-04): `new` skips ports held on the host (T2); 0.1 (2026-11-04): engine run: the starter is unhealthy as shipped, port wording, what was run; 0.1 (2026-11-04): says where the package stacks' READMEs are (A-04); 0.1 (2026-11-04): first version (Goal 3).
+Changelog: 0.1 (2026-11-04): the starter is healthy and logs requests (K1, run on an engine), `nexahome logs` mentioned; 0.1 (2026-11-04): `new` skips ports held on the host (T2); 0.1 (2026-11-04): engine run: the starter is unhealthy as shipped, port wording, what was run; 0.1 (2026-11-04): says where the package stacks' READMEs are (A-04); 0.1 (2026-11-04): first version (Goal 3).

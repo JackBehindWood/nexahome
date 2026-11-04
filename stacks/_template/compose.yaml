@@ -5,7 +5,9 @@ name: nexahome-_template
 services:
   app:
     image: busybox:1.38.0
-    command: ["httpd", "-f", "-p", "8080", "-h", "/data"]
+    # A placeholder that works: it writes one page into /www and serves it, logging each request (`nexahome logs`).
+    # Replace the image and command with your service; keep your service's own data in the volume below.
+    command: ["sh", "-c", "echo 'It works. Replace this placeholder with your service.' > /www/index.html && exec httpd -f -vv -p 8080 -h /www"]
     user: "10001:10001"
     read_only: true
     cap_drop: [ALL]
@@ -18,8 +20,10 @@ services:
       options: {max-size: 10m, max-file: "3"}  # Docker's default json-file never rotates
     ports:
       - "127.0.0.1:${TEMPLATE_PORT:-8081}:8080"
+    tmpfs:
+      - /www:uid=10001,gid=10001  # read_only is on, so the page needs a writable place
     volumes:
-      - data:/data
+      - data:/data  # your service's data
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/"]
       interval: 10s

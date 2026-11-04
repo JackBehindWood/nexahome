@@ -117,6 +117,15 @@ def test_new_skips_ports_that_are_bound_on_the_host(make_context: MakeContext, i
     assert "http://127.0.0.1:8083/" in out(ctx)
 
 
+def test_the_starter_serves_a_page_of_its_own_so_its_health_check_can_pass(make_context: MakeContext, instance: Path) -> None:
+    """K1: busybox served an empty named volume, so `/` answered 404 and the wget health check failed. The page is written
+    at start into a tmpfs, which also leaves the volume free for the user's own data."""
+    run(make_context, instance, "new", "page")
+    text = (instance / "stacks" / "page" / "compose.yaml").read_text()
+    assert "index.html" in text and "tmpfs:" in text and "-h /www" in text.replace('", "', " ").replace('"', "")
+    assert "-h /data" not in text.replace('", "', " ").replace('"', "")  # nothing is served from the empty volume
+
+
 @pytest.mark.parametrize("address", ["127.0.0.1", "0.0.0.0"])
 def test_the_port_probe_sees_a_real_listener(real_ports: None, address: str) -> None:
     import socket

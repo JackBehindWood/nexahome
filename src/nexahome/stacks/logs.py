@@ -48,5 +48,5 @@ def show(ctx: Context, instance: Path, stack: str | None, tail: int, follow: boo
         if result.stdout:
             print(result.stdout.rstrip("\n"), file=ctx.out)
         else:
-            print(f"{name}: no log lines; is it running? Check with: nexahome stacks", file=ctx.err)
+            print(f"{name}: no log lines yet; if it should have some, check that it runs: nexahome stacks", file=ctx.err)
     return ExitCode.OK
