@@ -4,7 +4,7 @@ name: nexahome-edge
 # nexahome-edge, which `make up` creates; every app reachable by name joins it too.
 services:
   edge:
-    image: caddy:2.11.7-alpine
+    image: caddy:2.11.9-alpine
     user: "1001:1001"
     read_only: true
     cap_drop: [ALL]
