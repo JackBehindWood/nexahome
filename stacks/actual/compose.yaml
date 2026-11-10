@@ -2,7 +2,7 @@ name: nexahome-actual
 
 services:
   actual:
-    image: actualbudget/actual-server:26.10.0-alpine
+    image: actualbudget/actual-server:26.11.0-alpine
     user: "1001:1001"
     read_only: true
     cap_drop: [ALL]
